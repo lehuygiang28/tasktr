@@ -43,3 +43,12 @@ Thumbs.db
 # Next.js
 .next
 out
+
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+.pnp.cjs
+.pnp.loader.mjs

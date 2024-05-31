@@ -1,1 +1,21 @@
-node_modules
+node_modules/
+
+# Ignore ESLint configuration files
+.eslintrc
+
+# Ignore build directories
+dist/
+
+# Ignore generated TypeScript files
+*.generated.ts
+
+.yarn/*
+
+.pnp.cjs
+.pnp.loader.mjs
+
+.nx/cache
+
+# Next.js
+.next
+out

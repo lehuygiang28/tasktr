@@ -1,9 +1,9 @@
 {
-  "name": "fe-e2e",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/fe-e2e/src",
-  "tags": [],
-  "implicitDependencies": ["fe"],
-  "// targets": "to see all targets run: nx show project fe-e2e --web",
-  "targets": {}
+    "name": "fe-e2e",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "apps/fe-e2e/src",
+    "tags": [],
+    "implicitDependencies": ["fe"],
+    "// targets": "to see all targets run: nx show project fe-e2e --web",
+    "targets": {}
 }
