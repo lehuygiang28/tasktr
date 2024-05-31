@@ -1,0 +1,9 @@
+{
+  "name": "tasktr-fe-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/tasktr-fe-e2e/src",
+  "tags": [],
+  "implicitDependencies": ["tasktr-fe"],
+  "// targets": "to see all targets run: nx show project tasktr-fe-e2e --web",
+  "targets": {}
+}
