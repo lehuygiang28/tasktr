@@ -1,7 +1,7 @@
 {
     "name": "@tasktr/source",
-    "version": "0.0.0",
-    "license": "MIT",
+    "version": "0.0.1",
+    "license": "",
     "private": true,
     "packageManager": "yarn@4.2.2",
     "dependencies": {
