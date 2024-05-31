@@ -38,7 +38,7 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/tasktr-be-e2e/**/*"]
+      "exclude": ["apps/be-e2e/**/*"]
     },
     {
       "plugin": "@nx/next/plugin",
