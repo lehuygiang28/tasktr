@@ -1,15 +1,14 @@
 'use client';
 
 import { Suspense } from 'react';
-
-import { NavigateToResource } from '@refinedev/nextjs-router';
+import { ErrorComponent } from '@refinedev/antd';
 import { Authenticated } from '@refinedev/core';
 
-export default function IndexPage() {
+export default function NotFound() {
     return (
         <Suspense>
-            <Authenticated key="home-page">
-                <NavigateToResource />
+            <Authenticated key="not-found">
+                <ErrorComponent />
             </Authenticated>
         </Suspense>
     );

@@ -1,4 +1,15 @@
 {
-    "cSpell.words": ["NORD", "Passwordless", "pwdless", "pwless", "Redlock", "tasktr"],
-    "conventionalCommits.scopes": ["be/auth"]
+    "cSpell.words": [
+        "antd",
+        "Kbar",
+        "nextjs",
+        "NORD",
+        "Passwordless",
+        "pwdless",
+        "pwless",
+        "Redlock",
+        "refinedev",
+        "tasktr"
+    ],
+    "conventionalCommits.scopes": ["be/auth", "fe"]
 }

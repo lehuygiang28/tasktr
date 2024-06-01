@@ -44,6 +44,9 @@ Thumbs.db
 .next
 out
 
+# production
+/build
+
 .yarn/*
 !.yarn/releases
 !.yarn/plugins
@@ -55,3 +58,11 @@ out
 
 .env*
 !.env.example
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# vercel
+.vercel
+
