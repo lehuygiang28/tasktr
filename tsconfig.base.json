@@ -14,7 +14,10 @@
         "skipLibCheck": true,
         "skipDefaultLibCheck": true,
         "baseUrl": ".",
-        "paths": {}
+        "paths": {
+            "~be/common": ["apps/be/common/src/index.ts"],
+            "~be/common/*": ["apps/be/common/src/*"]
+        }
     },
     "exclude": ["node_modules", "tmp"]
 }
