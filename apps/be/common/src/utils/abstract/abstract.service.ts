@@ -14,7 +14,7 @@ export class AbstractService {
      * @param {...unknown[]} args - The arguments passed to the function.
      * @return {string} The cache key.
      */
-    public buildCacheKey(fnName: string, ...args: unknown[]):string {
+    public buildCacheKey(fnName: string, ...args: unknown[]): string {
         return `${this.CACHE_PREFIX}_${fnName}:${sortedStringify(args)}`;
     }
 }
