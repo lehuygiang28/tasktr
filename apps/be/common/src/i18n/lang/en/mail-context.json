@@ -1,0 +1,30 @@
+{
+    "RESET_PASSWORD": {
+        "title": "Reset password",
+        "text1": "If you've lost your password or wish to reset it, just press the button below and follow the instructions. We’ll have you up and running in no time.",
+        "text2": "Or you can copy the link below and paste it into your browser to get started:",
+        "text3": "If you did not make this request then please ignore this email.",
+        "btn1": "Reset password"
+    },
+    "CONFIRM_EMAIL": {
+        "title": "Confirm email",
+        "text1": "You're almost ready to start enjoying our service. Just press the button below to confirm your email address.",
+        "text2": "Or you can copy the link below and paste it into your browser to get started:",
+        "text3": "If you did not make this request then please ignore this email.",
+        "btn1": "Confirm email"
+    },
+    "RESEND_CONFIRM_EMAIL": {
+        "title": "Confirm email",
+        "text1": "It seems like you haven't confirmed your email address yet. Just press the button below to confirm your email address.",
+        "text2": "Or you can copy the link below and paste it into your browser to get started:",
+        "text3": "If you did not make this request then please ignore this email.",
+        "btn1": "Confirm email"
+    },
+    "LOGIN_EMAIL": {
+        "title": "Login to your account",
+        "text1": "You have requested to login to your account. Please click the button below to proceed.",
+        "text2": "Alternatively, you can copy the link below and paste it into your browser to get started:",
+        "text3": "If you did not make this request, please ignore this email.",
+        "btn1": "Login"
+    }
+}

@@ -8,6 +8,7 @@ import { UserRoleEnum } from '../users.enum';
 import { UserBlockSchema } from './block.schema';
 import { AbstractDocument, NullableType } from '../../../../common/src/utils';
 import { AvatarSchema } from './avatar.schema';
+import { IsEmail } from 'class-validator';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -27,12 +28,19 @@ export class User extends AbstractDocument {
     })
     @Factory((faker: Faker) => faker.internet.email({ provider: 'example.com' }))
     @Prop({ unique: true, required: true })
+    @IsEmail()
     email: string;
+
+    @ApiProperty({
+        example: false,
+    })
+    @Prop({ default: false })
+    emailVerified: boolean;
 
     @ApiHideProperty()
     @Exclude({ toPlainOnly: true })
     @Factory((faker: Faker) => faker.internet.password())
-    @Prop({ required: true })
+    @Prop({ default: '' })
     password: string;
 
     @ApiProperty({

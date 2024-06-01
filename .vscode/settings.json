@@ -1,3 +1,4 @@
 {
-    "cSpell.words": ["tasktr"]
+    "cSpell.words": ["NORD", "Passwordless", "pwdless", "pwless", "Redlock", "tasktr"],
+    "conventionalCommits.scopes": ["be/auth"]
 }

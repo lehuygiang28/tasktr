@@ -9,7 +9,8 @@
             "executor": "@nx/js:node",
             "defaultConfiguration": "development",
             "options": {
-                "buildTarget": "be:build"
+                "buildTarget": "be:build",
+                "inspect": false
             },
             "configurations": {
                 "development": {

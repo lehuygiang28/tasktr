@@ -4,7 +4,7 @@
 // import { ConfigService } from '@nestjs/config';
 // import { JwtRefreshPayloadType } from './types/jwt-refresh-payload.type';
 // import { OrNeverType } from '../../utils/types';
-// import { AuthService } from '../auth.service';
+// import { AuthService } from '~be/app/users';
 
 // @Injectable()
 // export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
