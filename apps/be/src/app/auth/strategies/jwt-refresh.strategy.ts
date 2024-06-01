@@ -1,45 +1,29 @@
-// import { ExtractJwt, Strategy } from 'passport-jwt';
-// import { HttpStatus, Injectable } from '@nestjs/common';
-// import { PassportStrategy } from '@nestjs/passport';
-// import { ConfigService } from '@nestjs/config';
-// import { JwtRefreshPayloadType } from './types/jwt-refresh-payload.type';
-// import { OrNeverType } from '../../utils/types';
-// import { AuthService } from '~be/app/users';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
+import { OrNeverType } from '~be/common/utils/types';
+import { JwtPayloadType } from './types';
 
-// @Injectable()
-// export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-//     constructor(
-//         configService: ConfigService,
-//         private readonly usersService: AuthService,
-//     ) {
-//         super({
-//             jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'),
-//             secretOrKey: configService.getOrThrow<string>('AUTH_REFRESH_SECRET'),
-//         });
-//     }
+@Injectable()
+export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
+    constructor(configService: ConfigService) {
+        super({
+            jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'),
+            secretOrKey: configService.getOrThrow<string>('AUTH_REFRESH_SECRET'),
+        });
+    }
 
-//     public async validate(
-//         payload: JwtRefreshPayloadType,
-//     ): Promise<OrNeverType<JwtRefreshPayloadType>> {
-//         if (!payload.userId) {
-//             throw new AuthHttpExceptionDto({
-//                 status: HttpStatus.UNAUTHORIZED,
-//                 errors: {
-//                     token: 'invalidRefreshToken',
-//                 },
-//                 code: AuthErrorCodeEnum.RefreshTokenInvalid,
-//             });
-//         }
+    public async validate(payload: JwtPayloadType): Promise<OrNeverType<JwtPayloadType>> {
+        if (!payload.userId) {
+            throw new UnauthorizedException({
+                errors: {
+                    token: 'invalidRefreshToken',
+                },
+                message: 'Your token is invalid',
+            });
+        }
 
-//         if (await this.usersService.isTokenRevoked('refresh', payload.hash)) {
-//             throw new AuthHttpExceptionDto({
-//                 status: HttpStatus.UNAUTHORIZED,
-//                 errors: {
-//                     token: 'refreshTokenRevoked',
-//                 },
-//                 code: AuthErrorCodeEnum.RefreshTokenRevoked,
-//             });
-//         }
-//         return payload;
-//     }
-// }
+        return payload;
+    }
+}

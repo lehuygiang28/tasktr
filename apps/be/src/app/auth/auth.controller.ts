@@ -12,9 +12,9 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { PasswordlessStrategy } from './strategies';
-import { AuthEmailLoginDto, AuthSignupDto } from './dtos';
+import { AuthEmailLoginDto, AuthSignupDto, LoginResponseDto } from './dtos';
 import { AuthRegisterConfirmDto } from './dtos/auth-register-confirm.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -36,14 +36,24 @@ export class AuthController {
         return this.authService.registerConfirm(hash);
     }
 
+    @ApiOkResponse({ type: LoginResponseDto })
+    @HttpCode(HttpStatus.OK)
     @Post('login')
-    async login(@Req() req, @Res() res, @Body() { destination }: AuthEmailLoginDto) {
-        await this.authService.validateLogin({ destination });
+    async login(@Body() { destination, password }: AuthEmailLoginDto): Promise<LoginResponseDto> {
+        return this.authService.validatePassword({ destination, password });
+    }
+
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Post('login/pwdless')
+    async loginPwdless(@Req() req, @Res() res, @Body() { destination }: AuthEmailLoginDto) {
+        await this.authService.validatePasswordless({ destination });
         return this.pwdlessStrategy.send(req, res);
     }
 
+    @ApiOkResponse({ type: LoginResponseDto })
     @UseGuards(AuthGuard('pwdless'))
-    @Get('login/callback')
+    @Get('login/pwdless')
     callback(@Req() req) {
         return this.authService.generateTokens(req.user);
     }

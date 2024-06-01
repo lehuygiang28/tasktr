@@ -3,11 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { PinoLogger } from 'nestjs-pino';
-import { AuthEmailLoginDto, AuthSignupDto } from './dtos';
+import { AuthEmailLoginDto, AuthSignupDto, LoginResponseDto } from './dtos';
 import { UserRoleEnum } from '../users/users.enum';
 import { faker } from '@faker-js/faker';
 import { UserDto } from '../users';
 import ms from 'ms';
+import * as bcrypt from 'bcryptjs';
 import { JwtPayloadType } from './strategies/types';
 import { MailService } from '~be/common/mail';
 import { RedisService } from '~be/common/redis';
@@ -137,7 +138,7 @@ export class AuthService {
         ]);
     }
 
-    async validateLogin({ destination }: AuthEmailLoginDto): Promise<UserDto> {
+    async validatePasswordless({ destination }: AuthEmailLoginDto): Promise<UserDto> {
         const user = await this.usersService.findByEmail(destination);
 
         if (!user) {
@@ -161,7 +162,41 @@ export class AuthService {
         return user;
     }
 
-    async generateTokens(user: UserDto) {
+    async validatePassword({
+        destination,
+        password,
+    }: AuthEmailLoginDto): Promise<LoginResponseDto> {
+        const user = await this.validatePasswordless({ destination });
+
+        if (!user?.password) {
+            throw new UnprocessableEntityException({
+                errors: {
+                    password: 'notSet',
+                },
+                message: `User with email '${destination}' doesn't set password up`,
+            });
+        }
+
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+            throw new UnprocessableEntityException({
+                errors: {
+                    password: 'invalidPassword',
+                },
+                message: 'Invalid password',
+            });
+        }
+
+        const { accessToken, refreshToken } = await this.generateTokens(user);
+
+        return {
+            accessToken,
+            refreshToken,
+            ...user,
+        };
+    }
+
+    async generateTokens(user: UserDto): Promise<LoginResponseDto> {
         const [accessToken, refreshToken] = await Promise.all([
             await this.jwtService.signAsync(
                 {

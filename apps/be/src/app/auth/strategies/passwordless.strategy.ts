@@ -42,7 +42,7 @@ export class PasswordlessStrategy extends PassportStrategy(Strategy, 'pwdless') 
     }
 
     async validate({ destination }: AuthEmailLoginDto) {
-        const user = await this.authService.validateLogin({ destination });
+        const user = await this.authService.validatePasswordless({ destination });
         return user;
     }
 }
