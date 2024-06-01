@@ -3,7 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { PinoLogger } from 'nestjs-pino';
-import { AuthEmailLoginDto, AuthSignupDto, LoginResponseDto } from './dtos';
+import {
+    AuthEmailLoginDto,
+    AuthLoginPasswordlessDto,
+    AuthSignupDto,
+    LoginResponseDto,
+} from './dtos';
 import { UserRoleEnum } from '../users/users.enum';
 import { faker } from '@faker-js/faker';
 import { UserDto } from '../users';
@@ -138,7 +143,7 @@ export class AuthService {
         ]);
     }
 
-    async validatePasswordless({ destination }: AuthEmailLoginDto): Promise<UserDto> {
+    async validatePasswordless({ destination }: AuthLoginPasswordlessDto): Promise<UserDto> {
         const user = await this.usersService.findByEmail(destination);
 
         if (!user) {
@@ -231,5 +236,11 @@ export class AuthService {
             refreshToken,
             ...user,
         };
+    }
+
+    async refreshToken(data: JwtPayloadType): Promise<LoginResponseDto> {
+        const user = await this.validatePasswordless({ destination: data.email });
+        const { accessToken, refreshToken } = await this.generateTokens(user);
+        return { accessToken, refreshToken, ...user };
     }
 }

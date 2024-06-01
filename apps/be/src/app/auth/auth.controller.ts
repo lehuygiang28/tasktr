@@ -8,13 +8,22 @@ import {
     UseGuards,
     HttpStatus,
     HttpCode,
+    SerializeOptions,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { PasswordlessStrategy } from './strategies';
-import { AuthEmailLoginDto, AuthSignupDto, LoginResponseDto } from './dtos';
+import {
+    AuthEmailLoginDto,
+    AuthLoginPasswordlessDto,
+    AuthLoginPasswordlessQueryDto,
+    AuthSignupDto,
+    LoginResponseDto,
+    RefreshTokenDto,
+} from './dtos';
 import { AuthRegisterConfirmDto } from './dtos/auth-register-confirm.dto';
-import { ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiNoContentResponse, ApiOkResponse, ApiTags, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { JwtPayloadType } from './strategies/types';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -46,15 +55,32 @@ export class AuthController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     @Post('login/pwdless')
-    async loginPwdless(@Req() req, @Res() res, @Body() { destination }: AuthEmailLoginDto) {
+    async loginPwdless(@Req() req, @Res() res, @Body() { destination }: AuthLoginPasswordlessDto) {
         await this.authService.validatePasswordless({ destination });
         return this.pwdlessStrategy.send(req, res);
     }
 
+    @ApiQuery({ type: AuthLoginPasswordlessQueryDto })
     @ApiOkResponse({ type: LoginResponseDto })
     @UseGuards(AuthGuard('pwdless'))
     @Get('login/pwdless')
     callback(@Req() req) {
         return this.authService.generateTokens(req.user);
+    }
+
+    @ApiBody({
+        type: RefreshTokenDto,
+    })
+    @UseGuards(AuthGuard('jwt-refresh'))
+    @SerializeOptions({
+        groups: ['me'],
+    })
+    @Post('refresh')
+    @HttpCode(HttpStatus.OK)
+    @ApiOkResponse({ type: LoginResponseDto })
+    public refresh(
+        @Req() request: { user: JwtPayloadType },
+    ): Promise<Omit<LoginResponseDto, 'user'>> {
+        return this.authService.refreshToken(request.user);
     }
 }
