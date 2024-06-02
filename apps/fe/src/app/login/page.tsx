@@ -1,12 +1,21 @@
 'use client';
 
-import { ThemedTitleV2 } from '@refinedev/antd';
-import { Button, Typography, Layout, Space } from 'antd';
 import { useLogin } from '@refinedev/core';
+import { ThemedTitleV2 } from '@refinedev/antd';
+import { Button, Layout, Space, Form, Input, FormProps } from 'antd';
+import { MailOutlined } from '@ant-design/icons';
+import { AuthLoginPasswordlessDto } from '~be/app/auth/dtos';
 
 export default function Login() {
     const { mutate: login } = useLogin();
 
+    const onFinish: FormProps<AuthLoginPasswordlessDto>['onFinish'] = (values) => {
+        console.log('Success:', values);
+    };
+
+    const onFinishFailed: FormProps<AuthLoginPasswordlessDto>['onFinishFailed'] = (errorInfo) => {
+        console.log('Failed:', errorInfo);
+    };
     return (
         <Layout
             style={{
@@ -22,23 +31,27 @@ export default function Login() {
                         fontSize: '22px',
                     }}
                 />
-                <Button
-                    style={{ width: '240px', marginBottom: '32px' }}
-                    type="primary"
-                    size="middle"
-                    onClick={() => login({})}
-                >
-                    Sign in
-                </Button>
-                <Typography.Text type="secondary">
-                    Powered by
-                    <img
-                        style={{ padding: '0 5px' }}
-                        alt="Google"
-                        src="https://refine.ams3.cdn.digitaloceanspaces.com/superplate-auth-icons%2Fgoogle.svg"
-                    />
-                    Google
-                </Typography.Text>
+
+                <Form autoComplete="off" onFinish={onFinish} onFinishFailed={onFinishFailed}>
+                    <Form.Item<AuthLoginPasswordlessDto>
+                        name="destination"
+                        rules={[{ required: true, message: 'Please input your Username!' }]}
+                    >
+                        <Input
+                            prefix={<MailOutlined className="site-form-item-icon" />}
+                            placeholder="Email"
+                        />
+                    </Form.Item>
+
+                    <Button
+                        style={{ width: '240px', marginBottom: '32px' }}
+                        type="primary"
+                        size="middle"
+                        htmlType="submit"
+                    >
+                        Sign in
+                    </Button>
+                </Form>
             </Space>
         </Layout>
     );

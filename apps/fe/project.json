@@ -5,5 +5,46 @@
     "projectType": "application",
     "tags": [],
     "// targets": "to see all targets run: nx show project fe --web",
-    "targets": {}
+    "targets": {
+        "refine": {
+            "executor": "nx:run-commands",
+            "options": {
+                "cwd": "apps/fe",
+                "commands": [
+                    "node ../../scripts/copy-file.js ../../package.json ./package.json",
+                    "refine"
+                ]
+            }
+        },
+        "dev:rf": {
+            "executor": "nx:run-commands",
+            "options": {
+                "cwd": "apps/fe",
+                "commands": [
+                    "node ../../scripts/copy-file.js ../../package.json ./package.json",
+                    "cross-env NODE_OPTIONS=--max_old_space_size=4096 refine dev --platform nextjs"
+                ]
+            }
+        },
+        "build:rf": {
+            "executor": "nx:run-commands",
+            "options": {
+                "cwd": "apps/fe",
+                "commands": [
+                    "node ../../scripts/copy-file.js ../../package.json ./package.json",
+                    "refine build"
+                ]
+            }
+        },
+        "start:rf": {
+            "executor": "nx:run-commands",
+            "options": {
+                "cwd": "apps/fe",
+                "commands": [
+                    "node ../../scripts/copy-file.js ../../package.json ./package.json",
+                    "refine start"
+                ]
+            }
+        }
+    }
 }

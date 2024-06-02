@@ -13,6 +13,7 @@ const nextConfig = {
         svgr: false,
     },
     transpilePackages: ['@refinedev/antd'],
+    trailingSlash: true,
 };
 
 const plugins = [

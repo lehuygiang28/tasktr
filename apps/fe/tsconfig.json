@@ -10,7 +10,9 @@
         "noEmit": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
+        "emitDecoratorMetadata": true,
         "incremental": true,
+        "strictPropertyInitialization": false,
         "plugins": [
             {
                 "name": "next"
@@ -18,7 +20,9 @@
         ],
         "types": ["jest", "node"],
         "paths": {
-            "~/*": ["./apps/fe/src/*"]
+            "~/*": ["./apps/fe/src/*"],
+            "~be/app/*": ["apps/be/src/app/*"],
+            "~be/common/*": ["apps/be/common/src/*"]
         }
     },
     "include": [
