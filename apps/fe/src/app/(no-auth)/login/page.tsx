@@ -1,6 +1,6 @@
 'use client';
 
-import { useLogin, useNavigation } from '@refinedev/core';
+import { useLogin } from '@refinedev/core';
 import { Layout, Space, Form, Input, Typography } from 'antd';
 import { MailOutlined } from '@ant-design/icons';
 import type { LoginActionPayload } from '~/providers/auth-provider/types';
@@ -10,13 +10,17 @@ import { LoginPwdless } from '~/validators';
 import LoadingBtn from '~/components/button/loading-btn';
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
+import Loading from '~/app/loading';
+import { useRouter } from 'next/navigation';
 
 const { Title, Text } = Typography;
 const SEEM_SAFE_TOKEN_LENGTH = 30;
 
 export default function Login() {
+    const router = useRouter();
     const params = useSearchParams();
     const { mutate: login } = useLogin();
+
     const {
         control,
         handleSubmit,
@@ -37,12 +41,17 @@ export default function Login() {
     useEffect(() => {
         const token = params.get('token');
         if (token && token.length > SEEM_SAFE_TOKEN_LENGTH) {
-            console.log('Token is valid');
             login({ type: 'login', token });
         } else {
-            console.log('Token is invalid');
+            const cloneParams = new URLSearchParams(params);
+            cloneParams.delete('token');
+            return router.replace(`/login?${cloneParams.toString()}`);
         }
-    }, [params, login]);
+    }, [params, login, router]);
+
+    if (params.get('token')) {
+        return <Loading />;
+    }
 
     return (
         <Layout

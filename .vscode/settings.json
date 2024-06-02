@@ -12,5 +12,5 @@
         "refinedev",
         "tasktr"
     ],
-    "conventionalCommits.scopes": ["be/auth", "fe", "be", "fe/auth", "fe/page"]
+    "conventionalCommits.scopes": ["be/auth", "fe", "be", "fe/auth", "fe/page", "fe/components"]
 }
