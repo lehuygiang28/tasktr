@@ -52,17 +52,17 @@ export class AuthController {
         return this.authService.validatePassword({ destination, password });
     }
 
-    @ApiNoContentResponse()
-    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiOkResponse()
+    @HttpCode(HttpStatus.OK)
     @Post('login/pwdless')
-    async loginPwdless(@Req() req, @Res() res, @Body() { destination }: AuthLoginPasswordlessDto) {
+    async loginPwdless(@Body() { destination }: AuthLoginPasswordlessDto, @Req() req, @Res() res) {
         await this.authService.validatePasswordless({ destination });
         return this.pwdlessStrategy.send(req, res);
     }
 
+    @UseGuards(AuthGuard('pwdless'))
     @ApiQuery({ type: AuthLoginPasswordlessQueryDto })
     @ApiOkResponse({ type: LoginResponseDto })
-    @UseGuards(AuthGuard('pwdless'))
     @Get('login/pwdless')
     callback(@Req() req) {
         return this.authService.generateTokens(req.user);

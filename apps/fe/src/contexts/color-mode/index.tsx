@@ -20,7 +20,7 @@ export const ColorModeContextProvider: React.FC<
     PropsWithChildren<ColorModeContextProviderProps>
 > = ({ children, defaultMode }) => {
     const [isMounted, setIsMounted] = useState(false);
-    const [mode, setMode] = useState(defaultMode || 'light');
+    const [mode, setMode] = useState(defaultMode || 'dark');
 
     useEffect(() => {
         setIsMounted(true);
@@ -28,7 +28,7 @@ export const ColorModeContextProvider: React.FC<
 
     useEffect(() => {
         if (isMounted) {
-            const theme = Cookies.get('theme') || 'light';
+            const theme = Cookies.get('theme') || 'dark';
             setMode(theme);
         }
     }, [isMounted]);
@@ -55,7 +55,7 @@ export const ColorModeContextProvider: React.FC<
             <ConfigProvider
                 // you can change the theme colors here. example: ...RefineThemes.Magenta,
                 theme={{
-                    ...RefineThemes.Blue,
+                    ...RefineThemes.Purple,
                     algorithm: mode === 'light' ? defaultAlgorithm : darkAlgorithm,
                 }}
             >

@@ -1,9 +1,9 @@
-import authOptions from '~/app/api/auth/[...nextauth]/options';
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
-import React from 'react';
+import { PropsWithChildren } from 'react';
+import { authOptions } from '~/libs/next-auth';
 
-export default async function LoginLayout({ children }: React.PropsWithChildren) {
+export default async function NoAuthLayout({ children }: PropsWithChildren) {
     const data = await getData();
 
     if (data.session?.user) {
