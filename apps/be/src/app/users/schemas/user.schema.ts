@@ -6,7 +6,8 @@ import { Factory } from 'nestjs-seeder';
 import { Faker } from '@faker-js/faker';
 import { UserRoleEnum } from '../users.enum';
 import { UserBlockSchema } from './block.schema';
-import { AbstractDocument, NullableType } from '../../../../common/src/utils';
+import { AbstractDocument } from '~be/common/utils';
+import type { NullableType } from '~be/common/utils/types';
 import { AvatarSchema } from './avatar.schema';
 import { IsEmail } from 'class-validator';
 

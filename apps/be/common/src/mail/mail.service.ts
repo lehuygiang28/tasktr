@@ -8,7 +8,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { join } from 'path';
 import { Attachment } from 'nodemailer/lib/mailer';
 import { I18nTranslations } from '../i18n';
-import { MaybeType } from '../utils/types';
+import type { MaybeType } from '../utils/types';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

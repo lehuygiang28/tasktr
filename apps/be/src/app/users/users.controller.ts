@@ -1,20 +1,9 @@
-import {
-    Controller,
-    Get,
-    HttpStatus,
-    SerializeOptions,
-    HttpCode,
-    Query,
-    Param,
-    Post,
-    Body,
-    Patch,
-} from '@nestjs/common';
-import { ApiTags, ApiOkResponse, ApiExtraModels } from '@nestjs/swagger';
+import { Controller, HttpStatus, SerializeOptions, HttpCode, Post, Body } from '@nestjs/common';
+import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto, UserDto } from './dtos';
 import { UserRoleEnum } from './users.enum';
-import { NullableType } from '~be/common/utils';
+import type { NullableType } from '~be/common/utils';
 
 @ApiTags('users')
 @Controller({

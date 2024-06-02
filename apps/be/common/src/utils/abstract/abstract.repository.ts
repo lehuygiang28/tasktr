@@ -12,7 +12,7 @@ import {
     UpdateQuery,
 } from 'mongoose';
 import { NotFoundException } from '@nestjs/common';
-import { NullableType } from '../types';
+import type { NullableType } from '../types';
 
 export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     protected abstract readonly logger: PinoLogger;
