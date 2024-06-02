@@ -1,16 +1,7 @@
 'use client';
 
-import { Suspense } from 'react';
+import Home from '~/components/pages/home';
 
-import { NavigateToResource } from '@refinedev/nextjs-router';
-import { Authenticated } from '@refinedev/core';
-
-export default function IndexPage() {
-    return (
-        <Suspense>
-            <Authenticated key="home-page">
-                <NavigateToResource />
-            </Authenticated>
-        </Suspense>
-    );
+export default function HomePage() {
+    return <Home />;
 }

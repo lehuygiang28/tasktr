@@ -5,12 +5,11 @@ import Cookies from 'js-cookie';
 import { AuthActionResponse } from '@refinedev/core/dist/contexts/auth/types';
 import { LoginResponseDto } from '~be/app/auth/dtos';
 import { refreshTokens, requestLoginPwdless } from '~/services/auth.service';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession, signOut } from 'next-auth/react';
 import type { LoginActionPayload, LoginAction, RequestLoginAction } from './types/login.type';
 
 export const authProvider: AuthProvider & {
     refresh: () => Promise<AuthActionResponse & { tokenData?: LoginResponseDto }>;
-    getAuthData: () => LoginResponseDto | null;
 } = {
     login: async ({ type, ...data }: LoginActionPayload) => {
         if (type === 'login') {
@@ -74,10 +73,10 @@ export const authProvider: AuthProvider & {
         }
     },
     logout: async () => {
-        Cookies.remove('auth', { path: '/' });
+        await signOut();
         return {
             success: true,
-            redirectTo: '/login',
+            redirectTo: '/',
         };
     },
     refresh: async () => {
@@ -128,16 +127,8 @@ export const authProvider: AuthProvider & {
             };
         }
     },
-    getAuthData: (): LoginResponseDto | null => {
-        const auth = Cookies.get('auth');
-        if (auth) {
-            const parsedUser: LoginResponseDto = JSON.parse(auth);
-            return parsedUser;
-        }
-        return null;
-    },
     check: async () => {
-        const auth = Cookies.get('auth');
+        const auth = await getSession();
         if (auth) {
             return {
                 authenticated: true,
@@ -146,23 +137,13 @@ export const authProvider: AuthProvider & {
 
         return {
             authenticated: false,
-            logout: true,
-            redirectTo: '/login',
         };
     },
-    getPermissions: async () => {
-        const auth = Cookies.get('auth');
-        if (auth) {
-            const parsedUser = JSON.parse(auth);
-            return parsedUser.roles;
-        }
-        return null;
-    },
     getIdentity: async () => {
-        const auth = Cookies.get('auth');
-        if (auth) {
-            const parsedUser = JSON.parse(auth);
-            return parsedUser;
+        const auth = await getSession();
+        if (auth?.user) {
+            const { refreshToken, accessToken, ...user } = auth.user as LoginResponseDto;
+            return user;
         }
         return null;
     },
