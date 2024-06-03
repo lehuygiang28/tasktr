@@ -30,6 +30,11 @@ import { redisStore } from 'cache-manager-ioredis-yet';
                     host: config.getOrThrow<string>('REDIS_HOST'),
                     port: config.getOrThrow<number>('REDIS_PORT'),
                     password: config.getOrThrow<string>('REDIS_PASSWORD'),
+                    connectTimeout: Number(config.get<number>('REDIS_CONNECT_TIMEOUT')) || 5000,
+                    reconnectOnError: () => {
+                        const reconnectAndResendFailedCmd = 2;
+                        return reconnectAndResendFailedCmd;
+                    },
                 } as RedisOptions);
             },
         },
