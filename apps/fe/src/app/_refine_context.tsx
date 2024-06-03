@@ -12,10 +12,11 @@ import routerProvider from '@refinedev/nextjs-router';
 
 import { DevtoolsProvider } from '~/providers/devtools';
 import { dataProvider } from '~/providers/data-provider';
-import { tasktrDataProvider } from '~/providers/data-provider/tasktr';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ColorModeContextProvider } from '~/contexts/color-mode';
 import { authProvider } from '~/providers/auth-provider';
+import { useAxiosAuth } from '~/hooks/useAxiosAuth';
+import dataProviderSimpleRest from '@refinedev/simple-rest';
 
 type RefineContextProps = {
     defaultMode?: string;
@@ -35,6 +36,11 @@ type AppProps = {
 
 const App = (props: React.PropsWithChildren<AppProps>) => {
     const defaultMode = props?.defaultMode;
+    const axiosAuth = useAxiosAuth();
+    const tasktrDataProvider = dataProviderSimpleRest(
+        process.env.NEXT_PUBLIC_API_URL ?? '',
+        axiosAuth,
+    );
 
     return (
         <>

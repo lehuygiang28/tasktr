@@ -4469,7 +4469,6 @@ __metadata:
     antd: "npm:^5.17.4"
     autoprefixer: "npm:10.4.13"
     axios: "npm:^1.6.0"
-    axios-auth-refresh: "npm:^3.3.6"
     babel-jest: "npm:^29.4.1"
     bcryptjs: "npm:^2.4.3"
     cache-manager-ioredis-yet: "npm:^2.0.4"
@@ -6458,15 +6457,6 @@ __metadata:
   version: 4.9.1
   resolution: "axe-core@npm:4.9.1"
   checksum: 10c0/ac9e5a0c6fa115a43ebffc32a1d2189e1ca6431b5a78e88cdcf94a72a25c5964185682edd94fe6bdb1cb4266c0d06301b022866e0e50dcdf6e3cefe556470110
-  languageName: node
-  linkType: hard
-
-"axios-auth-refresh@npm:^3.3.6":
-  version: 3.3.6
-  resolution: "axios-auth-refresh@npm:3.3.6"
-  peerDependencies:
-    axios: ">= 0.18 < 0.19.0 || >= 0.19.1"
-  checksum: 10c0/c0089eceeec697f239315ca0b3c79f95cf45831eac92c7f8a7475c776dfa2d64017450422981fbd39a6786fdf10e95c40b70fc70648ed5e2b7fe466ba1e1e4a8
   languageName: node
   linkType: hard
 

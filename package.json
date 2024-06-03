@@ -30,7 +30,6 @@
         "@refinedev/simple-rest": "^5.0.6",
         "antd": "^5.17.4",
         "axios": "^1.6.0",
-        "axios-auth-refresh": "^3.3.6",
         "bcryptjs": "^2.4.3",
         "cache-manager-ioredis-yet": "^2.0.4",
         "class-transformer": "^0.5.1",
