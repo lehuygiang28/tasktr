@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
-import { refreshTokens } from '~/services/auth.service';
+import axios from '~/libs/axios';
+import { LoginResponseDto } from '~be/app/auth/dtos';
 
 export function useRefreshToken() {
     const { data: session } = useSession();
@@ -14,7 +15,11 @@ export function useRefreshToken() {
         setIsRefreshing(true);
 
         try {
-            const res = await refreshTokens(session.user.refreshToken);
+            const path = '/auth/refresh';
+            const res = await axios.post<LoginResponseDto>(path, {
+                refreshToken: session.user.refreshToken,
+            });
+
             session.user = res.data;
         } catch (error) {
             console.error('Failed to refresh tokens:', error);

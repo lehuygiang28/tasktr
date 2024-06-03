@@ -1,9 +1,9 @@
 import { Account, Session, User } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { AuthLoginPasswordlessQueryDto } from '~be/app/auth/dtos';
-import { loginPwdless } from '~/services/auth.service';
+import { AuthLoginPasswordlessQueryDto, LoginResponseDto } from '~be/app/auth/dtos';
 import { AxiosError } from 'axios';
+import axios from '../axios';
 
 export const authOptions = {
     providers: [
@@ -19,11 +19,15 @@ export const authOptions = {
                 },
             },
             async authorize(credentials) {
+                const path = '/auth/login/pwdless';
                 const payload: AuthLoginPasswordlessQueryDto = {
                     token: credentials?.token || '',
                 };
 
-                return loginPwdless(payload)
+                return axios
+                    .get<LoginResponseDto>(path, {
+                        params: payload,
+                    })
                     .then((response) => {
                         return response.data as unknown as User;
                     })
