@@ -21,6 +21,7 @@
         "fe/page",
         "fe/components",
         "actions",
-        "configs"
+        "configs",
+        "be/tasks"
     ]
 }

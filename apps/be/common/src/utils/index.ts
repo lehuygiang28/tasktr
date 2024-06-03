@@ -1,4 +1,5 @@
 export * from './abstract';
+export * from './decorators';
 export * from './common';
 export * from './dtos';
 export * from './filters';
