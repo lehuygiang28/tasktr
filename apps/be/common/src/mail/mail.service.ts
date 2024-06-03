@@ -5,7 +5,6 @@ import { MailerConfig } from './mail.config';
 import { I18nContext } from 'nestjs-i18n';
 import { MailData } from './mail-data.interface';
 import { PinoLogger } from 'nestjs-pino';
-import { join } from 'path';
 import { Attachment } from 'nodemailer/lib/mailer';
 import { I18nTranslations } from '../i18n';
 import type { MaybeType } from '../utils/types';
@@ -25,11 +24,11 @@ export class MailService {
 
         this.logger.setContext(MailService.name);
         this.BASE_ATTACHMENT = [
-            {
-                filename: 'techcell.png',
-                path: join(__dirname, 'assets/mail/templates/assets/images/techcell.png'),
-                cid: 'techcell',
-            },
+            // {
+            //     filename: 'giaang.png',
+            //     path: join(__dirname, 'assets/mail/templates/assets/images/giaang.png'),
+            //     cid: 'giaang',
+            // },
         ];
     }
 
