@@ -32,9 +32,12 @@ import { isTrueSet } from '../utils';
                             : {
                                   serializers: {
                                       req: (req: Request) => ({
-                                          id: req.id,
                                           method: req.method,
                                           url: req.url,
+                                      }),
+                                      res: (res) => ({
+                                          statusCode: res?.statusCode || res?.status,
+                                          statusMessage: res?.statusMessage,
                                       }),
                                   },
                               }),
