@@ -2,9 +2,11 @@
 
 import { AuthProvider } from '@refinedev/core';
 import { LoginResponseDto } from '~be/app/auth/dtos';
-import { requestLoginPwdless } from '~/services/auth.service';
 import { signIn, getSession, signOut } from 'next-auth/react';
 import type { LoginActionPayload, LoginAction, RequestLoginAction } from './types/login.type';
+import axios from '~/libs/axios';
+import { AxiosError } from 'axios';
+import { ProblemDetails } from '~be/common/utils';
 
 export const authProvider: AuthProvider = {
     login: async ({ type, ...data }: LoginActionPayload) => {
@@ -42,30 +44,52 @@ export const authProvider: AuthProvider = {
                 };
             }
         } else {
+            const path = '/auth/login/pwdless';
             const requestData = data as RequestLoginAction;
-            console.log('requestData', requestData);
-            try {
-                await requestLoginPwdless({
-                    destination: requestData.destination,
-                });
 
-                return {
-                    success: true,
-                    redirectTo: '/login',
-                    successNotification: {
-                        description: 'Check your email',
-                        message: `We've sent you an email with a link to log in. Click the link to continue.`,
-                    },
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                    error: {
-                        name: 'LoginError',
-                        message: 'Invalid email, please try again',
-                    },
-                };
-            }
+            return axios
+                .post<void>(path, { destination: requestData.destination })
+                .then((response) => {
+                    console.log(response);
+                    return {
+                        success: true,
+                        redirectTo: '/login',
+                        successNotification: {
+                            description: 'Check your email',
+                            message: `We've sent you an email with a link to log in. Click the link to continue.`,
+                        },
+                    };
+                })
+                .catch((error: AxiosError<ProblemDetails>) => {
+                    const resultResponse = {
+                        success: false,
+                        error: {
+                            name: 'LoginError',
+                            message: 'Something went wrong, please try again',
+                        },
+                    };
+
+                    if (error.response?.data?.errors) {
+                        const errors = error.response.data.errors;
+
+                        if (errors['email']) {
+                            const err = errors['email'] as string;
+                            switch (err) {
+                                case 'notFound': {
+                                    resultResponse.error.message =
+                                        'Your email is not registered, please register first';
+                                    break;
+                                }
+                                default: {
+                                    resultResponse.error.message = error.response?.data?.detail;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    return resultResponse;
+                });
         }
     },
     logout: async () => {
