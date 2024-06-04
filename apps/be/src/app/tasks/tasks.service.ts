@@ -1,23 +1,24 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
-import { QUEUE_NAME } from '~be/common/bullmq/bullmq.constant';
-import { JobsOptions, Queue } from 'bullmq';
-import { TasksRepository } from './tasks.repository';
-import { CreateTaskDto } from './dtos';
-import { Task } from './schemas/task.schema';
-import { UpdateTaskDto } from './dtos/update-task.dto';
-import { convertToObjectId, validateCronFrequency } from '~be/common/utils';
+import { Queue, JobsOptions } from 'bullmq';
 import { UpdateQuery } from 'mongoose';
-import { JwtPayloadType } from '../auth/strategies';
+
+import { BULLMQ_TASK_QUEUE } from '~be/common/bullmq/bullmq.constant';
+import { convertToObjectId, validateCronFrequency } from '~be/common/utils';
+import { JwtPayloadType } from '~be/app/auth/strategies';
+
+import { TasksRepository } from './tasks.repository';
+import { Task } from './schemas/task.schema';
+import { CreateTaskDto, TaskDto, UpdateTaskDto } from './dtos';
 
 @Injectable()
 export class TasksService {
     constructor(
         private readonly taskRepo: TasksRepository,
-        @InjectQueue(QUEUE_NAME) readonly bullMQQueue: Queue,
+        @InjectQueue(BULLMQ_TASK_QUEUE) readonly taskQueue: Queue,
     ) {}
 
-    async startCron(task: Task) {
+    async startCronTask(task: Task) {
         const jobOptions: JobsOptions = {
             jobId: task._id.toString(),
             keepLogs: 20,
@@ -26,20 +27,32 @@ export class TasksService {
             },
             removeOnComplete: true,
             removeOnFail: true,
+            priority: 1000,
         };
 
-        return this.bullMQQueue.add(`fetch`, task, jobOptions);
+        return this.taskQueue.add(`fetch`, task, jobOptions);
     }
 
-    async stopCron(task: Task) {
-        const isStopped = await this.bullMQQueue.removeRepeatable(
-            `fetch`,
-            {
-                pattern: task.cron,
-            },
-            task._id.toString(),
-        );
-        return isStopped;
+    async stopCronTask(task: Task): Promise<boolean> {
+        const [isStopped] = await Promise.allSettled([
+            this.taskQueue.removeRepeatable(
+                `fetch`,
+                {
+                    pattern: task.cron,
+                },
+                task._id.toString(),
+            ),
+            ...task.cronHistory.map((cron) => {
+                return this.taskQueue.removeRepeatable(
+                    `fetch`,
+                    {
+                        pattern: cron,
+                    },
+                    task._id.toString(),
+                );
+            }),
+        ]);
+        return isStopped.status === 'fulfilled';
     }
 
     async executeTask(oldTask: Task, newTask: Task) {
@@ -47,19 +60,25 @@ export class TasksService {
         if (oldTask.isEnable !== newTask.isEnable || oldTask.cron !== newTask.cron) {
             // If the old task was enabled, stop the cron job
             if (oldTask.isEnable) {
-                await this.stopCron(oldTask);
+                await this.stopCronTask(oldTask);
             }
 
             // If the new task is enabled, start the cron job
             if (newTask.isEnable) {
-                await this.startCron(newTask);
+                await this.startCronTask(newTask);
             }
         }
 
         return newTask;
     }
 
-    async createTask({ data, user }: { data: CreateTaskDto; user: JwtPayloadType }) {
+    async createTask({
+        data,
+        user,
+    }: {
+        data: CreateTaskDto;
+        user: JwtPayloadType;
+    }): Promise<TaskDto> {
         const taskFoundNamed = await this.taskRepo.findOne({
             filterQuery: {
                 name: data.name,
@@ -113,7 +132,7 @@ export class TasksService {
         }
 
         if (taskCreated.isEnable) {
-            await this.startCron(taskCreated);
+            await this.startCronTask(taskCreated);
         }
 
         return taskCreated;
@@ -127,13 +146,14 @@ export class TasksService {
         id: string;
         data: UpdateTaskDto;
         user: JwtPayloadType;
-    }) {
+    }): Promise<TaskDto> {
         const oldTask = await this.taskRepo.findOneOrThrow({
             filterQuery: {
                 _id: convertToObjectId(id),
                 userId: convertToObjectId(user.userId),
             },
         });
+        const updateQuery: UpdateQuery<Task> = { ...data };
 
         if (data?.cron) {
             const valid = validateCronFrequency(
@@ -154,11 +174,12 @@ export class TasksService {
                     message: valid.message,
                 });
             }
-        }
 
-        const updateQuery: UpdateQuery<Task> = { ...data };
-        if (oldTask.cron !== data.cron) {
-            updateQuery.cronHistory = [...(oldTask.cronHistory || []), oldTask.cron];
+            if (oldTask.cron !== data.cron) {
+                updateQuery.cronHistory = Array.from(
+                    new Set([...(oldTask.cronHistory || []), oldTask.cron]),
+                );
+            }
         }
 
         const updatedTask = await this.taskRepo.findOneAndUpdateOrThrow({
@@ -171,7 +192,7 @@ export class TasksService {
         return this.executeTask(oldTask, updatedTask);
     }
 
-    async getTask({ id, user }: { id: string; user: JwtPayloadType }) {
+    async getTask({ id, user }: { id: string; user: JwtPayloadType }): Promise<TaskDto> {
         return this.taskRepo.findOneOrThrow({
             filterQuery: {
                 _id: convertToObjectId(id),
@@ -180,7 +201,7 @@ export class TasksService {
         });
     }
 
-    async getTasks({ user }: { user: JwtPayloadType }) {
+    async getTasks({ user }: { user: JwtPayloadType }): Promise<TaskDto[]> {
         return this.taskRepo.find({
             filterQuery: {
                 userId: convertToObjectId(user.userId),
