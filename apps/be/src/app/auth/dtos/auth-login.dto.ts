@@ -5,7 +5,7 @@ import { lowerCaseTransformer } from '~be/common/utils/transformers';
 
 export class AuthEmailLoginDto {
     @ApiProperty({
-        example: 'test@techcell.cloud',
+        example: 'test@gmail.com',
         description: 'User email',
         required: true,
         type: String,
