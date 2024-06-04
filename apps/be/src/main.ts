@@ -9,6 +9,7 @@ import {
     SwaggerModule,
 } from '@nestjs/swagger';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
+import * as swaggerStats from 'swagger-stats';
 
 import { AppModule } from './app/app.module';
 import {
@@ -17,11 +18,13 @@ import {
     ResolvePromisesInterceptor,
     validationOptions,
 } from '~be/common/utils';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
     const port = process.env.PORT || 8000;
 
     const app = await NestFactory.create(AppModule, { bufferLogs: true });
+    const configService = app.get(ConfigService);
     const logger = app.get(Logger);
 
     app.enableCors();
@@ -68,6 +71,28 @@ async function bootstrap() {
         customCss: new SwaggerTheme().getBuffer(SwaggerThemeNameEnum.NORD_DARK),
     };
     SwaggerModule.setup('docs', app, document, swaggerCustomOptions);
+
+    if (configService.get('API_STATS_PATH')) {
+        app.use(
+            swaggerStats.getMiddleware({
+                uriPath: configService.getOrThrow<string>('API_STATS_PATH'),
+                swaggerSpec: document,
+                name: 'Tasktr API statistics',
+                timelineBucketDuration: 180000,
+                authentication: true,
+                async onAuthenticate(req, username, password) {
+                    if (
+                        username === configService.getOrThrow<string>('API_STATS_USERNAME') &&
+                        password === configService.getOrThrow<string>('API_STATS_PASSWORD')
+                    ) {
+                        return true;
+                    }
+
+                    return false;
+                },
+            }),
+        );
+    }
 
     await app.listen(port);
     logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
