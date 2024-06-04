@@ -3,8 +3,9 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto, TaskDto } from './dtos';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UpdateTaskDto } from './dtos/update-task.dto';
+import { AuthRoles } from '../auth/guards/auth.guard';
 
-//TODO: Implement auth
+@AuthRoles()
 @ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {

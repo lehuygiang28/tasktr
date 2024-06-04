@@ -1,7 +1,14 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
-import cronValidate from 'cron-validate';
+import { parseExpression } from 'cron-parser';
+
+function validateCron(value: string) {
+    try {
+        parseExpression(value);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
 
 export function IsCron(validationOptions?: ValidationOptions) {
     return function (object: object, propertyName: string) {
@@ -9,19 +16,20 @@ export function IsCron(validationOptions?: ValidationOptions) {
             name: 'IsCron',
             target: object.constructor,
             propertyName: propertyName,
-            options: validationOptions,
+            options: {
+                message: `Invalid ${propertyName} expression`,
+                ...validationOptions,
+            },
             validator: {
-                validate(value: any, args: ValidationArguments) {
-                    const result = cronValidate(value, {
-                        preset: 'default',
-                        override: {
-                            useSeconds: true,
-                        },
-                    });
-                    return result.isValid();
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                validate(value: unknown, args: ValidationArguments) {
+                    if (typeof value !== 'string') {
+                        return false;
+                    }
+                    return validateCron(value);
                 },
                 defaultMessage(args: ValidationArguments) {
-                    return 'Invalid cron expression';
+                    return `Invalid ${args.property} expression`;
                 },
             },
         });
