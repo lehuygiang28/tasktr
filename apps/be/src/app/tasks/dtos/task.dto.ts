@@ -10,6 +10,8 @@ import {
     ValidateNested,
     IsEnum,
     IsUrl,
+    IsTimeZone,
+    IsMongoId,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsCron, ToBoolean } from '~be/common/utils';
@@ -23,6 +25,7 @@ export class AlertDto implements AlertSchema {
 
 export class TaskDto implements Task {
     @ApiProperty({ type: String, format: 'ObjectId' })
+    @IsMongoId()
     _id: Types.ObjectId;
 
     @ApiProperty()
@@ -47,13 +50,14 @@ export class TaskDto implements Task {
     @IsString()
     body: string;
 
-    @ApiProperty()
+    @ApiProperty({ description: 'Cron expression' })
     @IsString()
     @IsCron()
     cron: string;
 
     @ApiProperty()
     @IsString()
+    @IsTimeZone()
     timezone: string;
 
     @ApiProperty()

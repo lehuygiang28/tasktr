@@ -22,7 +22,7 @@ import {
     RefreshTokenDto,
 } from './dtos';
 import { AuthRegisterConfirmDto } from './dtos/auth-register-confirm.dto';
-import { ApiNoContentResponse, ApiOkResponse, ApiTags, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { JwtPayloadType } from './strategies/types';
 
 @ApiTags('auth')

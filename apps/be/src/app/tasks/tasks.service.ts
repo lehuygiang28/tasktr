@@ -6,7 +6,7 @@ import { TasksRepository } from './tasks.repository';
 import { CreateTaskDto } from './dtos';
 import { Task } from './schemas/task.schema';
 import { UpdateTaskDto } from './dtos/update-task.dto';
-import { convertToObjectId } from '~be/common/utils';
+import { convertToObjectId, validateCronFrequency} from '~be/common/utils';
 import { UpdateQuery } from 'mongoose';
 
 @Injectable()
@@ -73,6 +73,25 @@ export class TasksService {
             });
         }
 
+        const valid = validateCronFrequency(
+            {
+                cronExpression: data.cron,
+                timeZone: data.timezone,
+            },
+            {
+                minIntervalInSeconds: 2 * 60,
+                numTasks: 1,
+            },
+        );
+        if (typeof valid === 'object') {
+            throw new UnprocessableEntityException({
+                errors: {
+                    task: valid.err,
+                },
+                message: valid.message,
+            });
+        }
+
         const taskCreated = await this.taskRepo.create({
             document: {
                 cronHistory: [],
@@ -103,6 +122,25 @@ export class TasksService {
                 _id: convertToObjectId(id),
             },
         });
+
+        const valid = validateCronFrequency(
+            {
+                cronExpression: data.cron,
+                timeZone: data.timezone,
+            },
+            {
+                minIntervalInSeconds: 2 * 60,
+                numTasks: 1,
+            },
+        );
+        if (typeof valid === 'object') {
+            throw new UnprocessableEntityException({
+                errors: {
+                    task: valid.err,
+                },
+                message: valid.message,
+            });
+        }
 
         const updateQuery: UpdateQuery<Task> = { ...data };
         if (oldTask.cron !== data.cron) {
