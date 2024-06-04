@@ -1,22 +1,26 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
+import { InjectQueue } from '@nestjs/bullmq';
 import { PinoLogger } from 'nestjs-pino';
+import ms from 'ms';
+import * as bcrypt from 'bcryptjs';
+import { Queue } from 'bullmq';
+import { faker } from '@faker-js/faker';
+
+import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
+import { MailService } from '~be/common/mail';
+import { RedisService } from '~be/common/redis';
+
+import { UsersService, UserRoleEnum, UserDto } from '~be/app/users';
+
 import {
     AuthEmailLoginDto,
     AuthLoginPasswordlessDto,
     AuthSignupDto,
     LoginResponseDto,
 } from './dtos';
-import { UserRoleEnum } from '../users/users.enum';
-import { faker } from '@faker-js/faker';
-import { UserDto } from '../users';
-import ms from 'ms';
-import * as bcrypt from 'bcryptjs';
 import { JwtPayloadType } from './strategies/types';
-import { MailService } from '~be/common/mail';
-import { RedisService } from '~be/common/redis';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +31,7 @@ export class AuthService {
         private readonly usersService: UsersService,
         private readonly mailService: MailService,
         private readonly redisService: RedisService,
+        // @InjectQueue(BULLMQ_BG_JOB_QUEUE) readonly taskQueue: Queue,
     ) {
         this.logger.setContext(AuthService.name);
     }
