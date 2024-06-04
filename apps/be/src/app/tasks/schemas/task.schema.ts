@@ -3,6 +3,7 @@ import { HydratedDocument, Types } from 'mongoose';
 import { AbstractDocument } from '~be/common/utils';
 import type { NullableType } from '~be/common/utils/types';
 import { HttpMethodEnum } from '../tasks.enum';
+import { User } from '~be/app/users/schemas';
 
 export class AlertSchema {
     @Prop({ required: false, default: 0, type: Number })
@@ -19,7 +20,7 @@ export class Task extends AbstractDocument {
         Object.assign(this, data);
     }
 
-    @Prop({ required: true, type: Types.ObjectId, ref: 'Users' })
+    @Prop({ required: true, type: Types.ObjectId, ref: User.name })
     userId: Types.ObjectId;
 
     @Prop({ unique: true, required: true, type: String })

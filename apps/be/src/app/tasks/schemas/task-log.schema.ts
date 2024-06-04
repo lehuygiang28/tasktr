@@ -1,13 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { AbstractDocument } from '~be/common/utils';
+import { Task } from './task.schema';
 
 @Schema({
     timestamps: true,
     collection: 'taskLogs',
 })
 export class TaskLog extends AbstractDocument {
-    @Prop({ required: true, type: Types.ObjectId, ref: 'Task' })
+    @Prop({ required: true, type: Types.ObjectId, ref: Task.name })
     taskId: Types.ObjectId;
 
     @Prop({ required: false, default: new Date() })
