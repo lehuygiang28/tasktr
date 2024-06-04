@@ -19,8 +19,8 @@ export class Task extends AbstractDocument {
         Object.assign(this, data);
     }
 
-    // @Prop({ required: true, type: Types.ObjectId, ref: 'Users' })
-    // userId: Types.ObjectId;
+    @Prop({ required: true, type: Types.ObjectId, ref: 'Users' })
+    userId: Types.ObjectId;
 
     @Prop({ unique: true, required: true, type: String })
     name: string;

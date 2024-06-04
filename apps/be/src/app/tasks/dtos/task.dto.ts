@@ -28,39 +28,43 @@ export class TaskDto implements Task {
     @IsMongoId()
     _id: Types.ObjectId;
 
-    @ApiProperty()
+    @ApiProperty({ type: String, format: 'ObjectId' })
+    @IsMongoId()
+    userId: Types.ObjectId;
+
+    @ApiProperty({ example: 'Task 1' })
     @IsString()
     name: string;
 
-    @ApiProperty({ enum: HttpMethodEnum })
+    @ApiProperty({ enum: HttpMethodEnum, example: HttpMethodEnum.GET })
     @IsString()
     @IsEnum(HttpMethodEnum)
     method: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: 'http://localhost:3000/ping' })
     @IsString()
     @IsUrl()
     endpoint: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: { 'Content-Type': 'application/text' } })
     @IsObject()
     headers: Record<string, string>;
 
-    @ApiProperty()
+    @ApiProperty({ example: '' })
     @IsString()
     body: string;
 
-    @ApiProperty({ description: 'Cron expression' })
+    @ApiProperty({ description: 'Cron expression', example: '0 */5 * * * *' })
     @IsString()
     @IsCron()
     cron: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: 'Asia/Ho_Chi_Minh' })
     @IsString()
     @IsTimeZone()
     timezone: string;
 
-    @ApiProperty()
+    @ApiProperty({ example: false })
     @ToBoolean()
     @IsBoolean()
     isEnable: boolean;
@@ -75,7 +79,7 @@ export class TaskDto implements Task {
     @IsString({ each: true })
     cronHistory: string[];
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ example: 'Task 1, run every 5 minutes' })
     @IsOptional()
     @IsString()
     note: string;

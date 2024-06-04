@@ -6,4 +6,5 @@ export class CreateTaskDto extends OmitType(TaskDto, [
     'createdAt',
     'updatedAt',
     'cronHistory',
+    'userId',
 ]) {}

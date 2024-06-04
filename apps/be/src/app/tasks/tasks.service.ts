@@ -6,8 +6,9 @@ import { TasksRepository } from './tasks.repository';
 import { CreateTaskDto } from './dtos';
 import { Task } from './schemas/task.schema';
 import { UpdateTaskDto } from './dtos/update-task.dto';
-import { convertToObjectId, validateCronFrequency} from '~be/common/utils';
+import { convertToObjectId, validateCronFrequency } from '~be/common/utils';
 import { UpdateQuery } from 'mongoose';
+import { JwtPayloadType } from '../auth/strategies';
 
 @Injectable()
 export class TasksService {
@@ -58,10 +59,11 @@ export class TasksService {
         return newTask;
     }
 
-    async createTask(data: CreateTaskDto) {
+    async createTask({ data, user }: { data: CreateTaskDto; user: JwtPayloadType }) {
         const taskFoundNamed = await this.taskRepo.findOne({
             filterQuery: {
                 name: data.name,
+                userId: convertToObjectId(user.userId),
             },
         });
         if (taskFoundNamed) {
@@ -96,6 +98,7 @@ export class TasksService {
             document: {
                 cronHistory: [],
                 isEnable: false,
+                userId: convertToObjectId(user.userId),
                 ...data,
             },
         });
@@ -116,30 +119,41 @@ export class TasksService {
         return taskCreated;
     }
 
-    async updateTask(id: string, data: UpdateTaskDto) {
+    async updateTask({
+        id,
+        data,
+        user,
+    }: {
+        id: string;
+        data: UpdateTaskDto;
+        user: JwtPayloadType;
+    }) {
         const oldTask = await this.taskRepo.findOneOrThrow({
             filterQuery: {
                 _id: convertToObjectId(id),
+                userId: convertToObjectId(user.userId),
             },
         });
 
-        const valid = validateCronFrequency(
-            {
-                cronExpression: data.cron,
-                timeZone: data.timezone,
-            },
-            {
-                minIntervalInSeconds: 2 * 60,
-                numTasks: 1,
-            },
-        );
-        if (typeof valid === 'object') {
-            throw new UnprocessableEntityException({
-                errors: {
-                    task: valid.err,
+        if (data?.cron) {
+            const valid = validateCronFrequency(
+                {
+                    cronExpression: data.cron,
+                    timeZone: data.timezone,
                 },
-                message: valid.message,
-            });
+                {
+                    minIntervalInSeconds: 2 * 60,
+                    numTasks: 1,
+                },
+            );
+            if (typeof valid === 'object') {
+                throw new UnprocessableEntityException({
+                    errors: {
+                        task: valid.err,
+                    },
+                    message: valid.message,
+                });
+            }
         }
 
         const updateQuery: UpdateQuery<Task> = { ...data };
@@ -147,27 +161,30 @@ export class TasksService {
             updateQuery.cronHistory = [...(oldTask.cronHistory || []), oldTask.cron];
         }
 
-        const newTask = await this.taskRepo.findOneAndUpdateOrThrow({
+        const updatedTask = await this.taskRepo.findOneAndUpdateOrThrow({
             filterQuery: {
                 _id: convertToObjectId(id),
             },
             updateQuery,
         });
 
-        return this.executeTask(oldTask, newTask);
+        return this.executeTask(oldTask, updatedTask);
     }
 
-    async getTask(id: string) {
+    async getTask({ id, user }: { id: string; user: JwtPayloadType }) {
         return this.taskRepo.findOneOrThrow({
             filterQuery: {
                 _id: convertToObjectId(id),
+                userId: convertToObjectId(user.userId),
             },
         });
     }
 
-    async getTasks() {
+    async getTasks({ user }: { user: JwtPayloadType }) {
         return this.taskRepo.find({
-            filterQuery: {},
+            filterQuery: {
+                userId: convertToObjectId(user.userId),
+            },
         });
     }
 }
