@@ -4,7 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { TasksRepository } from './tasks.repository';
-import { BullMQProcessor, QUEUE_NAME } from '~be/common/bullmq';
+import { TaskProcessor, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Task, TaskSchema } from './schemas/task.schema';
 
@@ -12,7 +12,7 @@ import { Task, TaskSchema } from './schemas/task.schema';
     imports: [
         HttpModule,
         BullModule.registerQueue({
-            name: QUEUE_NAME,
+            name: BULLMQ_TASK_QUEUE,
             connection: {
                 host: process.env['REDIS_HOST'] ?? '',
                 port: Number(process.env['REDIS_PORT']) || 6379,
@@ -22,7 +22,7 @@ import { Task, TaskSchema } from './schemas/task.schema';
         MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
     ],
     controllers: [TasksController],
-    providers: [TasksRepository, TasksService, BullMQProcessor],
+    providers: [TasksRepository, TasksService, TaskProcessor],
     exports: [TasksService],
 })
 export class TasksModule {}

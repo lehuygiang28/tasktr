@@ -1,10 +1,10 @@
 import { OnQueueEvent, QueueEventsHost, QueueEventsListener } from '@nestjs/bullmq';
-import { QUEUE_NAME } from './bullmq.constant';
+import { BULLMQ_TASK_QUEUE } from './bullmq.constant';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
-@QueueEventsListener(QUEUE_NAME)
+@QueueEventsListener(BULLMQ_TASK_QUEUE)
 export class BullMQEventsListener extends QueueEventsHost implements OnModuleInit {
     constructor(private readonly logger: PinoLogger) {
         super();
@@ -12,7 +12,9 @@ export class BullMQEventsListener extends QueueEventsHost implements OnModuleIni
     }
 
     onModuleInit() {
-        this.logger.debug(`BullMQEventsListener for ${QUEUE_NAME} is initialized and ready.`);
+        this.logger.debug(
+            `BullMQEventsListener for ${BULLMQ_TASK_QUEUE} is initialized and ready.`,
+        );
     }
 
     @OnQueueEvent('active')
@@ -24,7 +26,7 @@ export class BullMQEventsListener extends QueueEventsHost implements OnModuleIni
         id: string,
     ) {
         this.logger.info(
-            `Active event on ${QUEUE_NAME} with id: ${id} and args: ${JSON.stringify(args)}`,
+            `Active event on ${BULLMQ_TASK_QUEUE} with id: ${id} and args: ${JSON.stringify(args)}`,
         );
     }
 
@@ -38,7 +40,7 @@ export class BullMQEventsListener extends QueueEventsHost implements OnModuleIni
         id: string,
     ) {
         this.logger.info(
-            `Completed event on ${QUEUE_NAME} with id: ${id} and args: ${JSON.stringify(args)}`,
+            `Completed event on ${BULLMQ_TASK_QUEUE} with id: ${id} and args: ${JSON.stringify(args)}`,
         );
     }
 
@@ -52,7 +54,7 @@ export class BullMQEventsListener extends QueueEventsHost implements OnModuleIni
         id: string,
     ) {
         this.logger.info(
-            `Failed event on ${QUEUE_NAME} with id: ${id} and args: ${JSON.stringify(args)}`,
+            `Failed event on ${BULLMQ_TASK_QUEUE} with id: ${id} and args: ${JSON.stringify(args)}`,
         );
     }
 }
