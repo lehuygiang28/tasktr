@@ -1,4 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
+import { Response } from 'express';
+import { Controller, Get, Res } from '@nestjs/common';
 
 import { AppService } from './app.service';
 
@@ -6,13 +7,8 @@ import { AppService } from './app.service';
 export class AppController {
     constructor(private readonly appService: AppService) {}
 
-    @Get()
-    getData() {
-        return this.appService.getData();
-    }
-
     @Get('/ping')
-    getPing() {
-        return this.appService.getPing();
+    getPing(@Res() res: Response) {
+        return this.appService.getPing(res);
     }
 }

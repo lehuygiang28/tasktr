@@ -1,12 +1,11 @@
+import { Response } from 'express';
+
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-    getData(): { message: string } {
-        return { message: 'Hello API' };
-    }
-
-    getPing(): { message: string } {
-        return { message: 'pong' };
+    getPing(res: Response) {
+        res.header('Cache-Control', 'no-store, max-age=0, must-revalidate').send('pong');
+        return;
     }
 }
