@@ -2,15 +2,16 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
-import { BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
+import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import { Job, Queue } from 'bullmq';
+import { TaskJobName, BULLMQ_TASK_LOG_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
 import { Task } from '~be/app/tasks/schemas/task.schema';
 import { addMonitorInterceptor, DURATION_KEY, RESPONSE_SIZE_KEY } from '~be/common/axios';
+import { CreateTaskLogDto } from '~be/app/task-logs';
 
 @Injectable()
 @Processor(BULLMQ_TASK_QUEUE, {
-    concurrency: Number(process.env['BULL_CONCURRENCY']) || 1,
+    concurrency: Number(process.env['BULL_TASK_CONCURRENCY']) || 1,
 })
 export class TaskProcessor extends WorkerHost implements OnModuleInit {
     private readonly axios: AxiosInstance;
@@ -18,6 +19,8 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     constructor(
         private readonly logger: PinoLogger,
         private readonly httpService: HttpService,
+        @InjectQueue(BULLMQ_TASK_LOG_QUEUE)
+        readonly taskLogQueue: Queue<unknown, unknown, TaskJobName>,
     ) {
         super();
         this.logger.setContext(TaskProcessor.name);
@@ -37,9 +40,9 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         }
     }
 
-    async fetch(job: Job<Task>): Promise<unknown> {
+    async fetch(job: Job<Task>): Promise<boolean> {
+        const now = Date.now();
         const { name, endpoint, method, body, headers } = job.data;
-
         const config: AxiosRequestConfig = {
             url: endpoint,
             method,
@@ -47,19 +50,46 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             data: body,
         };
 
+        let response: AxiosResponse | null;
         try {
-            const response: AxiosResponse = await this.httpService.axiosRef.request(config);
+            response = await this.httpService.axiosRef.request(config);
             this.logger.debug(
-                `FETCH ${BULLMQ_TASK_QUEUE}-${job.id} - ${name} - ${response.status} - ${response.headers[DURATION_KEY]} ms - ${response.headers[RESPONSE_SIZE_KEY]} bytes`,
+                `FETCH ${name} - ${response?.status} - ${response?.headers[DURATION_KEY]} ms - ${response?.headers[RESPONSE_SIZE_KEY]} bytes`,
             );
-            return true;
         } catch (error: AxiosError | unknown) {
             if (error instanceof AxiosError) {
                 this.logger.error(error.response?.data);
-                throw 'An error happened!';
+            } else {
+                this.logger.error(error);
             }
-
-            throw 'An error happened!';
+            response = null;
         }
+
+        let taskLog: CreateTaskLogDto = {
+            taskId: job.data._id,
+            endpoint,
+            method,
+            scheduledAt: new Date(job?.processedOn ?? now),
+            executedAt: new Date(job?.finishedOn ?? now),
+            duration: 0,
+            statusCode: 0,
+            responseSizeBytes: 0,
+        };
+
+        if (response) {
+            taskLog = {
+                ...taskLog,
+                statusCode: response.status,
+                duration: response.headers[DURATION_KEY],
+                responseSizeBytes: response.headers[RESPONSE_SIZE_KEY],
+            };
+        }
+
+        await this.taskLogQueue.add(`saveTaskLog`, taskLog, {
+            removeOnFail: 1,
+            removeOnComplete: 1,
+        });
+
+        return true;
     }
 }
