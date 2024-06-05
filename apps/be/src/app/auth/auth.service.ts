@@ -112,7 +112,7 @@ export class AuthService {
         if (!user) {
             throw new UnprocessableEntityException({
                 errors: {
-                    users: 'userNotFound',
+                    user: 'userNotFound',
                 },
                 message: `User with email '${user?.email}' doesn't require registration`,
             });
