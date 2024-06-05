@@ -22,3 +22,5 @@ dist/
 # Next.js
 .next
 out
+
+compodoc/

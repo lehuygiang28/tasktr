@@ -71,6 +71,7 @@
     },
     "devDependencies": {
         "@babel/core": "^7.24.6",
+        "@compodoc/compodoc": "^1.1.25",
         "@nestjs/schematics": "^10.0.1",
         "@nestjs/testing": "^10.0.2",
         "@nx/cypress": "19.1.1",
