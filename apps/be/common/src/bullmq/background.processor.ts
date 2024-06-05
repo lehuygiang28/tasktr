@@ -10,7 +10,7 @@ export type BackgroundJobName = 'sendEmailRegister';
 
 @Injectable()
 @Processor(BULLMQ_BG_JOB_QUEUE, {
-    concurrency: Number(process.env['BULL_CONCURRENCY']) || 1,
+    concurrency: Number(process.env['BULL_BACKGROUND_CONCURRENCY']) || 1,
 })
 export class BackgroundProcessor extends WorkerHost implements OnModuleInit {
     constructor(
@@ -36,7 +36,7 @@ export class BackgroundProcessor extends WorkerHost implements OnModuleInit {
         }
     }
 
-    async sendEmailRegister(job: Job<unknown, unknown, 'sendEmailRegister'>): Promise<unknown> {
+    async sendEmailRegister(job: Job<unknown, unknown, BackgroundJobName>): Promise<unknown> {
         const { email, hash } = job.data as { email: string; hash: string };
         return this.mailService.sendConfirmMail({
             to: email,
