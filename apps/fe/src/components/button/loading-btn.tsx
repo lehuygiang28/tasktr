@@ -1,12 +1,25 @@
 import { Button, ButtonProps } from 'antd';
-import { ReactNode, useState, MouseEvent as ReactMouseEvent } from 'react';
+import {
+    ReactNode,
+    useState,
+    MouseEvent as ReactMouseEvent,
+    ReactElement,
+    PropsWithChildren,
+} from 'react';
 
-export type LoadingBtnProps = { content: ReactNode; isValid?: boolean } & Omit<
-    ButtonProps,
-    'loading'
->;
+export type LoadingBtnProps = {
+    content?: ReactNode | ReactElement | string;
+    isValid?: boolean;
+} & Omit<ButtonProps, 'loading'> &
+    PropsWithChildren;
 
-export default function LoadingBtn({ content, onClick, isValid, ...props }: LoadingBtnProps) {
+export default function LoadingBtn({
+    content,
+    onClick,
+    isValid,
+    children,
+    ...props
+}: LoadingBtnProps) {
     const [loading, setLoading] = useState(false);
 
     const enterLoading = async (e: ReactMouseEvent<HTMLElement>) => {
@@ -23,6 +36,7 @@ export default function LoadingBtn({ content, onClick, isValid, ...props }: Load
     return (
         <Button loading={loading} onClick={enterLoading} {...props}>
             {content}
+            {children}
         </Button>
     );
 }

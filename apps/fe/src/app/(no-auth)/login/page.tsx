@@ -1,8 +1,8 @@
 'use client';
 
 import { useLogin } from '@refinedev/core';
-import { Layout, Space, Form, Input, Typography } from 'antd';
-import { MailOutlined } from '@ant-design/icons';
+import { Layout, Space, Form, Input, Typography, Divider } from 'antd';
+import { MailOutlined, GithubOutlined, GoogleOutlined } from '@ant-design/icons';
 import type { LoginActionPayload } from '~/providers/auth-provider/types';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
@@ -12,6 +12,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import Loading from '~/app/loading';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const { Title, Text } = Typography;
 const SEEM_SAFE_TOKEN_LENGTH = 30;
@@ -42,7 +43,7 @@ export default function Login() {
         const token = params.get('token');
         if (token && token.length > SEEM_SAFE_TOKEN_LENGTH) {
             login({ type: 'login', token });
-        } else {
+        } else if (token) {
             const cloneParams = new URLSearchParams(params);
             cloneParams.delete('token');
             return router.replace(`/login?${cloneParams.toString()}`);
@@ -61,41 +62,68 @@ export default function Login() {
                 alignItems: 'center',
             }}
         >
-            <Space direction="vertical" align="center">
-                <Title level={3} style={{ marginBottom: '4px' }}>
-                    Sign in to your account
-                </Title>
-                <Text>Sign in to your Tasktr</Text>
+            <div>
+                <Space direction="vertical" align="center">
+                    <Title level={3} style={{ marginBottom: '4px' }}>
+                        Sign in to your account
+                    </Title>
+                    <Text>Sign in to your Tasktr</Text>
 
-                <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
-                    <Controller<LoginPwdless>
-                        name={'destination'}
-                        control={control}
-                        render={({ field }) => (
-                            <Form.Item<LoginPwdless>
-                                name={'destination'}
-                                validateStatus={errors?.destination ? 'error' : 'validating'}
-                                help={<>{errors?.destination?.message}</>}
-                            >
-                                <Input
-                                    {...field}
-                                    prefix={<MailOutlined className="site-form-item-icon" />}
-                                    placeholder="Email"
-                                />
-                            </Form.Item>
-                        )}
-                    />
+                    <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+                        <Controller<LoginPwdless>
+                            name={'destination'}
+                            control={control}
+                            render={({ field }) => (
+                                <Form.Item<LoginPwdless>
+                                    name={'destination'}
+                                    validateStatus={errors?.destination ? 'error' : 'validating'}
+                                    help={<>{errors?.destination?.message}</>}
+                                >
+                                    <Input
+                                        {...field}
+                                        prefix={<MailOutlined className="site-form-item-icon" />}
+                                        placeholder="Email"
+                                    />
+                                </Form.Item>
+                            )}
+                        />
 
-                    <LoadingBtn
-                        content="Sign in"
-                        type="primary"
-                        style={{ width: '240px', marginBottom: '32px' }}
-                        size="middle"
-                        htmlType="submit"
-                        isValid={isValid}
-                    />
-                </form>
-            </Space>
+                        <LoadingBtn
+                            content="Sign in"
+                            type="primary"
+                            style={{ width: '240px', marginBottom: '32px' }}
+                            size="middle"
+                            htmlType="submit"
+                            isValid={isValid}
+                        />
+                    </form>
+                </Space>
+                {/* <Divider plain>or continue with</Divider>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Space direction="horizontal" align="center">
+                        <LoadingBtn
+                            type="primary"
+                            style={{ width: '100px', marginBottom: '32px' }}
+                            size="middle"
+                            isValid={isValid}
+                        >
+                            <GoogleOutlined /> Google
+                        </LoadingBtn>
+                        <LoadingBtn
+                            type="primary"
+                            style={{ width: '100px', marginBottom: '32px' }}
+                            size="middle"
+                            isValid={isValid}
+                        >
+                            <GithubOutlined /> Github
+                        </LoadingBtn>
+                    </Space>
+                </div> */}
+            </div>
+
+            <Text>
+                Don&apos;t have an account yet? <Link href="/register">Sign up </Link>
+            </Text>
         </Layout>
     );
 }

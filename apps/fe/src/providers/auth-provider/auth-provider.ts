@@ -7,6 +7,11 @@ import type { LoginActionPayload, LoginAction, RequestLoginAction } from './type
 import axios from '~/libs/axios';
 import { AxiosError } from 'axios';
 import { ProblemDetails } from '~be/common/utils';
+import {
+    RegisterAction,
+    RegisterActionPayload,
+    RequestRegisterAction,
+} from './types/register.type';
 
 export const authProvider: AuthProvider = {
     login: async ({ type, ...data }: LoginActionPayload) => {
@@ -49,8 +54,7 @@ export const authProvider: AuthProvider = {
 
             return axios
                 .post<void>(path, { destination: requestData.destination })
-                .then((response) => {
-                    console.log(response);
+                .then(() => {
                     return {
                         success: true,
                         redirectTo: '/login',
@@ -85,6 +89,123 @@ export const authProvider: AuthProvider = {
                                     break;
                                 }
                             }
+                        }
+                    }
+
+                    return resultResponse;
+                });
+        }
+    },
+    register: async ({ type, ...data }: RegisterActionPayload) => {
+        if (type === 'request-register') {
+            const loginData = data as RequestRegisterAction;
+            const { email, fullName = undefined } = loginData;
+            const path = '/auth/register';
+
+            return axios
+                .post<void>(path, { email, fullName })
+                .then(() => {
+                    return {
+                        success: true,
+                        redirectTo: '/register',
+                        successNotification: {
+                            description: 'Check your email',
+                            message: `We've sent you an email with a link to register. Click the link to continue.`,
+                        },
+                    };
+                })
+                .catch((error) => {
+                    const resultResponse = {
+                        success: false,
+                        error: {
+                            name: 'RegisterError',
+                            message: 'Something went wrong, please try again',
+                        },
+                    };
+
+                    if (error.response?.data?.errors) {
+                        const errors = error.response.data.errors;
+
+                        if (errors['email']) {
+                            const err = errors['email'] as string;
+                            switch (err) {
+                                case 'emailAlreadyExists': {
+                                    resultResponse.error.message =
+                                        'Your email is already registered, back to login';
+                                    break;
+                                }
+                                default: {
+                                    resultResponse.error.message = error.response?.data?.detail;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    return resultResponse;
+                });
+        } else {
+            const path = '/auth/register/confirm';
+            const registerData = data as RegisterAction;
+            const { hash } = registerData;
+
+            return axios
+                .post<void>(path, { hash })
+                .then(() => {
+                    return {
+                        success: true,
+                        redirectTo: '/login',
+                        successNotification: {
+                            message: 'You have successfully registered',
+                            description: 'Back to login and continue to TaskTr',
+                        },
+                    };
+                })
+                .catch((error) => {
+                    const resultResponse = {
+                        success: false,
+                        error: {
+                            name: 'RegisterError',
+                            message: 'Something went wrong, please try again',
+                        },
+                    };
+
+                    if (error.response?.data?.errors) {
+                        const errors = error.response.data.errors;
+
+                        if (errors['hash']) {
+                            const err = errors['hash'] as string;
+                            switch (err) {
+                                case 'invalidHash': {
+                                    resultResponse.error.message =
+                                        'Your confirmation link is expired or invalid';
+                                    break;
+                                }
+                                default: {
+                                    resultResponse.error.message = error.response?.data?.detail;
+                                    break;
+                                }
+                            }
+                        } else if (errors['user']) {
+                            const err = errors['user'] as string;
+                            switch (err) {
+                                case 'alreadyConfirmed': {
+                                    resultResponse.error.message =
+                                        'Your email is already confirmed, back to login';
+                                    break;
+                                }
+                                case 'userNotFound': {
+                                    resultResponse.error.message =
+                                        'Your email is not registered, please register first';
+                                    break;
+                                }
+                                default: {
+                                    resultResponse.error.message = error.response?.data?.detail;
+                                    break;
+                                }
+                            }
+                        } else {
+                            resultResponse.error.message = error.response?.data?.detail;
                         }
                     }
 
