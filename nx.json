@@ -43,9 +43,9 @@
         {
             "plugin": "@nx/next/plugin",
             "options": {
-                "startTargetName": "start",
-                "buildTargetName": "build",
-                "devTargetName": "dev",
+                "startTargetName": "start:rf",
+                "buildTargetName": "build:rf",
+                "devTargetName": "dev:rf",
                 "serveStaticTargetName": "serve-static"
             }
         },

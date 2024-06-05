@@ -23,6 +23,7 @@
         "fe/components",
         "actions",
         "configs",
-        "be/tasks"
+        "be/tasks",
+        "nx"
     ]
 }
