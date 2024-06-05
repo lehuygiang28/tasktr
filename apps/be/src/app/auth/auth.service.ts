@@ -79,6 +79,7 @@ export class AuthService {
                 {
                     removeOnComplete: true,
                     removeOnFail: true,
+                    keepLogs: 20,
                 },
             ),
         ]);
@@ -113,7 +114,7 @@ export class AuthService {
                 errors: {
                     users: 'userNotFound',
                 },
-                message: `User with email '${user.email}' doesn't require registration`,
+                message: `User with email '${user?.email}' doesn't require registration`,
             });
         }
 

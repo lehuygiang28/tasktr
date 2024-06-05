@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import { GMAIL_TRANSPORT, RESEND_TRANSPORT, SENDGRID_TRANSPORT } from './mail.constant';
 import { MailerConfig } from './mail.config';
-import { I18nContext } from 'nestjs-i18n';
+import { I18nService } from 'nestjs-i18n';
 import { MailData } from './mail-data.interface';
 import { PinoLogger } from 'nestjs-pino';
 import { Attachment } from 'nodemailer/lib/mailer';
@@ -16,6 +16,7 @@ export class MailService {
         private mailerService: MailerService,
         private readonly logger: PinoLogger,
         private readonly configService: ConfigService,
+        private readonly i18n: I18nService<I18nTranslations>,
     ) {
         const mailConfig = new MailerConfig(this.configService);
         this.mailerService.addTransporter(SENDGRID_TRANSPORT, mailConfig.SendGridTransport);
@@ -71,7 +72,6 @@ export class MailService {
         let { transporter = SENDGRID_TRANSPORT } = retryData;
         const { retryCount = 0 } = retryData;
 
-        const i18n = I18nContext.current<I18nTranslations>();
         let emailConfirmTitle: MaybeType<string>;
         let text1: MaybeType<string>;
         let text2: MaybeType<string>;
@@ -85,21 +85,30 @@ export class MailService {
             };
         }
 
-        if (i18n) {
-            if (!isResend) {
-                emailConfirmTitle = i18n.t('mail-context.CONFIRM_EMAIL.title');
-                text1 = i18n.t('mail-context.CONFIRM_EMAIL.text1');
-                text2 = i18n.t('mail-context.CONFIRM_EMAIL.text2');
-                text3 = i18n.t('mail-context.CONFIRM_EMAIL.text3');
-                btn1 = i18n.t('mail-context.CONFIRM_EMAIL.btn1');
-            } else {
-                emailConfirmTitle = i18n.t('mail-context.RESEND_CONFIRM_EMAIL.title');
-                text1 = i18n.t('mail-context.RESEND_CONFIRM_EMAIL.text1');
-                text2 = i18n.t('mail-context.RESEND_CONFIRM_EMAIL.text2');
-                text3 = i18n.t('mail-context.RESEND_CONFIRM_EMAIL.text3');
-                btn1 = i18n.t('mail-context.RESEND_CONFIRM_EMAIL.btn1');
-            }
+        if (isResend) {
+            emailConfirmTitle = this.i18n.t('mail-context.RESEND_CONFIRM_EMAIL.title');
+            text1 = this.i18n.t('mail-context.RESEND_CONFIRM_EMAIL.text1');
+            text2 = this.i18n.t('mail-context.RESEND_CONFIRM_EMAIL.text2');
+            text3 = this.i18n.t('mail-context.RESEND_CONFIRM_EMAIL.text3');
+            btn1 = this.i18n.t('mail-context.RESEND_CONFIRM_EMAIL.btn1');
+        } else {
+            emailConfirmTitle = this.i18n.t('mail-context.CONFIRM_EMAIL.title');
+            text1 = this.i18n.t('mail-context.CONFIRM_EMAIL.text1');
+            text2 = this.i18n.t('mail-context.CONFIRM_EMAIL.text2');
+            text3 = this.i18n.t('mail-context.CONFIRM_EMAIL.text3');
+            btn1 = this.i18n.t('mail-context.CONFIRM_EMAIL.btn1');
         }
+
+        this.logger.debug(
+            JSON.stringify({
+                emailConfirmTitle,
+                text1,
+                text2,
+                text3,
+                btn1,
+            }),
+            'mail text',
+        );
 
         const url = new URL(
             this.configService.getOrThrow<string>('FE_DOMAIN') +
@@ -119,7 +128,6 @@ export class MailService {
                 context: {
                     title: emailConfirmTitle,
                     url: url.toString(),
-                    app_name: 'TechCell.cloud',
                     text1,
                     text2,
                     text3,
@@ -165,20 +173,19 @@ export class MailService {
             };
         }
 
-        const i18n = I18nContext.current<I18nTranslations>();
         let resetPasswordTitle: MaybeType<string>;
         let text1: MaybeType<string>;
         let text2: MaybeType<string>;
         let text3: MaybeType<string>;
         let btn1: MaybeType<string>;
 
-        if (i18n) {
+        if (this.i18n) {
             [resetPasswordTitle, text1, text2, text3, btn1] = await Promise.all([
-                i18n.t('mail-context.RESET_PASSWORD.title'),
-                i18n.t('mail-context.RESET_PASSWORD.text1'),
-                i18n.t('mail-context.RESET_PASSWORD.text2'),
-                i18n.t('mail-context.RESET_PASSWORD.text3'),
-                i18n.t('mail-context.RESET_PASSWORD.btn1'),
+                this.i18n.t('mail-context.RESET_PASSWORD.title'),
+                this.i18n.t('mail-context.RESET_PASSWORD.text1'),
+                this.i18n.t('mail-context.RESET_PASSWORD.text2'),
+                this.i18n.t('mail-context.RESET_PASSWORD.text3'),
+                this.i18n.t('mail-context.RESET_PASSWORD.btn1'),
             ]);
         }
         const fallbackReturnUrl =
@@ -238,7 +245,6 @@ export class MailService {
         let { transporter = SENDGRID_TRANSPORT } = retryData;
         const { retryCount = 0 } = retryData;
 
-        const i18n = I18nContext.current<I18nTranslations>();
         let emailConfirmTitle: MaybeType<string>;
         let text1: MaybeType<string>;
         let text2: MaybeType<string>;
@@ -252,12 +258,12 @@ export class MailService {
             };
         }
 
-        if (i18n) {
-            emailConfirmTitle = i18n.t('mail-context.LOGIN_EMAIL.title');
-            text1 = i18n.t('mail-context.LOGIN_EMAIL.text1');
-            text2 = i18n.t('mail-context.LOGIN_EMAIL.text2');
-            text3 = i18n.t('mail-context.LOGIN_EMAIL.text3');
-            btn1 = i18n.t('mail-context.LOGIN_EMAIL.btn1');
+        if (this.i18n) {
+            emailConfirmTitle = this.i18n.t('mail-context.LOGIN_EMAIL.title');
+            text1 = this.i18n.t('mail-context.LOGIN_EMAIL.text1');
+            text2 = this.i18n.t('mail-context.LOGIN_EMAIL.text2');
+            text3 = this.i18n.t('mail-context.LOGIN_EMAIL.text3');
+            btn1 = this.i18n.t('mail-context.LOGIN_EMAIL.btn1');
         }
 
         const transporterName = this.resolveTransporter(transporter);
