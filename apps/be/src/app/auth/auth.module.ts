@@ -1,6 +1,13 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { BullModule } from '@nestjs/bullmq';
+
+import { UsersModule } from '~be/app/users';
+import { MailModule } from '~be/common/mail';
+import { RedisModule } from '~be/common/redis';
+import { BackgroundProcessor, BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
+
 import { AuthService } from './auth.service';
 import {
     AnonymousStrategy,
@@ -8,13 +15,19 @@ import {
     JwtStrategy,
     PasswordlessStrategy,
 } from './strategies';
-import { UsersModule } from '../users';
-import { MailModule } from '~be/common/mail';
-import { RedisModule } from '~be/common/redis';
 import { AuthController } from './auth.controller';
 
 @Module({
-    imports: [JwtModule.register({}), PassportModule, MailModule, RedisModule, UsersModule],
+    imports: [
+        JwtModule.register({}),
+        BullModule.registerQueue({
+            name: BULLMQ_BG_JOB_QUEUE,
+        }),
+        PassportModule,
+        MailModule,
+        RedisModule,
+        UsersModule,
+    ],
     controllers: [AuthController],
     providers: [
         AuthService,
@@ -22,7 +35,8 @@ import { AuthController } from './auth.controller';
         JwtStrategy,
         PasswordlessStrategy,
         JwtRefreshStrategy,
+        BackgroundProcessor,
     ],
-    exports: [AuthService],
+    exports: [AuthService, BackgroundProcessor],
 })
 export class AuthModule {}

@@ -8,8 +8,7 @@ import * as bcrypt from 'bcryptjs';
 import { Queue } from 'bullmq';
 import { faker } from '@faker-js/faker';
 
-import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
-import { MailService } from '~be/common/mail';
+import { BackgroundJobName, BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 import { RedisService } from '~be/common/redis';
 
 import { UsersService, UserRoleEnum, UserDto } from '~be/app/users';
@@ -29,15 +28,14 @@ export class AuthService {
         private readonly configService: ConfigService,
         private readonly jwtService: JwtService,
         private readonly usersService: UsersService,
-        private readonly mailService: MailService,
         private readonly redisService: RedisService,
-        // @InjectQueue(BULLMQ_BG_JOB_QUEUE) readonly taskQueue: Queue,
+        @InjectQueue(BULLMQ_BG_JOB_QUEUE)
+        readonly bgQueue: Queue<unknown, unknown, BackgroundJobName>,
     ) {
         this.logger.setContext(AuthService.name);
     }
 
     async register(dto: AuthSignupDto): Promise<void> {
-        this.logger.info(dto);
         if (await this.usersService.findByEmail(dto.email)) {
             throw new UnprocessableEntityException({
                 errors: {
@@ -59,6 +57,9 @@ export class AuthService {
         });
 
         const key = `auth:confirmEmailHash:${userCreated._id.toString()}`;
+        const expiresIn = ms(
+            this.configService.getOrThrow<string>('AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN'),
+        );
         const hash = await this.jwtService.signAsync(
             {
                 confirmEmailUserId: userCreated._id,
@@ -66,31 +67,24 @@ export class AuthService {
             },
             {
                 secret: this.configService.getOrThrow('AUTH_CONFIRM_EMAIL_SECRET'),
-                expiresIn:
-                    Date.now() +
-                    ms(
-                        this.configService.getOrThrow<string>(
-                            'AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN',
-                        ),
-                    ),
+                expiresIn: expiresIn,
             },
         );
 
-        const data = await Promise.allSettled([
-            this.redisService.set(
-                key,
-                { hash },
-                ms(this.configService.getOrThrow<string>('AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN')),
-            ),
-            this.mailService.sendConfirmMail({
-                to: userCreated.email,
-                mailData: {
-                    hash,
+        const data = await Promise.all([
+            this.redisService.set(key, { hash }, expiresIn),
+            this.bgQueue.add(
+                'sendEmailRegister',
+                { email: userCreated.email, hash },
+                {
+                    removeOnComplete: true,
+                    removeOnFail: true,
                 },
-            }),
+            ),
         ]);
         this.logger.debug(data);
     }
+
     async registerConfirm(hash: string): Promise<void> {
         let userId: UserDto['_id'];
 
@@ -216,9 +210,9 @@ export class AuthService {
                 } as Omit<JwtPayloadType, 'iat' | 'exp'>,
                 {
                     secret: this.configService.getOrThrow('AUTH_JWT_SECRET'),
-                    expiresIn:
-                        Date.now() +
-                        ms(this.configService.getOrThrow<string>('AUTH_JWT_TOKEN_EXPIRES_IN')),
+                    expiresIn: ms(
+                        this.configService.getOrThrow<string>('AUTH_JWT_TOKEN_EXPIRES_IN'),
+                    ),
                 },
             ),
             await this.jwtService.signAsync(
@@ -229,9 +223,9 @@ export class AuthService {
                 } as Omit<JwtPayloadType, 'iat' | 'exp'>,
                 {
                     secret: this.configService.getOrThrow('AUTH_REFRESH_SECRET'),
-                    expiresIn:
-                        Date.now() +
-                        ms(this.configService.getOrThrow<string>('AUTH_REFRESH_TOKEN_EXPIRES_IN')),
+                    expiresIn: ms(
+                        this.configService.getOrThrow<string>('AUTH_REFRESH_TOKEN_EXPIRES_IN'),
+                    ),
                 },
             ),
         ]);
