@@ -3,7 +3,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue, JobsOptions } from 'bullmq';
 import { UpdateQuery } from 'mongoose';
 
-import { BULLMQ_TASK_QUEUE } from '~be/common/bullmq/bullmq.constant';
+import { BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
 import { convertToObjectId, validateCronFrequency } from '~be/common/utils';
 import { JwtPayloadType } from '~be/app/auth/strategies';
 
@@ -21,7 +21,6 @@ export class TasksService {
     async startCronTask(task: Task) {
         const jobOptions: JobsOptions = {
             jobId: task._id.toString(),
-            keepLogs: 20,
             repeat: {
                 pattern: task.cron,
             },
@@ -34,13 +33,14 @@ export class TasksService {
     }
 
     async stopCronTask(task: Task): Promise<boolean> {
+        const taskIdString = task._id.toString();
         const [isStopped] = await Promise.allSettled([
             this.taskQueue.removeRepeatable(
                 `fetch`,
                 {
                     pattern: task.cron,
                 },
-                task._id.toString(),
+                taskIdString,
             ),
             ...task.cronHistory.map((cron) => {
                 return this.taskQueue.removeRepeatable(
@@ -48,7 +48,7 @@ export class TasksService {
                     {
                         pattern: cron,
                     },
-                    task._id.toString(),
+                    taskIdString,
                 );
             }),
         ]);
