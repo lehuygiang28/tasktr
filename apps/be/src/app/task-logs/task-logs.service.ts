@@ -18,7 +18,7 @@ export class TaskLogsService {
     async create(taskLog: CreateTaskLogDto): Promise<TaskLog> {
         const logs = await this.taskLogsRepository.find({
             filterQuery: {
-                taskId: taskLog.taskId,
+                taskId: convertToObjectId(taskLog.taskId),
             },
             queryOptions: {
                 limit: this.MAX_LOGS_PER_TASK,
@@ -32,7 +32,10 @@ export class TaskLogsService {
         }
 
         return this.taskLogsRepository.create({
-            document: taskLog,
+            document: {
+                ...taskLog,
+                taskId: convertToObjectId(taskLog.taskId),
+            },
         });
     }
 
