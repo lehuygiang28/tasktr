@@ -63,5 +63,9 @@ export class Task extends AbstractDocument {
     updatedAt?: Date;
 }
 
-export const TaskSchema = SchemaFactory.createForClass(Task);
+const TaskSchema = SchemaFactory.createForClass(Task);
 export type TaskDocument = HydratedDocument<Task>;
+
+TaskSchema.index({ userId: 1, name: 1 }, { unique: true });
+
+export { TaskSchema };
