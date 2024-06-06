@@ -1,10 +1,15 @@
-import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Redis } from 'ioredis';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class RedisStateService implements OnModuleInit, OnModuleDestroy {
-    private readonly logger = new Logger(RedisStateService.name);
-    constructor(@Inject('REDIS_CLIENT') private readonly redisClient: Redis) {}
+    constructor(
+        @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
+        private readonly logger: PinoLogger,
+    ) {
+        this.logger.setContext(RedisStateService.name);
+    }
 
     async onModuleInit() {
         await this.checkRedisConnection();
