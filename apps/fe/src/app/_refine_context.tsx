@@ -7,16 +7,15 @@ import { Refine } from '@refinedev/core';
 import { RefineKbar, RefineKbarProvider } from '@refinedev/kbar';
 import { SessionProvider } from 'next-auth/react';
 import { useNotificationProvider } from '@refinedev/antd';
-
+import dataProviderSimpleRest from '@refinedev/simple-rest';
 import routerProvider from '@refinedev/nextjs-router';
 
-import { DevtoolsProvider } from '~/providers/devtools';
-import { dataProvider } from '~/providers/data-provider';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
+
 import { ColorModeContextProvider } from '~/contexts/color-mode';
+import { DevtoolsProvider } from '~/providers/devtools';
 import { authProvider } from '~/providers/auth-provider';
 import { useAxiosAuth } from '~/hooks/useAxiosAuth';
-import dataProviderSimpleRest from '@refinedev/simple-rest';
 
 type RefineContextProps = {
     defaultMode?: string;
@@ -51,28 +50,17 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                             <Refine
                                 routerProvider={routerProvider}
                                 dataProvider={{
-                                    default: dataProvider,
-                                    tasktr: tasktrDataProvider,
+                                    default: tasktrDataProvider,
                                 }}
                                 notificationProvider={useNotificationProvider}
                                 authProvider={authProvider}
                                 resources={[
                                     {
-                                        name: 'blog_posts',
-                                        list: '/blog-posts',
-                                        create: '/blog-posts/create',
-                                        edit: '/blog-posts/edit/:id',
-                                        show: '/blog-posts/show/:id',
-                                        meta: {
-                                            canDelete: true,
-                                        },
-                                    },
-                                    {
-                                        name: 'categories',
-                                        list: '/categories',
-                                        create: '/categories/create',
-                                        edit: '/categories/edit/:id',
-                                        show: '/categories/show/:id',
+                                        name: 'tasks',
+                                        list: '/tasks',
+                                        create: '/tasks/create',
+                                        edit: '/tasks/edit/:id',
+                                        show: '/tasks/show/:id',
                                         meta: {
                                             canDelete: true,
                                         },

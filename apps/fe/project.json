@@ -45,6 +45,20 @@
                     "refine start"
                 ]
             }
+        },
+        "build": {
+            "executor": "@nx/next:build",
+            "outputs": ["{options.outputPath}"],
+            "defaultConfiguration": "production",
+            "options": {
+                "outputPath": "dist/apps/fe"
+            },
+            "configurations": {
+                "development": {
+                    "outputPath": "."
+                },
+                "production": {}
+            }
         }
     }
 }

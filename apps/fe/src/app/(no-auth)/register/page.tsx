@@ -37,7 +37,6 @@ export default function RegisterPage() {
             email: values.email,
             fullName: values?.fullName,
         };
-        console.log(data);
         return register(data);
     };
 
@@ -84,6 +83,7 @@ export default function RegisterPage() {
                                 name={'email'}
                                 validateStatus={errors?.email ? 'error' : 'validating'}
                                 help={<>{errors?.email?.message}</>}
+                                rules={[{ required: false }]}
                             >
                                 <Input
                                     {...field}
@@ -101,6 +101,7 @@ export default function RegisterPage() {
                                 name={'fullName'}
                                 validateStatus={errors?.fullName ? 'error' : 'validating'}
                                 help={<>{errors?.fullName?.message}</>}
+                                rules={[{ required: false }]}
                             >
                                 <Input
                                     {...field}

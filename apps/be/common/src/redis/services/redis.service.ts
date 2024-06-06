@@ -5,7 +5,7 @@ import { Redis } from 'ioredis';
 export class RedisService {
     constructor(@Inject('REDIS_CLIENT') private readonly redisClient: Redis) {}
 
-    public getClient(): Redis {
+    public get getClient(): Redis {
         return this.redisClient;
     }
 

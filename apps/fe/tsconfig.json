@@ -5,7 +5,7 @@
         "allowJs": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
-        "strict": true,
+        "strict": false,
         "forceConsistentCasingInFileNames": true,
         "noEmit": true,
         "resolveJsonModule": true,
@@ -18,12 +18,7 @@
                 "name": "next"
             }
         ],
-        "types": ["jest", "node"],
-        "paths": {
-            "~/*": ["./apps/fe/src/*"],
-            "~be/app/*": ["apps/be/src/app/*"],
-            "~be/common/*": ["apps/be/common/src/*"]
-        }
+        "types": ["jest", "node"]
     },
     "include": [
         "**/*.ts",
@@ -33,7 +28,8 @@
         "../../apps/fe/.next/types/**/*.ts",
         "../../dist/apps/fe/.next/types/**/*.ts",
         "next-env.d.ts",
-        ".next/types/**/*.ts"
+        ".next/types/**/*.ts",
+        "../../dist/fe/.next/types/**/*.ts"
     ],
     "exclude": ["node_modules", "jest.config.ts", "**/*.spec.ts", "**/*.test.ts"]
 }

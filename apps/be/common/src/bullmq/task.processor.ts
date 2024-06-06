@@ -43,10 +43,11 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     async fetch(job: Job<Task>): Promise<boolean> {
         const now = Date.now();
         const { name, endpoint, method, body, headers } = job.data;
+
         const config: AxiosRequestConfig = {
             url: endpoint,
             method,
-            headers,
+            headers: headers ? JSON.parse(headers) : undefined,
             data: body,
         };
 

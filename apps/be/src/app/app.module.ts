@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 
 import { MongodbModule } from '~be/common/mongodb';
 import { LoggerModule } from '~be/common/pino-logger';
 import { I18nModule } from '~be/common/i18n';
-import { RedisModule } from '~be/common/redis';
+import { RedisModule, RedisService } from '~be/common/redis';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -18,20 +18,16 @@ import { TasksModule } from './tasks/tasks.module';
         ConfigModule.forRoot({
             isGlobal: true,
         }),
+        RedisModule,
         BullModule.forRootAsync({
-            imports: [ConfigModule],
-            useFactory: async (configService: ConfigService) => ({
-                connection: {
-                    host: configService.get<string>('REDIS_HOST'),
-                    port: configService.get<number>('REDIS_PORT'),
-                    password: configService.get<string>('REDIS_PASSWORD'),
-                },
+            imports: [RedisModule],
+            useFactory: async (redisService: RedisService) => ({
+                connection: redisService.getClient,
             }),
-            inject: [ConfigService],
+            inject: [RedisService],
         }),
         LoggerModule,
         I18nModule,
-        RedisModule,
         MongodbModule,
         AuthModule,
         UsersModule,

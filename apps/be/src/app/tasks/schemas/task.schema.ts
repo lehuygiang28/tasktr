@@ -41,8 +41,8 @@ export class Task extends AbstractDocument {
     @Prop({ required: true, type: String, enum: HttpMethodEnum })
     method: string;
 
-    @Prop({ required: false, type: Object, default: {} })
-    headers: Record<string, string>;
+    @Prop({ required: false, default: '', type: String })
+    headers: string;
 
     @Prop({ required: false, default: '', type: String })
     body: string;
@@ -63,5 +63,9 @@ export class Task extends AbstractDocument {
     updatedAt?: Date;
 }
 
-export const TaskSchema = SchemaFactory.createForClass(Task);
+const TaskSchema = SchemaFactory.createForClass(Task);
 export type TaskDocument = HydratedDocument<Task>;
+
+TaskSchema.index({ userId: 1, name: 1 }, { unique: true });
+
+export { TaskSchema };

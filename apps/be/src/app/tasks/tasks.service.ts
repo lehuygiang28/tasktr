@@ -18,7 +18,7 @@ export class TasksService {
         @InjectQueue(BULLMQ_TASK_QUEUE) readonly taskQueue: Queue,
     ) {}
 
-    async startCronTask(task: Task) {
+    private async startCronTask(task: Task) {
         const jobOptions: JobsOptions = {
             jobId: task._id.toString(),
             repeat: {
@@ -32,7 +32,7 @@ export class TasksService {
         return this.taskQueue.add(`fetch`, task, jobOptions);
     }
 
-    async stopCronTask(task: Task): Promise<boolean> {
+    private async stopCronTask(task: Task): Promise<boolean> {
         const taskIdString = task._id.toString();
         const [isStopped] = await Promise.allSettled([
             this.taskQueue.removeRepeatable(
@@ -55,7 +55,7 @@ export class TasksService {
         return isStopped.status === 'fulfilled';
     }
 
-    async executeTask(oldTask: Task, newTask: Task) {
+    private async executeTask(oldTask: Task, newTask: Task) {
         // Check if either the 'isEnable' status or the 'cron' expression has changed
         if (oldTask.isEnable !== newTask.isEnable || oldTask.cron !== newTask.cron) {
             // If the old task was enabled, stop the cron job
@@ -118,6 +118,7 @@ export class TasksService {
                 cronHistory: [],
                 isEnable: false,
                 userId: convertToObjectId(user.userId),
+                timezone: data?.timezone ?? process.env.TZ ?? 'Asia/Ho_Chi_Minh',
                 ...data,
             },
         });
@@ -147,6 +148,23 @@ export class TasksService {
         data: UpdateTaskDto;
         user: JwtPayloadType;
     }): Promise<TaskDto> {
+        if (data?.name) {
+            const taskFoundNamed = await this.taskRepo.findOne({
+                filterQuery: {
+                    name: data.name,
+                    userId: convertToObjectId(user.userId),
+                },
+            });
+            if (taskFoundNamed && taskFoundNamed._id.toString() !== id) {
+                throw new UnprocessableEntityException({
+                    errors: {
+                        task: 'taskNameExist',
+                    },
+                    message: 'Task name already exist',
+                });
+            }
+        }
+
         const oldTask = await this.taskRepo.findOneOrThrow({
             filterQuery: {
                 _id: convertToObjectId(id),

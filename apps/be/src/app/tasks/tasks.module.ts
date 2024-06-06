@@ -18,11 +18,6 @@ import { TaskLogsModule } from '../task-logs';
         MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
         BullModule.registerQueue({
             name: BULLMQ_TASK_QUEUE,
-            connection: {
-                host: process.env['REDIS_HOST'] ?? '',
-                port: Number(process.env['REDIS_PORT']),
-                password: process.env['REDIS_PASSWORD'],
-            },
         }),
         TaskLogsModule,
         BullModule.registerQueue({

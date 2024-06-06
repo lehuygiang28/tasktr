@@ -89,8 +89,12 @@ export class AuthService {
     async registerConfirm(hash: string): Promise<void> {
         let userId: UserDto['_id'];
 
+        let jwtData: {
+            confirmEmailUserId: UserDto['_id'];
+            email: UserDto['email'];
+        };
         try {
-            const jwtData = await this.jwtService.verifyAsync<{
+            jwtData = await this.jwtService.verifyAsync<{
                 confirmEmailUserId: UserDto['_id'];
                 email: UserDto['email'];
             }>(hash, {
@@ -114,7 +118,7 @@ export class AuthService {
                 errors: {
                     user: 'userNotFound',
                 },
-                message: `User with email '${user?.email}' doesn't require registration`,
+                message: `User with email '${jwtData?.email}' doesn't require registration`,
             });
         }
 
@@ -169,7 +173,7 @@ export class AuthService {
 
     async validatePassword({
         destination,
-        password,
+        password = '',
     }: AuthEmailLoginDto): Promise<LoginResponseDto> {
         const user = await this.validatePasswordless({ destination });
 

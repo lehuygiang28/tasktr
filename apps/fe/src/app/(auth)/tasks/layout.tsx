@@ -1,7 +1,8 @@
 import React from 'react';
-import { ThemedLayout } from '~/components/themed-layout';
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
+
+import { ThemedLayout } from '~/components/themed-layout';
 import { authOptions } from '~/libs/next-auth';
 
 export default async function Layout({ children }: React.PropsWithChildren) {

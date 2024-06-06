@@ -78,6 +78,7 @@ export default function Login() {
                                     name={'destination'}
                                     validateStatus={errors?.destination ? 'error' : 'validating'}
                                     help={<>{errors?.destination?.message}</>}
+                                    rules={[{ required: true }]}
                                 >
                                     <Input
                                         {...field}

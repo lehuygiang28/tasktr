@@ -6,7 +6,6 @@ import {
     IsString,
     IsBoolean,
     IsOptional,
-    IsObject,
     ValidateNested,
     IsEnum,
     IsUrl,
@@ -14,7 +13,7 @@ import {
     IsMongoId,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsCron, ToBoolean } from '~be/common/utils';
+import { IsCron, IsObjectString, ToBoolean } from '~be/common/utils';
 import { HttpMethodEnum } from '../tasks.enum';
 
 export class AlertDto implements AlertSchema {
@@ -46,11 +45,13 @@ export class TaskDto implements Task {
     @IsUrl()
     endpoint: string;
 
-    @ApiProperty({ example: { 'Content-Type': 'application/text' } })
-    @IsObject()
-    headers: Record<string, string>;
+    @ApiProperty({ example: '{ "Content-Type": "application/json" }' })
+    @IsOptional()
+    @IsObjectString()
+    headers: string;
 
-    @ApiProperty({ example: '' })
+    @ApiProperty({ example: '{ "key": "value" }' })
+    @IsOptional()
     @IsString()
     body: string;
 
@@ -60,6 +61,7 @@ export class TaskDto implements Task {
     cron: string;
 
     @ApiProperty({ example: 'Asia/Ho_Chi_Minh' })
+    @IsOptional()
     @IsString()
     @IsTimeZone()
     timezone: string;

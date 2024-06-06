@@ -12,6 +12,7 @@
         "pwless",
         "Redlock",
         "refinedev",
+        "Sider",
         "tasktr"
     ],
     "conventionalCommits.scopes": [
@@ -24,6 +25,7 @@
         "actions",
         "configs",
         "be/tasks",
-        "nx"
+        "nx",
+        "ci"
     ]
 }
