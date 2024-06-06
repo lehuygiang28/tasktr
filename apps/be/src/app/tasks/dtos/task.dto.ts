@@ -46,11 +46,12 @@ export class TaskDto implements Task {
     endpoint: string;
 
     @ApiProperty({ example: '{ "Content-Type": "application/json" }' })
-    @IsString()
+    @IsOptional()
     @IsObjectString()
     headers: string;
 
     @ApiProperty({ example: '{ "key": "value" }' })
+    @IsOptional()
     @IsString()
     body: string;
 
@@ -60,6 +61,7 @@ export class TaskDto implements Task {
     cron: string;
 
     @ApiProperty({ example: 'Asia/Ho_Chi_Minh' })
+    @IsOptional()
     @IsString()
     @IsTimeZone()
     timezone: string;
