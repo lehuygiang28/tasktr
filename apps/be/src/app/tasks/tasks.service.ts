@@ -57,7 +57,15 @@ export class TasksService {
 
     private async executeTask(oldTask: Task, newTask: Task) {
         // Check if either the 'isEnable' status or the 'cron' expression has changed
-        if (oldTask.isEnable !== newTask.isEnable || oldTask.cron !== newTask.cron) {
+        if (
+            oldTask.isEnable !== newTask.isEnable ||
+            oldTask.endpoint !== newTask.endpoint ||
+            oldTask.method !== newTask.method ||
+            oldTask.cron !== newTask.cron ||
+            oldTask.headers !== newTask.headers ||
+            oldTask.body !== newTask.body ||
+            oldTask.timezone !== newTask.timezone
+        ) {
             // If the old task was enabled, stop the cron job
             if (oldTask.isEnable) {
                 await this.stopCronTask(oldTask);
@@ -100,7 +108,7 @@ export class TasksService {
                 timeZone: data.timezone,
             },
             {
-                minIntervalInSeconds: 2 * 60,
+                minIntervalInSeconds: 60,
                 numTasks: 1,
             },
         );
@@ -180,7 +188,7 @@ export class TasksService {
                     timeZone: data.timezone,
                 },
                 {
-                    minIntervalInSeconds: 2 * 60,
+                    minIntervalInSeconds: 60,
                     numTasks: 1,
                 },
             );
