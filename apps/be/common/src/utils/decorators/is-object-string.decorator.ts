@@ -8,6 +8,9 @@ import {
 @ValidatorConstraint({ async: false })
 export class IsObjectStringConstraint implements ValidatorConstraintInterface {
     validate(text: string) {
+        if (text === '') {
+            return true;
+        }
         try {
             const object = JSON.parse(text);
             return typeof object === 'object' && object !== null;
