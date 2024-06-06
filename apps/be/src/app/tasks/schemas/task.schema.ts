@@ -41,8 +41,8 @@ export class Task extends AbstractDocument {
     @Prop({ required: true, type: String, enum: HttpMethodEnum })
     method: string;
 
-    @Prop({ required: false, type: Object, default: {} })
-    headers: Record<string, string>;
+    @Prop({ required: false, default: '', type: String })
+    headers: string;
 
     @Prop({ required: false, default: '', type: String })
     body: string;
