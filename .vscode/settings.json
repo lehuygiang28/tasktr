@@ -12,6 +12,7 @@
         "pwless",
         "Redlock",
         "refinedev",
+        "Sider",
         "tasktr"
     ],
     "conventionalCommits.scopes": [

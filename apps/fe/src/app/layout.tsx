@@ -4,8 +4,8 @@ import React, { Suspense } from 'react';
 import { RefineContext } from './_refine_context';
 
 export const metadata: Metadata = {
-    title: 'Refine',
-    description: 'TaskTr',
+    title: 'TaskTr - The Simple Way to Schedule and Execute Any Task',
+    description: 'TaskTr - The Simple Way to Schedule and Execute Any Task',
     icons: {
         icon: 'https://github.githubassets.com/favicons/favicon.png',
     },
