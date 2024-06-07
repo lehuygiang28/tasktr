@@ -4,6 +4,13 @@
     "license": "",
     "private": true,
     "packageManager": "yarn@4.2.2",
+    "scripts": {
+        "fe": "yarn nx dev:rf fe",
+        "be": "yarn nx serve be --configuration=development",
+        "fe:build": "yarn nx build fe",
+        "fe:prod": "yarn nx start fe --configuration=production",
+        "be:prod": "yarn nx serve be --configuration=production"
+    },
     "dependencies": {
         "@ant-design/icons": "^5.3.7",
         "@ant-design/nextjs-registry": "^1.0.0",

@@ -26,26 +26,6 @@
                 ]
             }
         },
-        "build:rf": {
-            "executor": "nx:run-commands",
-            "options": {
-                "cwd": "apps/fe",
-                "commands": [
-                    "node ../../scripts/copy-file.js ../../package.json ./package.json",
-                    "refine build"
-                ]
-            }
-        },
-        "start:rf": {
-            "executor": "nx:run-commands",
-            "options": {
-                "cwd": "apps/fe",
-                "commands": [
-                    "node ../../scripts/copy-file.js ../../package.json ./package.json",
-                    "refine start"
-                ]
-            }
-        },
         "build": {
             "executor": "@nx/next:build",
             "outputs": ["{options.outputPath}"],
@@ -58,6 +38,24 @@
                     "outputPath": "."
                 },
                 "production": {}
+            }
+        },
+        "start": {
+            "executor": "@nx/next:server",
+            "outputs": ["{options.outputPath}"],
+            "defaultConfiguration": "production",
+            "options": {
+                "outputPath": "dist/apps/fe"
+            },
+            "configurations": {
+                "development": {
+                    "buildTarget": "fe:build:development",
+                    "dev": true
+                },
+                "production": {
+                    "buildTarget": "fe:build:production",
+                    "dev": false
+                }
             }
         }
     }
