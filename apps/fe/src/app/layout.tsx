@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     title: 'TaskTr - The Simple Way to Schedule and Execute Any Task',
     description: 'TaskTr - The Simple Way to Schedule and Execute Any Task',
     icons: {
-        icon: '/logo-pp.png',
+        icon: '/images/logo-favicon.webp',
     },
 };
 
