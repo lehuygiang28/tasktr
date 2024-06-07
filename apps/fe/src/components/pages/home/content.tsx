@@ -8,22 +8,22 @@ import {
     FileDoneOutlined,
 } from '@ant-design/icons';
 import { TypeAnimation } from 'react-type-animation';
+import Link from 'next/link';
+import AnimatedCard, { type CardData } from '~/components/card/animated-card';
 
 const { Content } = Layout;
 const { Title } = Typography;
-const { Meta } = Card;
-
-interface CardData {
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-}
 
 const cardData: CardData[] = [
     {
         icon: <FieldTimeOutlined />,
         title: 'Job Scheduling',
-        description: 'Schedule jobs by using any time interval or cron expression.',
+        description: 'Schedule jobs by using cron expression.',
+    },
+    {
+        icon: <FileDoneOutlined />,
+        title: 'Access to logs',
+        description: 'Easy access to your logs. View logs in real time.',
     },
     {
         icon: <MonitorOutlined />,
@@ -35,18 +35,13 @@ const cardData: CardData[] = [
         title: 'Metric insights',
         description: 'Get rich analytics on critical metrics of your jobs and monitors.',
     },
-    {
-        icon: <FileDoneOutlined />,
-        title: 'Access to logs',
-        description: 'Easy access to your logs. All in one place nicely organized.',
-    },
 ];
 
 export default function HomePageContent() {
     return (
         <Content style={{ marginTop: '35px' }}>
             <Space
-                size={100}
+                size={150}
                 direction="vertical"
                 style={{ justifySelf: 'center', alignItems: 'center' }}
             >
@@ -80,9 +75,11 @@ export default function HomePageContent() {
                                 />
                             </Title>
                             <Space direction="vertical" size="large">
-                                <Button type="primary" size="large">
-                                    Get Started for Free
-                                </Button>
+                                <Link href={'/tasks'} style={{ all: 'unset' }}>
+                                    <Button type="primary" size="large">
+                                        Get Started for Free
+                                    </Button>
+                                </Link>
                             </Space>
                         </Card>
                     </Col>
@@ -95,21 +92,7 @@ export default function HomePageContent() {
                     <Row justify={'center'} gutter={[16, 16]}>
                         {cardData.map((data, index) => (
                             <Col key={index} xs={24} sm={24} md={18} lg={12} xl={10}>
-                                <Card
-                                    style={{
-                                        marginTop: '20px',
-                                        maxWidth: '80%',
-                                        justifyContent: 'center',
-                                        marginLeft: 'auto',
-                                        marginRight: 'auto',
-                                    }}
-                                >
-                                    <Meta
-                                        avatar={data.icon}
-                                        title={data.title}
-                                        description={data.description}
-                                    />
-                                </Card>
+                                <AnimatedCard data={data} />
                             </Col>
                         ))}
                     </Row>
@@ -131,9 +114,11 @@ export default function HomePageContent() {
                             </Title>
                             <Title level={4}>Your tasks, on autopilot</Title>
                             <Space direction="vertical" size="large">
-                                <Button type="primary" size="large">
-                                    Get Started for Free
-                                </Button>
+                                <Link href={'/tasks'} style={{ all: 'unset' }}>
+                                    <Button type="primary" size="large">
+                                        Get Started for Free
+                                    </Button>
+                                </Link>
                             </Space>
                         </Card>
                     </Col>
