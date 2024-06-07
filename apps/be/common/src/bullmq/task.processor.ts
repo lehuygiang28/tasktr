@@ -73,7 +73,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             scheduledAt: new Date(job?.processedOn ?? now),
             executedAt: new Date(job?.finishedOn ?? now),
             duration: 0,
-            statusCode: 0,
+            statusCode: 500,
             responseSizeBytes: 0,
         };
 
@@ -87,8 +87,12 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         }
 
         await this.taskLogQueue.add(`saveTaskLog`, taskLog, {
-            removeOnFail: 1,
             removeOnComplete: 1,
+            attempts: 5,
+            backoff: {
+                type: 'exponential',
+                delay: 5000,
+            },
         });
 
         return true;
