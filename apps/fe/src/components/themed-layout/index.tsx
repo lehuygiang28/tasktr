@@ -1,6 +1,7 @@
 'use client';
 
 import { PropsWithChildren, useContext } from 'react';
+import Image from 'next/image';
 import { Header } from '../../components/header';
 import { ThemedLayoutV2, ThemedSiderV2 } from '@refinedev/antd';
 import { Layout, Typography } from 'antd';
@@ -8,15 +9,30 @@ import { Layout, Typography } from 'antd';
 import { ColorModeContext } from '~/contexts/color-mode';
 import Link from 'next/link';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
-function CustomSider() {
+function CustomSider({ mode }: { mode: string }) {
     return (
         <ThemedSiderV2
             Title={() => (
                 <>
                     <Link href={'/'} style={{ all: 'unset', cursor: 'pointer' }}>
-                        <Title level={2}>TaskTr</Title>
+                        {mode === 'dark' && (
+                            <Image
+                                src={'/images/logo-pp.webp'}
+                                alt="logo tasktr"
+                                width={80}
+                                height={24}
+                            />
+                        )}
+                        {mode === 'light' && (
+                            <Image
+                                src={'/images/logo-black.webp'}
+                                alt="logo tasktr"
+                                width={80}
+                                height={24}
+                            />
+                        )}{' '}
                     </Link>
                 </>
             )}
@@ -33,9 +49,7 @@ function CustomSider() {
     );
 }
 
-function CustomFooter() {
-    const { mode } = useContext(ColorModeContext);
-
+function CustomFooter({ mode }: { mode: string }) {
     return (
         <Layout.Footer
             style={{
@@ -54,12 +68,22 @@ function CustomFooter() {
 }
 
 export function ThemedLayout({ children }: PropsWithChildren) {
+    const { mode } = useContext(ColorModeContext);
+
     return (
         <ThemedLayoutV2
             Header={() => <Header sticky />}
-            Sider={CustomSider}
+            Sider={() => (
+                <>
+                    <CustomSider mode={mode} />
+                </>
+            )}
             dashboard
-            Footer={CustomFooter}
+            Footer={() => (
+                <>
+                    <CustomFooter mode={mode} />
+                </>
+            )}
         >
             {children}
         </ThemedLayoutV2>

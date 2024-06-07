@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { Layout, Menu, Button, Typography, Drawer, Space, Skeleton, Row, Col } from 'antd';
 import {
     LogoutOutlined,
@@ -13,6 +14,7 @@ import {
 } from '@ant-design/icons';
 import { useIsAuthenticated, useGetIdentity, useLogout } from '@refinedev/core';
 import { LoginResponseDto } from '~be/app/auth/dtos';
+import { ColorModeContext } from '~/contexts/color-mode';
 
 const Avatar = dynamic(() => import('antd').then((antd) => antd.Avatar), { ssr: false });
 const Dropdown = dynamic(() => import('antd').then((antd) => antd.Dropdown), { ssr: false });
@@ -23,6 +25,8 @@ const { Link } = Typography;
 const menuItems: { label: string; key: string; icon: React.ReactNode }[] = [];
 
 export default function HomePageHeader() {
+    const { mode } = useContext(ColorModeContext);
+
     const [drawerVisible, setDrawerVisible] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -57,12 +61,23 @@ export default function HomePageHeader() {
                     alignItems: 'center',
                 }}
             >
-                <Link
-                    href="/"
-                    className="demo-logo"
-                    style={{ fontSize: '1.8rem', fontWeight: 'bold' }}
-                >
-                    TaskTr
+                <Link href="/" style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>
+                    {mode === 'dark' && (
+                        <Image
+                            src={'/images/logo-pp.webp'}
+                            alt="logo tasktr"
+                            width={80}
+                            height={24}
+                        />
+                    )}
+                    {mode === 'light' && (
+                        <Image
+                            src={'/images/logo-black.webp'}
+                            alt="logo tasktr"
+                            width={80}
+                            height={24}
+                        />
+                    )}
                 </Link>
                 <Row>
                     <Col xs={0} md={24}>
