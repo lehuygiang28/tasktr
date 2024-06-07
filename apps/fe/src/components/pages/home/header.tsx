@@ -52,7 +52,14 @@ export default function HomePageHeader() {
     };
 
     return (
-        <Header style={{ display: 'flex', alignItems: 'center', padding: '0 2rem' }}>
+        <Header
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 2rem',
+                backgroundColor: mode === 'light' ? 'transparent' : undefined,
+            }}
+        >
             <div
                 style={{
                     display: 'flex',
