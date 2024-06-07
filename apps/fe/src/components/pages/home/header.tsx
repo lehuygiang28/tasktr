@@ -1,27 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Layout, Menu, Button, Typography, Grid, Drawer, Avatar, Dropdown } from 'antd';
-import type { MenuProps } from 'antd';
-import { MenuOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Layout, Menu, Button, Typography, Drawer, Space, Skeleton, Row, Col } from 'antd';
+import {
+    LogoutOutlined,
+    MenuOutlined,
+    LoginOutlined,
+    DownOutlined,
+    UpOutlined,
+    UnorderedListOutlined,
+} from '@ant-design/icons';
 import { useIsAuthenticated, useGetIdentity, useLogout } from '@refinedev/core';
 import { LoginResponseDto } from '~be/app/auth/dtos';
+
+const Avatar = dynamic(() => import('antd').then((antd) => antd.Avatar), { ssr: false });
+const Dropdown = dynamic(() => import('antd').then((antd) => antd.Dropdown), { ssr: false });
 
 const { Header } = Layout;
 const { Link } = Typography;
 
-const menuItems: MenuProps['items'] = [
-    { label: 'Pricing', key: 'pricing' },
-    { label: 'Features', key: 'features' },
-    { label: 'Docs', key: 'docs' },
-];
+const menuItems: { label: string; key: string; icon: React.ReactNode }[] = [];
 
 export default function HomePageHeader() {
     const [drawerVisible, setDrawerVisible] = useState(false);
-    const screens = Grid.useBreakpoint();
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    const { data: isAuthData } = useIsAuthenticated();
-    const { data: identity } = useGetIdentity<LoginResponseDto>();
+    const { data: isAuthData, isLoading: isLoadingAuth } = useIsAuthenticated();
+    const { data: identity, isLoading: isLoadingIdentity } = useGetIdentity<LoginResponseDto>();
     const { mutate: logout } = useLogout();
 
     const showDrawer = () => {
@@ -32,65 +38,149 @@ export default function HomePageHeader() {
         setDrawerVisible(false);
     };
 
+    const handleLogout = () => {
+        logout();
+        onClose();
+    };
+
+    const handleVisibleChange = (flag: boolean) => {
+        setDropdownOpen(flag);
+    };
+
     return (
-        <Header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Header style={{ display: 'flex', alignItems: 'center', padding: '0 2rem' }}>
             <div
                 style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     width: '100%',
-                    alignContent: 'center',
                     alignItems: 'center',
-                    verticalAlign: 'middle',
                 }}
             >
-                <div className="demo-logo">TaskTr</div>
-                {screens.md ? (
-                    <>
-                        <Menu
-                            mode="horizontal"
-                            items={menuItems}
-                            style={{ backgroundColor: 'transparent' }}
-                        />
-                        {isAuthData?.authenticated ? (
-                            <Dropdown
-                                menu={{
-                                    items: [
-                                        {
-                                            key: 'logout',
-                                            label: (
-                                                <Link key="logout" onClick={() => logout()}>
-                                                    Sign out
-                                                </Link>
-                                            ),
-                                        },
-                                    ],
+                <Link
+                    href="/"
+                    className="demo-logo"
+                    style={{ fontSize: '1.8rem', fontWeight: 'bold' }}
+                >
+                    TaskTr
+                </Link>
+                <Row>
+                    <Col xs={0} md={24}>
+                        <Space align="center">
+                            <Menu
+                                mode="horizontal"
+                                items={menuItems.map((item) => ({
+                                    ...item,
+                                    label: <Link href={item.key}>{item.label}</Link>,
+                                }))}
+                                style={{
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
+                                    padding: '0',
+                                    margin: '0 1rem',
                                 }}
-                                trigger={['click']}
+                                selectedKeys={[]}
+                            />
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
                             >
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    <Avatar src={identity?.avatar?.url} />
-                                    <span style={{ marginLeft: '10px' }}>{identity?.email}</span>
-                                </div>
-                            </Dropdown>
-                        ) : (
-                            <Button href="/login" style={{ marginLeft: screens.md ? '0' : 'auto' }}>
-                                Sign in
-                            </Button>
-                        )}
-                    </>
-                ) : (
-                    <Button type="link" onClick={showDrawer}>
-                        <MenuOutlined />
-                    </Button>
-                )}
+                                {isLoadingAuth && isLoadingIdentity ? (
+                                    <Space align="center">
+                                        <Skeleton.Avatar
+                                            active
+                                            size="small"
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                cursor: 'pointer',
+                                            }}
+                                        />
+                                        <Skeleton.Button
+                                            active
+                                            size="small"
+                                            shape="round"
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                cursor: 'pointer',
+                                            }}
+                                        />
+                                    </Space>
+                                ) : isAuthData?.authenticated ? (
+                                    <Dropdown
+                                        menu={{
+                                            items: [
+                                                {
+                                                    key: 'tasks',
+                                                    label: (
+                                                        <Link key="tasks" href="/tasks">
+                                                            <Space>
+                                                                <UnorderedListOutlined />
+                                                                Tasks
+                                                            </Space>
+                                                        </Link>
+                                                    ),
+                                                },
+                                                {
+                                                    key: 'logout',
+                                                    label: (
+                                                        <Link key="logout" onClick={handleLogout}>
+                                                            <Space>
+                                                                <LogoutOutlined /> Logout
+                                                            </Space>
+                                                        </Link>
+                                                    ),
+                                                },
+                                            ],
+                                        }}
+                                        trigger={['click']}
+                                        onVisibleChange={handleVisibleChange}
+                                    >
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            {!isLoadingIdentity && (
+                                                <Space size="middle" style={{ cursor: 'pointer' }}>
+                                                    <Avatar src={identity?.avatar?.url} />
+                                                    <span>{identity?.email}</span>
+                                                    {dropdownOpen ? (
+                                                        <UpOutlined style={{ fontSize: '8px' }} />
+                                                    ) : (
+                                                        <DownOutlined style={{ fontSize: '8px' }} />
+                                                    )}
+                                                </Space>
+                                            )}
+                                        </div>
+                                    </Dropdown>
+                                ) : (
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        <Button href="/login" type="dashed">
+                                            Login
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </Space>
+                    </Col>
+                    <Col xs={24} md={0}>
+                        <Button type="link" onClick={showDrawer} icon={<MenuOutlined />} />
+                    </Col>
+                </Row>
             </div>
+
             <Drawer
                 title="Menu"
                 placement="right"
@@ -100,24 +190,34 @@ export default function HomePageHeader() {
                 width={250}
             >
                 <Menu
-                    mode="vertical"
-                    items={[
-                        ...(menuItems || []),
-                        {
-                            key: 'login',
-                            label: isAuthData?.authenticated ? (
-                                <Link onClick={() => logout()} underline>
-                                    Log out
-                                </Link>
-                            ) : (
-                                <Link href="/login" underline>
-                                    Sign in
-                                </Link>
-                            ),
-                        },
-                    ]}
-                    style={{ backgroundColor: 'transparent' }}
-                />
+                    mode="inline"
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'inherit',
+                        border: 'none',
+                    }}
+                >
+                    {menuItems.map((item) => (
+                        <Menu.Item key={item.key} icon={item.icon}>
+                            <Link href={item.key}>{item.label}</Link>
+                        </Menu.Item>
+                    ))}
+
+                    {isLoadingAuth ? (
+                        <Skeleton.Button active size="small" shape="round" />
+                    ) : isAuthData?.authenticated ? (
+                        <Menu.Item key="logout" icon={<LogoutOutlined />}>
+                            <Link onClick={handleLogout} href="#">
+                                Logout
+                            </Link>
+                        </Menu.Item>
+                    ) : (
+                        <Menu.Item key="login" icon={<LoginOutlined />}>
+                            <Link href="/login">Login</Link>
+                        </Menu.Item>
+                    )}
+                </Menu>
             </Drawer>
         </Header>
     );
