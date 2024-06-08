@@ -16,6 +16,7 @@ import { ColorModeContextProvider } from '~/contexts/color-mode';
 import { DevtoolsProvider } from '~/providers/devtools';
 import { authProvider } from '~/providers/auth-provider';
 import { useAxiosAuth } from '~/hooks/useAxiosAuth';
+import worldTimeAPIProvider from '~/providers/data-provider/timezone';
 
 type RefineContextProps = {
     defaultMode?: string;
@@ -51,6 +52,7 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                                 routerProvider={routerProvider}
                                 dataProvider={{
                                     default: tasktrDataProvider,
+                                    [worldTimeAPIProvider.name]: worldTimeAPIProvider,
                                 }}
                                 notificationProvider={useNotificationProvider}
                                 authProvider={authProvider}
