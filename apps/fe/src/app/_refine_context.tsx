@@ -3,11 +3,10 @@
 import '@refinedev/antd/dist/reset.css';
 
 import React from 'react';
-import { Refine } from '@refinedev/core';
+import { DataProvider, Refine } from '@refinedev/core';
 import { RefineKbar, RefineKbarProvider } from '@refinedev/kbar';
 import { SessionProvider } from 'next-auth/react';
 import { useNotificationProvider } from '@refinedev/antd';
-import dataProviderSimpleRest from '@refinedev/simple-rest';
 import routerProvider from '@refinedev/nextjs-router';
 
 import { AntdRegistry } from '@ant-design/nextjs-registry';
@@ -17,6 +16,7 @@ import { DevtoolsProvider } from '~/providers/devtools';
 import { authProvider } from '~/providers/auth-provider';
 import { useAxiosAuth } from '~/hooks/useAxiosAuth';
 import worldTimeAPIProvider from '~/providers/data-provider/timezone';
+import { tasktrDataProvider } from '~/providers/data-provider/tasktr';
 
 type RefineContextProps = {
     defaultMode?: string;
@@ -37,10 +37,7 @@ type AppProps = {
 const App = (props: React.PropsWithChildren<AppProps>) => {
     const defaultMode = props?.defaultMode;
     const axiosAuth = useAxiosAuth();
-    const tasktrDataProvider = dataProviderSimpleRest(
-        process.env.NEXT_PUBLIC_API_URL ?? '',
-        axiosAuth,
-    );
+    const taskTr = { ...tasktrDataProvider(axiosAuth) };
 
     return (
         <>
@@ -51,7 +48,7 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                             <Refine
                                 routerProvider={routerProvider}
                                 dataProvider={{
-                                    default: tasktrDataProvider,
+                                    default: taskTr as DataProvider,
                                     [worldTimeAPIProvider.name]: worldTimeAPIProvider,
                                 }}
                                 notificationProvider={useNotificationProvider}
