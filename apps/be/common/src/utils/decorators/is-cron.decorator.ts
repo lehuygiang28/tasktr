@@ -1,5 +1,5 @@
 import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
-import { parseExpression } from 'cron-parser';
+import { stringToArray } from 'cron-converter';
 
 export function IsCron(validationOptions?: ValidationOptions) {
     return function (object: object, propertyName: string) {
@@ -15,7 +15,7 @@ export function IsCron(validationOptions?: ValidationOptions) {
                     }
 
                     try {
-                        parseExpression(String(value));
+                        stringToArray(String(value));
                         return true;
                     } catch (error) {
                         return false;
