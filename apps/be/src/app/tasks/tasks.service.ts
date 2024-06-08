@@ -1,7 +1,7 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue, JobsOptions } from 'bullmq';
-import { UpdateQuery } from 'mongoose';
+import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
 
 import { BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
 import { convertToObjectId, validateCronFrequency } from '~be/common/utils';
@@ -9,7 +9,8 @@ import { JwtPayloadType } from '~be/app/auth/strategies';
 
 import { TasksRepository } from './tasks.repository';
 import { Task } from './schemas/task.schema';
-import { CreateTaskDto, TaskDto, UpdateTaskDto } from './dtos';
+import { CreateTaskDto, GetTasksResponseDto, TaskDto, UpdateTaskDto } from './dtos';
+import { GetTasksDto } from './dtos/get-tasks.dto';
 
 @Injectable()
 export class TasksService {
@@ -227,11 +228,51 @@ export class TasksService {
         });
     }
 
-    async getTasks({ user }: { user: JwtPayloadType }): Promise<TaskDto[]> {
-        return this.taskRepo.find({
-            filterQuery: {
-                userId: convertToObjectId(user.userId),
-            },
-        });
+    async getTasks({
+        user,
+        query,
+    }: {
+        user: JwtPayloadType;
+        query: GetTasksDto;
+    }): Promise<GetTasksResponseDto> {
+        const filter: FilterQuery<TaskDto> = {
+            userId: convertToObjectId(user.userId),
+        };
+        const options: Partial<QueryOptions<Task>> = {};
+
+        if (query.search) {
+            filter.$or = [
+                { name: { $regex: query.search, $options: 'i' } },
+                { endpoint: { $regex: query.search, $options: 'i' } },
+            ];
+        }
+
+        if (query.methods?.length) {
+            filter.method = { $in: query.methods };
+        }
+
+        if (query.sortBy && query.sortOrder) {
+            options.sort = { [query.sortBy]: query.sortOrder };
+        }
+
+        if (query.page && query.limit) {
+            options.skip = (query.page - 1) * query.limit;
+            options.limit = query.limit;
+        }
+
+        const [tasks, total] = await Promise.all([
+            this.taskRepo.find({
+                filterQuery: filter,
+                queryOptions: options,
+            }),
+            this.taskRepo.count(filter),
+        ]);
+
+        return {
+            data: tasks,
+            total,
+            page: query.page || 1,
+            limit: query.limit || tasks?.length,
+        };
     }
 }

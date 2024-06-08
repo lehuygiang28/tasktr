@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, TaskDto } from './dtos';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
@@ -6,6 +16,7 @@ import { UpdateTaskDto } from './dtos/update-task.dto';
 import { AuthRoles } from '../auth/guards/auth.guard';
 import { CurrentUser } from '~be/common/utils';
 import { JwtPayloadType } from '../auth/strategies';
+import { GetTasksDto } from './dtos/get-tasks.dto';
 
 @AuthRoles()
 @ApiTags('tasks')
@@ -30,10 +41,10 @@ export class TasksController {
         return this.tasksService.updateTask({ id, data, user });
     }
 
-    @ApiOkResponse({ type: [TaskDto] })
+    @ApiOkResponse({ type: GetTasksResponseDto })
     @Get('/')
-    getTasks(@CurrentUser() user: JwtPayloadType) {
-        return this.tasksService.getTasks({ user });
+    getTasks(@CurrentUser() user: JwtPayloadType, @Query() query: GetTasksDto) {
+        return this.tasksService.getTasks({ user, query });
     }
 
     @ApiOkResponse({ type: TaskDto })
