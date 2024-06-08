@@ -1,16 +1,15 @@
 'use client';
 
 import { HttpError, useUpdate } from '@refinedev/core';
-import { DeleteButton, EditButton, List, SaveButton, ShowButton, useTable } from '@refinedev/antd';
-import { Space, Table, Switch, Typography, Form, Input } from 'antd';
+import { DeleteButton, EditButton, List, ShowButton, useTable } from '@refinedev/antd';
+import { Space, Table, Switch, Typography } from 'antd';
 import { toString as cronReadable } from 'cronstrue';
 import { getSchedule, stringToArray } from 'cron-converter';
 
 import { type TaskDto } from '~be/app/tasks/dtos';
-import { useDebouncedCallback } from '~/hooks/useDebouncedCallback';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
+import { useDebouncedCallback } from '~/hooks/useDebouncedCallback';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
-import { SearchOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -19,30 +18,31 @@ interface TableSearch {
 }
 
 export default function TaskList() {
-    const { tableProps, searchFormProps } = useTable<TaskDto, HttpError, TableSearch>({
+    const {
+        tableProps: { pagination, ...tableProps },
+    } = useTable<TaskDto, HttpError, TableSearch>({
         syncWithLocation: true,
+        pagination: {
+            mode: 'server',
+        },
     });
     const { mutate: update } = useUpdate<TaskDto>({});
     const debouncedUpdate = useDebouncedCallback(update, 200);
 
     return (
         <List>
-            <Form {...searchFormProps} layout="inline">
-                <Form.Item name="name">
-                    <Input placeholder="Search by name" />
-                </Form.Item>
-                <SaveButton onClick={searchFormProps.form?.submit} icon={<SearchOutlined />}>
-                    Search
-                </SaveButton>
-            </Form>
-            <br />
             <Table<TaskDto>
                 {...tableProps}
                 rowKey="_id"
                 pagination={{
-                    ...tableProps.pagination,
-                    position: ['bottomCenter'],
+                    ...pagination,
+                    position: ['bottomRight'],
                     size: 'small',
+                    showSizeChanger: true,
+                    showTotal: (total) => `Total ${total} tasks`,
+                    defaultPageSize: 5,
+                    pageSizeOptions: [5, 10, 20, 50, 100],
+                    showTitle: false,
                 }}
             >
                 <Table.Column
