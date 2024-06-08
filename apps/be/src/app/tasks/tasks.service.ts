@@ -122,12 +122,21 @@ export class TasksService {
             });
         }
 
+        if (!data.endpoint.trim().startsWith('http') || !data.endpoint.trim().startsWith('https')) {
+            data.endpoint = `https://${data.endpoint}`;
+        }
+
         const taskCreated = await this.taskRepo.create({
             document: {
                 cronHistory: [],
                 isEnable: false,
                 userId: convertToObjectId(user.userId),
                 timezone: data?.timezone ?? process.env.TZ ?? 'Asia/Ho_Chi_Minh',
+                endpoint:
+                    !data.endpoint.trim().startsWith('http') ||
+                    !data.endpoint.trim().startsWith('https')
+                        ? `https://${data.endpoint}`
+                        : data.endpoint,
                 ...data,
             },
         });
@@ -209,11 +218,22 @@ export class TasksService {
             }
         }
 
+        let endpoint = data?.endpoint || undefined;
+        if (
+            endpoint &&
+            (!endpoint.trim().startsWith('http') || !endpoint.trim().startsWith('https'))
+        ) {
+            endpoint = `https://${endpoint}`;
+        }
+
         const updatedTask = await this.taskRepo.findOneAndUpdateOrThrow({
             filterQuery: {
                 _id: convertToObjectId(id),
             },
-            updateQuery,
+            updateQuery: {
+                ...updateQuery,
+                endpoint: endpoint,
+            },
         });
 
         return this.executeTask(oldTask, updatedTask);
