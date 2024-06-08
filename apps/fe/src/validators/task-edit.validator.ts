@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { CreateTaskDto } from '~be/app/tasks/dtos';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
-import { IsCron, IsObjectString } from '~be/common/utils/decorators';
+import { IsCron } from '~be/common/utils/decorators';
 
 export class TaskEditValidator implements Omit<CreateTaskDto, 'alert'> {
     constructor(data?: unknown) {
@@ -36,7 +36,7 @@ export class TaskEditValidator implements Omit<CreateTaskDto, 'alert'> {
     @IsEnum(HttpMethodEnum, { message: 'Please select an option' })
     method: string;
 
-    @IsCron({ message: 'Cron expression is not valid, see https://crontab.guru' })
+    @IsCron({ message: 'Cron expression is not valid' })
     cron: string;
 
     @IsBoolean({ message: 'Please select an option' })
@@ -55,6 +55,5 @@ export class TaskEditValidator implements Omit<CreateTaskDto, 'alert'> {
     body: string;
 
     @IsOptional()
-    @IsObjectString({ message: 'Please enter a valid JSON' })
     headers: string;
 }

@@ -1,10 +1,14 @@
 'use client';
 
-import { useContext } from 'react';
-import { Descriptions, Typography } from 'antd';
+import { useContext, useEffect, useState } from 'react';
+import { Descriptions, Typography, Spin } from 'antd';
 import { Show } from '@refinedev/antd';
 import { useShow } from '@refinedev/core';
-import { CodeBlock } from 'react-code-blocks';
+import { Highlight, themes } from 'prism-react-renderer';
+import { format } from 'prettier';
+import * as prettierBabel from 'prettier/plugins/babel';
+import * as prettierMd from 'prettier/plugins/markdown';
+import * as prettierEstree from 'prettier/plugins/estree';
 
 import { type TaskDto } from '~be/app/tasks/dtos';
 import { ColorModeContext } from '~/contexts/color-mode';
@@ -13,11 +17,37 @@ import { formatDateToHumanReadable } from '~/libs/utils/common';
 const { Text } = Typography;
 
 export default function TaskShow() {
-    const { queryResult } = useShow<TaskDto>({});
-    const { data, isLoading } = queryResult;
     const { mode } = useContext(ColorModeContext);
+    const {
+        queryResult: { data: { data: record } = {}, isLoading },
+    } = useShow<TaskDto>({});
 
-    const record = data?.data;
+    const [formattedHeaders, setFormattedHeaders] = useState<string | null>(null);
+    const [formattedBody, setFormattedBody] = useState<string | null>(null);
+    const [formatting, setFormatting] = useState(false);
+
+    useEffect(() => {
+        const formatCode = async () => {
+            setFormatting(true);
+            if (record?.headers) {
+                const formatted = await format(record.headers, {
+                    plugins: [prettierEstree, prettierBabel],
+                    parser: 'json-stringify',
+                });
+                setFormattedHeaders(formatted);
+            }
+            if (record?.body) {
+                const formatted = await format(record.body, {
+                    plugins: [prettierEstree, prettierMd],
+                    parser: 'markdown',
+                });
+                setFormattedBody(formatted);
+            }
+            setFormatting(false);
+        };
+
+        formatCode();
+    }, [record?.headers, record?.body]);
 
     return (
         <Show isLoading={isLoading}>
@@ -44,24 +74,52 @@ export default function TaskShow() {
                     {record?.updatedAt && formatDateToHumanReadable(record?.updatedAt)}
                 </Descriptions.Item>
                 <Descriptions.Item label="Headers" span={12}>
-                    <>
-                        <CodeBlock
-                            text={record?.headers ? record.headers : '// empty'}
-                            language={'json'}
-                            showLineNumbers={false}
-                            theme={{ mode: mode === 'light' ? 'light' : 'dark' }}
-                        />
-                    </>
+                    {formatting ? (
+                        <Spin />
+                    ) : (
+                        <>
+                            <Highlight
+                                theme={mode === 'light' ? themes.duotoneLight : themes.vsDark}
+                                code={formattedHeaders ?? '// empty'}
+                                language="ts"
+                            >
+                                {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                                    <pre style={{ ...style, whiteSpace: 'pre-wrap' }}>
+                                        {tokens.map((line, i) => (
+                                            <div key={i} {...getLineProps({ line })}>
+                                                {line.map((token, key) => (
+                                                    <span key={key} {...getTokenProps({ token })} />
+                                                ))}
+                                            </div>
+                                        ))}
+                                    </pre>
+                                )}
+                            </Highlight>
+                        </>
+                    )}
                 </Descriptions.Item>
                 <Descriptions.Item label="Body" span={12}>
-                    <>
-                        <CodeBlock
-                            text={record?.body ? record.body : '// empty'}
-                            language={'json'}
-                            showLineNumbers={false}
-                            theme={{ mode: mode === 'light' ? 'light' : 'dark' }}
-                        />
-                    </>
+                    {formatting ? (
+                        <Spin />
+                    ) : (
+                        <Highlight
+                            theme={mode === 'light' ? themes.duotoneLight : themes.vsDark}
+                            code={formattedBody ?? '// empty'}
+                            language="ts"
+                        >
+                            {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                                <pre style={{ ...style, whiteSpace: 'pre-wrap' }}>
+                                    {tokens.map((line, i) => (
+                                        <div key={i} {...getLineProps({ line })}>
+                                            {line.map((token, key) => (
+                                                <span key={key} {...getTokenProps({ token })} />
+                                            ))}
+                                        </div>
+                                    ))}
+                                </pre>
+                            )}
+                        </Highlight>
+                    )}
                 </Descriptions.Item>
             </Descriptions>
         </Show>
