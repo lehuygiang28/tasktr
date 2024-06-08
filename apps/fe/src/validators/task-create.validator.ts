@@ -9,7 +9,8 @@ import {
 } from 'class-validator';
 import { CreateTaskDto } from '~be/app/tasks/dtos';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
-import { IsCron } from '~be/common/utils/decorators';
+// import { IsCron } from '~be/common/utils/decorators';
+import { IsCron } from '@kovalenko/is-cron';
 
 export class TaskCreateValidator implements Omit<CreateTaskDto, 'alert' | 'headers'> {
     @IsNotEmpty({ message: 'Please enter a name of task' })
@@ -22,7 +23,7 @@ export class TaskCreateValidator implements Omit<CreateTaskDto, 'alert' | 'heade
     @IsEnum(HttpMethodEnum, { message: 'Please select an option' })
     method: string;
 
-    @IsCron({ message: 'Cron expression is not valid, see https://crontab.guru' })
+    @IsCron({ message: 'Cron expression is not valid' })
     cron: string;
 
     @IsOptional()
