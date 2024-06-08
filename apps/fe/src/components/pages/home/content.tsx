@@ -18,7 +18,7 @@ const cardData: CardData[] = [
     {
         icon: <FieldTimeOutlined />,
         title: 'Job Scheduling',
-        description: 'Schedule jobs by using cron expression.',
+        description: 'Schedule jobs by using cron expression or interval.',
     },
     {
         icon: <FileDoneOutlined />,
@@ -28,23 +28,19 @@ const cardData: CardData[] = [
     {
         icon: <MonitorOutlined />,
         title: 'Job Monitoring',
-        description: 'Set up one-click uptime and running time monitoring for your recurring jobs.',
+        description: 'Set up uptime and running time monitoring for jobs.',
     },
     {
         icon: <RocketOutlined />,
         title: 'Metric insights',
-        description: 'Get rich analytics on critical metrics of your jobs and monitors.',
+        description: 'Get rich analytics on critical metrics of your tasks.',
     },
 ];
 
 export default function HomePageContent() {
     return (
-        <Content style={{ marginTop: '35px' }}>
-            <Space
-                size={150}
-                direction="vertical"
-                style={{ justifySelf: 'center', alignItems: 'center' }}
-            >
+        <Content style={{ marginTop: '35px', width: '100%' }}>
+            <Space size={150} direction="vertical" style={{ alignItems: 'center', width: '100%' }}>
                 <Row justify="center">
                     <Col xs={30} sm={30} md={24} lg={18} xl={16}>
                         <Card
