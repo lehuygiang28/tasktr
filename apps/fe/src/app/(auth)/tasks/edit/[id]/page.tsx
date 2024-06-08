@@ -2,6 +2,7 @@
 
 import 'react-js-cron/dist/styles.css';
 
+import { useEffect } from 'react';
 import { Controller, useFieldArray } from 'react-hook-form';
 import { Form, Input, Select, Row, Col, Switch, Space, Button } from 'antd';
 import { Edit, useForm as useFormAnt } from '@refinedev/antd';
@@ -9,13 +10,13 @@ import { HttpError, useList } from '@refinedev/core';
 import { useForm } from '@refinedev/react-hook-form';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
+import Cron from 'react-js-cron';
 
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import { TaskEditValidator } from '~/validators';
-import { useEffect } from 'react';
 import worldTimeAPIProvider from '~/providers/data-provider/timezone';
-import Cron from 'react-js-cron';
 import { useCronReducer } from '~/hooks/useCronReducer';
+import { HttpMethodTag } from '~/components/tag/http-method-tag';
 
 const { Item } = Form;
 const { Option } = Select;
@@ -168,10 +169,9 @@ export default function TaskEdit() {
                                         {...field}
                                         options={Object.values(HttpMethodEnum).map((value) => ({
                                             value: value,
-                                            label: value,
+                                            label: <HttpMethodTag method={value} />,
                                         }))}
                                         placeholder="Select a http method"
-                                        style={{ width: '100%' }}
                                     />
                                 </Item>
                             )}

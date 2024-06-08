@@ -11,10 +11,11 @@ import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import { TaskCreateValidator } from '~/validators';
-import { useState } from 'react';
 import worldTimeAPIProvider from '~/providers/data-provider/timezone';
 import Cron from 'react-js-cron';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { useCronReducer } from '~/hooks/useCronReducer';
+import { HttpMethodTag } from '~/components/tag/http-method-tag';
 
 const { Item } = Form;
 const { Option } = Select;
@@ -25,7 +26,8 @@ interface HeaderField {
 }
 
 export default function TaskCreate() {
-    const [cronVal, setCronVal] = useState('30 * * * *');
+    const [values, dispatchValues] = useCronReducer('30 * * * *');
+
     const { data: timeZones } = useList({
         dataProviderName: worldTimeAPIProvider.name,
     });
@@ -146,10 +148,9 @@ export default function TaskCreate() {
                                         {...field}
                                         options={Object.values(HttpMethodEnum).map((value) => ({
                                             value: value,
-                                            label: value,
+                                            label: <HttpMethodTag method={value} />,
                                         }))}
                                         placeholder="Select a http method"
-                                        style={{ width: '100%' }}
                                     />
                                 </Item>
                             )}
@@ -206,10 +207,30 @@ export default function TaskCreate() {
                                 <Input
                                     ref={ref}
                                     placeholder="Cron expression"
-                                    value={cronVal}
-                                    onChange={(e) => setCronVal(e.target.value)}
+                                    value={values.inputValue}
+                                    onChange={(event) => {
+                                        dispatchValues({
+                                            type: 'set_input_value',
+                                            value: event.target.value,
+                                        });
+                                    }}
+                                    onBlur={() => {
+                                        dispatchValues({
+                                            type: 'set_cron_value',
+                                            value: values.inputValue,
+                                        });
+                                    }}
                                 />
-                                <Cron value={cronVal} setValue={setCronVal} />
+                                <Cron
+                                    value={values.cronValue}
+                                    setValue={(newValue: string) => {
+                                        dispatchValues({
+                                            type: 'set_values',
+                                            value: newValue,
+                                        });
+                                    }}
+                                    leadingZero={false}
+                                />
                             </Space>
                         </Item>
                     )}
