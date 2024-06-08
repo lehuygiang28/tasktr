@@ -10,7 +10,7 @@ import {
     Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto, TaskDto } from './dtos';
+import { CreateTaskDto, GetTasksResponseDto, TaskDto } from './dtos';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UpdateTaskDto } from './dtos/update-task.dto';
 import { AuthRoles } from '../auth/guards/auth.guard';
