@@ -43,10 +43,9 @@ function handleSort(searchParams: URLSearchParams, sorters?: CrudSort | CrudSort
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
-const { getList, ...provider } = dataProviderSimpleRest(API_URL);
 
 export const tasktrDataProvider = (axios: AxiosInstance) => ({
-    ...provider,
+    ...dataProviderSimpleRest(API_URL, axios),
     getList: async ({
         resource,
         pagination,
