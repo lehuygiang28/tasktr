@@ -75,6 +75,7 @@
         "react-intersection-observer": "^9.10.3",
         "react-js-cron": "^5.0.1",
         "react-type-animation": "^3.2.0",
+        "recharts": "^2.12.7",
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.8.0",
         "swagger-stats": "^0.99.7",

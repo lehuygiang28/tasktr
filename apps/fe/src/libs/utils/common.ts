@@ -20,3 +20,18 @@ export function formatDateToHumanReadable(date: Date | string) {
 
     return formattedDate;
 }
+
+export function sortArrayByKey<T>(array: T[], key: keyof T): T[] {
+    if (!array) {
+        return [];
+    }
+    return array.sort((a, b) => {
+        if (a[key] < b[key]) {
+            return -1;
+        }
+        if (a[key] > b[key]) {
+            return 1;
+        }
+        return 0;
+    });
+}

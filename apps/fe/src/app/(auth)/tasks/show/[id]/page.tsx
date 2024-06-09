@@ -1,7 +1,7 @@
 'use client';
 
 import { useContext, useEffect, useState } from 'react';
-import { Descriptions, Typography, Spin } from 'antd';
+import { Descriptions, Typography, Spin, Button } from 'antd';
 import { Show } from '@refinedev/antd';
 import { useShow } from '@refinedev/core';
 import { Highlight, themes } from 'prism-react-renderer';
@@ -13,6 +13,8 @@ import * as prettierEstree from 'prettier/plugins/estree';
 import { type TaskDto } from '~be/app/tasks/dtos';
 import { ColorModeContext } from '~/contexts/color-mode';
 import { formatDateToHumanReadable } from '~/libs/utils/common';
+import Link from 'next/link';
+import { FileProtectOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -50,7 +52,16 @@ export default function TaskShow() {
     }, [record?.headers, record?.body]);
 
     return (
-        <Show isLoading={isLoading}>
+        <Show
+            isLoading={isLoading}
+            headerButtons={
+                <Link href={`/tasks/logs/${record?._id}`}>
+                    <Button size="middle" type="default">
+                        <FileProtectOutlined /> See Logs
+                    </Button>
+                </Link>
+            }
+        >
             <Descriptions>
                 <Descriptions.Item label="ID">
                     <Text copyable>{record?._id.toString()}</Text>

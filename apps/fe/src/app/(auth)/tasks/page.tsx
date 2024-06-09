@@ -2,7 +2,8 @@
 
 import { HttpError, useUpdate } from '@refinedev/core';
 import { DeleteButton, EditButton, List, ShowButton, useTable } from '@refinedev/antd';
-import { Space, Table, Switch, Typography } from 'antd';
+import { Space, Table, Switch, Typography, Button } from 'antd';
+import { FileProtectOutlined } from '@ant-design/icons';
 import { toString as cronReadable } from 'cronstrue';
 import { getSchedule, stringToArray } from 'cron-converter';
 
@@ -10,6 +11,7 @@ import { type TaskDto } from '~be/app/tasks/dtos';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
 import { useDebouncedCallback } from '~/hooks/useDebouncedCallback';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
+import Link from 'next/link';
 
 const { Text } = Typography;
 
@@ -165,6 +167,11 @@ export default function TaskList() {
                                 size="small"
                                 recordItemId={record._id.toString()}
                             />
+                            <Link href={`/tasks/logs/${record._id}`}>
+                                <Button size="small" type="default">
+                                    <FileProtectOutlined />
+                                </Button>
+                            </Link>
                         </Space>
                     )}
                 />
