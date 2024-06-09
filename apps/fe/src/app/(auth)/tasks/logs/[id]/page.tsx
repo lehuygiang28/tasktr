@@ -4,7 +4,16 @@ import Link from 'next/link';
 import { HttpError, useParsed } from '@refinedev/core';
 import { List, ShowButton, useTable } from '@refinedev/antd';
 import { Breadcrumb, Space, Table, Tag } from 'antd';
-import { LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Line, Legend } from 'recharts';
+import {
+    LineChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+    Line,
+    Legend,
+    Label,
+} from 'recharts';
 import { format } from 'date-fns';
 
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
@@ -54,8 +63,24 @@ export default function LogList() {
                                 name="Executed At"
                                 angle={-30}
                                 textAnchor="end"
+                                label={
+                                    <Label
+                                        value="Executed At"
+                                        position="insideBottom"
+                                        offset={-50}
+                                        style={{ textAnchor: 'middle' }}
+                                    />
+                                }
                             />
-                            <YAxis dataKey={'duration'} name="Duration" label={'Duration'} />
+                            <YAxis
+                                dataKey={'duration'}
+                                name="Duration"
+                                label={{
+                                    value: 'Duration',
+                                    position: 'insideLeft',
+                                    angle: -90,
+                                }}
+                            />
                             <Legend verticalAlign="top" height={15} />
                             <Line type="monotone" dataKey="duration" stroke="#82ca9d" />
                             <Line type="monotone" dataKey="responseSizeBytes" stroke="#8884d8" />
