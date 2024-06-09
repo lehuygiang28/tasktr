@@ -11,12 +11,15 @@ import { TasksRepository } from './tasks.repository';
 import { Task } from './schemas/task.schema';
 import { CreateTaskDto, GetTasksResponseDto, TaskDto, UpdateTaskDto } from './dtos';
 import { GetTasksDto } from './dtos/get-tasks.dto';
+import { GetLogsByTaskIdDto, GetLogsByTaskIdResponseDto } from '../task-logs/dtos';
+import { TaskLogsService } from '../task-logs';
 
 @Injectable()
 export class TasksService {
     constructor(
         private readonly taskRepo: TasksRepository,
         @InjectQueue(BULLMQ_TASK_QUEUE) readonly taskQueue: Queue,
+        private readonly taskLogsService: TaskLogsService,
     ) {}
 
     private async startCronTask(task: Task) {
@@ -294,5 +297,24 @@ export class TasksService {
             page: query.page || 1,
             limit: query.limit || tasks?.length,
         };
+    }
+
+    async getLogsByTaskId({
+        taskId,
+        query,
+        user,
+    }: {
+        taskId: string;
+        query: GetLogsByTaskIdDto;
+        user: JwtPayloadType;
+    }): Promise<GetLogsByTaskIdResponseDto> {
+        const foundTask = await this.taskRepo.findOneOrThrow({
+            filterQuery: {
+                _id: convertToObjectId(taskId),
+                userId: convertToObjectId(user.userId),
+            },
+        });
+
+        return this.taskLogsService.getLogsByTaskId({ taskId: foundTask._id, query });
     }
 }

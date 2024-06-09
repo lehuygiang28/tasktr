@@ -4,8 +4,14 @@ import { convertToObjectId } from '~be/common/utils/common';
 
 import { TaskLogsRepository } from './task-logs.repository';
 import { TaskLog } from './task-log.schema';
-import { CreateTaskLogDto } from './dtos';
+import {
+    CreateTaskLogDto,
+    GetLogsByTaskIdDto,
+    GetLogsByTaskIdResponseDto,
+    TaskLogDto,
+} from './dtos';
 import { ConfigService } from '@nestjs/config';
+import { FilterQuery, QueryOptions, Types } from 'mongoose';
 
 @Injectable()
 export class TaskLogsService {
@@ -47,11 +53,40 @@ export class TaskLogsService {
         });
     }
 
-    async getLogsByTaskId(taskId: string): Promise<TaskLog[]> {
-        return this.taskLogsRepository.find({
-            filterQuery: {
-                taskId: convertToObjectId(taskId),
-            },
-        });
+    async getLogsByTaskId({
+        taskId,
+        query,
+    }: {
+        taskId: string | Types.ObjectId;
+        query: GetLogsByTaskIdDto;
+    }): Promise<GetLogsByTaskIdResponseDto> {
+        const filter: FilterQuery<TaskLogDto> = {
+            taskId: convertToObjectId(taskId),
+        };
+        const options: Partial<QueryOptions<TaskLogDto>> = {};
+
+        if (query.sortBy && query.sortOrder) {
+            options.sort = { [query.sortBy]: query.sortOrder };
+        }
+
+        if (query.page && query.limit) {
+            options.skip = (query.page - 1) * query.limit;
+            options.limit = query.limit;
+        }
+
+        const [logs, total] = await Promise.all([
+            this.taskLogsRepository.find({
+                filterQuery: filter,
+                queryOptions: options,
+            }),
+            this.taskLogsRepository.count(filter),
+        ]);
+
+        return {
+            data: logs,
+            total,
+            page: query.page || 1,
+            limit: query.limit || logs?.length || 0,
+        };
     }
 }

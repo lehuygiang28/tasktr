@@ -14,9 +14,10 @@ import { CreateTaskDto, GetTasksResponseDto, TaskDto } from './dtos';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UpdateTaskDto } from './dtos/update-task.dto';
 import { AuthRoles } from '../auth/guards/auth.guard';
-import { CurrentUser } from '~be/common/utils';
+import { CurrentUser, IdParamDto } from '~be/common/utils';
 import { JwtPayloadType } from '../auth/strategies';
 import { GetTasksDto } from './dtos/get-tasks.dto';
+import { GetLogsByTaskIdDto, GetLogsByTaskIdResponseDto } from '../task-logs/dtos';
 
 @AuthRoles()
 @ApiTags('tasks')
@@ -34,7 +35,7 @@ export class TasksController {
     @HttpCode(HttpStatus.OK)
     @Patch('/:id')
     updateTask(
-        @Param('id') id: string,
+        @Param() { id }: IdParamDto,
         @Body() data: UpdateTaskDto,
         @CurrentUser() user: JwtPayloadType,
     ) {
@@ -49,7 +50,17 @@ export class TasksController {
 
     @ApiOkResponse({ type: TaskDto })
     @Get('/:id')
-    getTask(@Param('id') id: string, @CurrentUser() user: JwtPayloadType) {
+    getTask(@Param() { id }: IdParamDto, @CurrentUser() user: JwtPayloadType) {
         return this.tasksService.getTask({ id, user });
+    }
+
+    @ApiOkResponse({ type: GetLogsByTaskIdDto })
+    @Get('/logs/:id')
+    async getLogsByTaskId(
+        @Param() { id }: IdParamDto,
+        @Query() query: GetLogsByTaskIdDto,
+        @CurrentUser() user: JwtPayloadType,
+    ): Promise<GetLogsByTaskIdResponseDto> {
+        return this.tasksService.getLogsByTaskId({ taskId: id, query, user });
     }
 }
