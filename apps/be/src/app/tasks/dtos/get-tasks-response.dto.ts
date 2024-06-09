@@ -1,16 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { TaskDto } from './task.dto';
+import { PaginationResponseDto } from '~be/common/utils';
 
-export class GetTasksResponseDto {
+export class GetTasksResponseDto extends IntersectionType(PaginationResponseDto<TaskDto>) {
     @ApiProperty({ type: [TaskDto] })
     data: TaskDto[];
-
-    @ApiProperty()
-    total: number;
-
-    @ApiProperty()
-    page: number;
-
-    @ApiProperty()
-    limit: number;
 }
