@@ -54,13 +54,16 @@ export default function TaskShow() {
     return (
         <Show
             isLoading={isLoading}
-            headerButtons={
-                <Link href={`/tasks/logs/${record?._id}`}>
-                    <Button size="middle" type="default">
-                        <FileProtectOutlined /> See Logs
-                    </Button>
-                </Link>
-            }
+            headerButtons={({ defaultButtons }) => (
+                <>
+                    {defaultButtons}
+                    <Link href={`/tasks/logs/${record?._id}`}>
+                        <Button size="middle" type="default">
+                            <FileProtectOutlined /> See Logs
+                        </Button>
+                    </Link>
+                </>
+            )}
         >
             <Descriptions>
                 <Descriptions.Item label="ID">

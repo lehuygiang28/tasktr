@@ -162,11 +162,11 @@ export default function TaskList() {
                                 size="small"
                                 recordItemId={record._id.toString()}
                             />
-                            <DeleteButton
+                            {/* <DeleteButton
                                 hideText
                                 size="small"
                                 recordItemId={record._id.toString()}
-                            />
+                            /> */}
                             <Link href={`/tasks/logs/${record._id}`}>
                                 <Button size="small" type="default">
                                     <FileProtectOutlined />

@@ -61,7 +61,7 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                                         edit: '/tasks/edit/:id',
                                         show: '/tasks/show/:id',
                                         meta: {
-                                            canDelete: true,
+                                            canDelete: false,
                                         },
                                     },
                                 ]}
