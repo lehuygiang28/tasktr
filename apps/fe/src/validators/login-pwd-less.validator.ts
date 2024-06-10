@@ -4,5 +4,7 @@ import { AuthLoginPasswordlessDto } from '~be/app/auth/dtos';
 export class LoginPwdless implements AuthLoginPasswordlessDto {
     @IsEmail(undefined, { message: 'Email is invalid' })
     @IsNotEmpty({ message: 'Email is required' })
-    destination: string;
+    email: string;
+
+    returnUrl: string;
 }

@@ -9,4 +9,6 @@ export class RegisterValidator implements AuthSignupDto {
     @IsOptional()
     @IsString({ message: "Name can't be empty" })
     fullName?: string;
+
+    returnUrl: string;
 }

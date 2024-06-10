@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const { Title, Text } = Typography;
-const SEEM_SAFE_TOKEN_LENGTH = 30;
+const SEEM_SAFE_HASH_LENGTH = 30;
 
 export default function Login() {
     const router = useRouter();
@@ -28,29 +28,30 @@ export default function Login() {
         formState: { errors, isValid },
     } = useForm<LoginPwdless>({
         resolver: classValidatorResolver(LoginPwdless),
-        defaultValues: { destination: '' },
+        defaultValues: { email: '' },
     });
 
     const onSubmit: SubmitHandler<LoginPwdless> = (values) => {
         const data: LoginActionPayload = {
             type: 'request-login',
-            destination: values.destination,
+            email: values.email,
+            returnUrl: window?.location?.href,
         };
         return login(data);
     };
 
     useEffect(() => {
-        const token = params.get('token');
-        if (token && token.length > SEEM_SAFE_TOKEN_LENGTH) {
-            login({ type: 'login', token });
-        } else if (token) {
+        const hash = params.get('hash');
+        if (hash && hash.length > SEEM_SAFE_HASH_LENGTH) {
+            login({ type: 'login', hash });
+        } else if (hash) {
             const cloneParams = new URLSearchParams(params);
-            cloneParams.delete('token');
+            cloneParams.delete('hash');
             return router.replace(`/login?${cloneParams.toString()}`);
         }
     }, [params, login, router]);
 
-    if (params.get('token')) {
+    if (params.get('hash')) {
         return <Loading />;
     }
 
@@ -71,13 +72,13 @@ export default function Login() {
 
                     <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
                         <Controller<LoginPwdless>
-                            name={'destination'}
+                            name={'email'}
                             control={control}
                             render={({ field }) => (
                                 <Form.Item<LoginPwdless>
-                                    name={'destination'}
-                                    validateStatus={errors?.destination ? 'error' : 'validating'}
-                                    help={<>{errors?.destination?.message}</>}
+                                    name={'email'}
+                                    validateStatus={errors?.email ? 'error' : 'validating'}
+                                    help={<>{errors?.email?.message}</>}
                                     rules={[{ required: true }]}
                                 >
                                     <Input

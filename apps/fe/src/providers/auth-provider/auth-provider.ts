@@ -17,7 +17,7 @@ export const authProvider: AuthProvider = {
     login: async ({ type, ...data }: LoginActionPayload) => {
         if (type === 'login') {
             const loginData = data as LoginAction;
-            const { token, provider = null, to = '/' } = loginData;
+            const { hash, provider = null, to = '/' } = loginData;
 
             if (provider === 'google') {
                 signIn('google', {
@@ -33,7 +33,7 @@ export const authProvider: AuthProvider = {
 
             try {
                 await signIn('credentials', {
-                    token,
+                    hash,
                 });
                 return {
                     success: true,
@@ -53,7 +53,7 @@ export const authProvider: AuthProvider = {
             const requestData = data as RequestLoginAction;
 
             return axios
-                .post<void>(path, { destination: requestData.destination })
+                .post<void>(path, requestData)
                 .then(() => {
                     return {
                         success: true,
@@ -99,11 +99,11 @@ export const authProvider: AuthProvider = {
     register: async ({ type, ...data }: RegisterActionPayload) => {
         if (type === 'request-register') {
             const loginData = data as RequestRegisterAction;
-            const { email, fullName = undefined } = loginData;
+            const { email, fullName = undefined, returnUrl } = loginData;
             const path = '/auth/register';
 
             return axios
-                .post<void>(path, { email, fullName })
+                .post<void>(path, { email, fullName, returnUrl })
                 .then(() => {
                     return {
                         success: true,

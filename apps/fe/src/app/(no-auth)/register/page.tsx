@@ -36,6 +36,7 @@ export default function RegisterPage() {
             type: 'request-register',
             email: values.email,
             fullName: values?.fullName,
+            returnUrl: window?.location?.href,
         };
         return register(data);
     };
@@ -51,7 +52,7 @@ export default function RegisterPage() {
             register(data);
         } else if (hash) {
             const cloneParams = new URLSearchParams(params);
-            cloneParams.delete('token');
+            cloneParams.delete('hash');
             return router.replace(`/register?${cloneParams.toString()}`);
         }
     }, [params, register, router]);

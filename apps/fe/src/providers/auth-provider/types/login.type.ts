@@ -1,6 +1,6 @@
-import { AuthLoginPasswordlessQueryDto } from '~be/app/auth/dtos';
+import { AuthValidatePasswordlessDto } from '~be/app/auth/dtos';
 
-export type LoginAction = AuthLoginPasswordlessQueryDto & {
+export type LoginAction = AuthValidatePasswordlessDto & {
     type: 'login';
     provider: null | 'google' | 'github';
     to: null | string;
@@ -8,7 +8,8 @@ export type LoginAction = AuthLoginPasswordlessQueryDto & {
 
 export type RequestLoginAction = {
     type: 'request-login';
-    destination: string;
+    email: string;
+    returnUrl: string;
 };
 
 export type LoginActionPayload = LoginAction | RequestLoginAction;

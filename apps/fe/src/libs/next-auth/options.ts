@@ -1,7 +1,7 @@
 import { Account, Session, User } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { AuthLoginPasswordlessQueryDto, LoginResponseDto } from '~be/app/auth/dtos';
+import { AuthValidatePasswordlessDto, LoginResponseDto } from '~be/app/auth/dtos';
 import { AxiosError } from 'axios';
 import axios from '../axios';
 
@@ -14,20 +14,18 @@ export const authOptions = {
         }),
         CredentialsProvider({
             credentials: {
-                token: {
-                    label: 'token',
+                hash: {
+                    label: 'hash',
                 },
             },
             async authorize(credentials) {
-                const path = '/auth/login/pwdless';
-                const payload: AuthLoginPasswordlessQueryDto = {
-                    token: credentials?.token || '',
+                const path = '/auth/login/pwdless/validate';
+                const payload: AuthValidatePasswordlessDto = {
+                    hash: credentials?.hash || '',
                 };
 
                 return axios
-                    .get<LoginResponseDto>(path, {
-                        params: payload,
-                    })
+                    .post<LoginResponseDto>(path, payload)
                     .then((response) => {
                         return response.data as unknown as User;
                     })
