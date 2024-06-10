@@ -3,6 +3,7 @@
 import { useContext, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import NextLink from 'next/link';
 import { Layout, Menu, Button, Typography, Drawer, Space, Skeleton, Row, Col } from 'antd';
 import {
     LogoutOutlined,
@@ -11,6 +12,7 @@ import {
     DownOutlined,
     UpOutlined,
     UnorderedListOutlined,
+    ArrowRightOutlined,
 } from '@ant-design/icons';
 import { useIsAuthenticated, useGetIdentity, useLogout } from '@refinedev/core';
 import { LoginResponseDto } from '~be/app/auth/dtos';
@@ -189,9 +191,18 @@ export default function HomePageHeader() {
                                             cursor: 'pointer',
                                         }}
                                     >
-                                        <Button href="/login" type="dashed">
-                                            Login
-                                        </Button>
+                                        <Space>
+                                            <NextLink href="/login">
+                                                <Button type="text" ghost>
+                                                    Login
+                                                </Button>
+                                            </NextLink>
+                                            <NextLink href="/register">
+                                                <Button type="primary" ghost>
+                                                    Register <ArrowRightOutlined />
+                                                </Button>
+                                            </NextLink>
+                                        </Space>
                                     </div>
                                 )}
                             </div>
