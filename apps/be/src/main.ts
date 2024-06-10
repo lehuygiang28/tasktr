@@ -69,6 +69,7 @@ async function bootstrap() {
     const swaggerCustomOptions: SwaggerCustomOptions = {
         customSiteTitle: 'Tasktr RESTful API documentations',
         customCss: new SwaggerTheme().getBuffer(SwaggerThemeNameEnum.NORD_DARK),
+        customfavIcon: `${configService.get('FE_DOMAIN')}/favicon.ico`,
     };
     SwaggerModule.setup('docs', app, document, swaggerCustomOptions);
 
