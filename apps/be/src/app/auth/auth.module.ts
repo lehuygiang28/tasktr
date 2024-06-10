@@ -9,12 +9,7 @@ import { RedisModule } from '~be/common/redis';
 import { BackgroundProcessor, BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 
 import { AuthService } from './auth.service';
-import {
-    AnonymousStrategy,
-    JwtRefreshStrategy,
-    JwtStrategy,
-    PasswordlessStrategy,
-} from './strategies';
+import { AnonymousStrategy, JwtRefreshStrategy, JwtStrategy } from './strategies';
 import { AuthController } from './auth.controller';
 
 @Module({
@@ -33,7 +28,6 @@ import { AuthController } from './auth.controller';
         AuthService,
         AnonymousStrategy,
         JwtStrategy,
-        PasswordlessStrategy,
         JwtRefreshStrategy,
         BackgroundProcessor,
     ],

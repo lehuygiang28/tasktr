@@ -63,8 +63,6 @@
         "passport": "^0.7.0",
         "passport-anonymous": "^1.0.1",
         "passport-jwt": "^4.0.1",
-        "passport-magic-link": "^2.1.0",
-        "passport-magic-login": "^1.2.2",
         "pino-http": "^10.1.0",
         "pino-pretty": "^11.1.0",
         "prism-react-renderer": "^2.3.1",

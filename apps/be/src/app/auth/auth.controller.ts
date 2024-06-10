@@ -1,9 +1,7 @@
 import {
     Controller,
     Req,
-    Res,
     Post,
-    Get,
     Body,
     UseGuards,
     HttpStatus,
@@ -12,26 +10,21 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
-import { PasswordlessStrategy } from './strategies';
 import {
-    AuthEmailLoginDto,
     AuthLoginPasswordlessDto,
-    AuthLoginPasswordlessQueryDto,
+    AuthValidatePasswordlessDto,
     AuthSignupDto,
     LoginResponseDto,
     RefreshTokenDto,
 } from './dtos';
 import { AuthRegisterConfirmDto } from './dtos/auth-register-confirm.dto';
-import { ApiOkResponse, ApiTags, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { JwtPayloadType } from './strategies/types';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-    constructor(
-        private readonly authService: AuthService,
-        private readonly pwdlessStrategy: PasswordlessStrategy,
-    ) {}
+    constructor(private readonly authService: AuthService) {}
 
     @HttpCode(HttpStatus.NO_CONTENT)
     @Post('register')
@@ -45,27 +38,17 @@ export class AuthController {
         return this.authService.registerConfirm(hash);
     }
 
-    @ApiOkResponse({ type: LoginResponseDto })
-    @HttpCode(HttpStatus.OK)
-    @Post('login')
-    async login(@Body() { destination, password }: AuthEmailLoginDto): Promise<LoginResponseDto> {
-        return this.authService.validatePassword({ destination, password });
-    }
-
     @ApiOkResponse()
     @HttpCode(HttpStatus.OK)
     @Post('login/pwdless')
-    async loginPwdless(@Body() { destination }: AuthLoginPasswordlessDto, @Req() req, @Res() res) {
-        await this.authService.validatePasswordless({ destination });
-        return this.pwdlessStrategy.send(req, res);
+    async loginPwdless(@Body() data: AuthLoginPasswordlessDto) {
+        return this.authService.requestLoginPwdless(data);
     }
 
-    @UseGuards(AuthGuard('pwdless'))
-    @ApiQuery({ type: AuthLoginPasswordlessQueryDto })
     @ApiOkResponse({ type: LoginResponseDto })
-    @Get('login/pwdless')
-    callback(@Req() req) {
-        return this.authService.generateTokens(req.user);
+    @Post('login/pwdless/validate')
+    validateLoginPwdless(@Body() { hash = '' }: AuthValidatePasswordlessDto) {
+        return this.authService.validateRequestLoginPwdless(hash);
     }
 
     @ApiBody({

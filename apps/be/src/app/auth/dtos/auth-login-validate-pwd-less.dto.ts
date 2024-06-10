@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class AuthLoginPasswordlessQueryDto {
+export class AuthValidatePasswordlessDto {
     @ApiProperty({
-        example: 'token_secret',
+        example: 'hash',
         required: true,
         type: String,
     })
     @IsNotEmpty()
     @IsString()
-    token: string;
+    hash: string;
 }

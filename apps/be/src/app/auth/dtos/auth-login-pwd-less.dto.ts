@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsUrl } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { lowerCaseTransformer } from '~be/common/utils/transformers';
 
@@ -13,5 +13,16 @@ export class AuthLoginPasswordlessDto {
     @Transform(lowerCaseTransformer)
     @IsEmail()
     @IsNotEmpty()
-    destination: string;
+    email: string;
+
+    @ApiProperty({
+        example: 'https://tasktr.giaang.id.vn',
+        description: 'Return url to redirect',
+        required: true,
+        type: String,
+    })
+    @IsUrl({
+        require_tld: process.env.NODE_ENV === 'production' ? true : false,
+    })
+    returnUrl: string;
 }

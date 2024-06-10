@@ -58,7 +58,7 @@ export class MailService {
         data: {
             to: string;
             mailData: {
-                hash: string;
+                url: string;
             };
             isResend?: boolean;
         },
@@ -110,12 +110,6 @@ export class MailService {
             'mail text',
         );
 
-        const url = new URL(
-            this.configService.getOrThrow<string>('FE_DOMAIN') +
-                this.configService.getOrThrow<string>('FE_CONFIRM_REGISTER_PATH'),
-        );
-        url.searchParams.set('hash', mailData.hash);
-
         const transporterName = this.resolveTransporter(transporter);
         this.logger.debug(`Sending confirm mail to ${to} with transporter: ${transporterName}`);
         return this.mailerService
@@ -127,7 +121,7 @@ export class MailService {
                 attachments: this.BASE_ATTACHMENT,
                 context: {
                     title: emailConfirmTitle,
-                    url: url.toString(),
+                    url: mailData.url.toString(),
                     text1,
                     text2,
                     text3,
@@ -155,7 +149,7 @@ export class MailService {
     }
 
     async sendForgotPassword(
-        mailData: MailData<{ hash: string; tokenExpires: number; returnUrl?: string }>,
+        mailData: MailData<{ url: string; tokenExpires: number; returnUrl?: string }>,
         retryData: {
             retryCount?: number;
             transporter?: string;
@@ -188,13 +182,9 @@ export class MailService {
                 this.i18n.t('mail-context.RESET_PASSWORD.btn1'),
             ]);
         }
-        const fallbackReturnUrl =
-            this.configService.getOrThrow<string>('FE_DOMAIN') +
-            this.configService.getOrThrow<string>('FE_CHANGE_PW_PATH');
 
-        const url = new URL(data?.returnUrl ?? fallbackReturnUrl);
+        const url = new URL(data.url);
         url.searchParams.set('expires', data.tokenExpires.toString());
-        url.searchParams.set('hash', data.hash);
 
         const transporterName = this.resolveTransporter(transporter);
         this.logger.debug(`Sending forgot mail to ${to} with transporter: ${transporterName}`);
@@ -218,7 +208,7 @@ export class MailService {
                 this.logger.debug(`Mail sent: ${to}`);
             })
             .catch(async (error) => {
-                this.logger.debug(`Send mail failed: ${error.message}`);
+                this.logger.error(`Send mail failed: ${error.message}`);
                 transporter = this.getNextTransporter(transporterName);
                 this.logger.debug(`Retry send mail with transporter: ${transporter}`);
                 await this.sendForgotPassword(mailData, {
@@ -232,7 +222,7 @@ export class MailService {
         data: {
             to: string;
             mailData: {
-                href: string;
+                url: string;
             };
         },
         retryData: {
@@ -277,7 +267,7 @@ export class MailService {
                 attachments: this.BASE_ATTACHMENT,
                 context: {
                     title: emailConfirmTitle,
-                    url: mailData.href,
+                    url: mailData.url,
                     app_name: 'TechCell.cloud',
                     text1,
                     text2,

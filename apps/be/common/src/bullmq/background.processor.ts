@@ -6,7 +6,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 import { MailService } from '~be/common/mail';
 
-export type BackgroundJobName = 'sendEmailRegister';
+export type BackgroundJobName = 'sendEmailRegister' | 'sendEmailLogin';
 
 @Injectable()
 @Processor(BULLMQ_BG_JOB_QUEUE, {
@@ -31,17 +31,29 @@ export class BackgroundProcessor extends WorkerHost implements OnModuleInit {
         switch (job.name) {
             case 'sendEmailRegister':
                 return this.sendEmailRegister(job);
+            case 'sendEmailLogin':
+                return this.sendEmailLogin(job);
             default:
                 throw new Error(`Process ${job.name} not implemented`);
         }
     }
 
     async sendEmailRegister(job: Job<unknown, unknown, BackgroundJobName>): Promise<unknown> {
-        const { email, hash } = job.data as { email: string; hash: string };
+        const { email, url } = job.data as { email: string; url: string };
         return this.mailService.sendConfirmMail({
             to: email,
             mailData: {
-                hash,
+                url,
+            },
+        });
+    }
+
+    async sendEmailLogin(job: Job<unknown, unknown, BackgroundJobName>): Promise<unknown> {
+        const { email, url } = job.data as { email: string; url: string };
+        return this.mailService.sendLogin({
+            to: email,
+            mailData: {
+                url,
             },
         });
     }

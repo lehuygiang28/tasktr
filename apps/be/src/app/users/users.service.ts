@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+    HttpException,
+    HttpStatus,
+    Injectable,
+    UnprocessableEntityException,
+} from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { UserRoleEnum } from './users.enum';
 import { User } from './schemas';
@@ -127,21 +132,18 @@ export class UsersService {
         return user ? new User(user) : null;
     }
 
-    // async findByIdOrThrow(id: string | Types.ObjectId): Promise<User> {
-    //     const user = await this.findById(id);
-    //     if (!user) {
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.NOT_FOUND,
-    //                 errors: {
-    //                     user: 'userNotFound',
-    //                 },
-    //             },
-    //             HttpStatus.NOT_FOUND,
-    //         );
-    //     }
-    //     return user;
-    // }
+    async findByIdOrThrow(id: string | Types.ObjectId): Promise<User> {
+        const user = await this.findById(id);
+        if (!user) {
+            throw new UnprocessableEntityException({
+                errors: {
+                    email: 'notFound',
+                },
+                message: `User with email '${user.email}' is not found`,
+            });
+        }
+        return user;
+    }
 
     // async findBySocial(socialId: string, provider: AuthProviderEnum): Promise<NullableType<User>> {
     //     const user = await this.usersRepository.findOne({

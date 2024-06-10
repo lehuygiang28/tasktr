@@ -4,7 +4,6 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectQueue } from '@nestjs/bullmq';
 import { PinoLogger } from 'nestjs-pino';
 import ms from 'ms';
-import * as bcrypt from 'bcryptjs';
 import { Queue } from 'bullmq';
 import { faker } from '@faker-js/faker';
 
@@ -13,13 +12,10 @@ import { RedisService } from '~be/common/redis';
 
 import { UsersService, UserRoleEnum, UserDto } from '~be/app/users';
 
-import {
-    AuthEmailLoginDto,
-    AuthLoginPasswordlessDto,
-    AuthSignupDto,
-    LoginResponseDto,
-} from './dtos';
+import { AuthLoginPasswordlessDto, AuthSignupDto, LoginResponseDto } from './dtos';
 import { JwtPayloadType } from './strategies/types';
+import { convertToObjectId, NullableType } from '~be/common/utils';
+import { User } from '../users/schemas';
 
 @Injectable()
 export class AuthService {
@@ -70,6 +66,9 @@ export class AuthService {
             },
         );
 
+        const urlInMail = new URL(dto.returnUrl);
+        urlInMail.searchParams.set('hash', hash);
+
         const data = await Promise.all([
             this.redisService.set(
                 key,
@@ -78,7 +77,7 @@ export class AuthService {
             ),
             this.bgQueue.add(
                 'sendEmailRegister',
-                { email: userCreated.email, hash },
+                { email: userCreated.email, url: urlInMail.toString() },
                 {
                     removeOnComplete: true,
                     removeOnFail: true,
@@ -150,15 +149,15 @@ export class AuthService {
         ]);
     }
 
-    async validatePasswordless({ destination }: AuthLoginPasswordlessDto): Promise<UserDto> {
-        const user = await this.usersService.findByEmail(destination);
+    async requestLoginPwdless({ email, returnUrl }: AuthLoginPasswordlessDto): Promise<'OK'> {
+        const user = await this.usersService.findByEmail(email);
 
         if (!user) {
             throw new UnprocessableEntityException({
                 errors: {
                     email: 'notFound',
                 },
-                message: `User with email '${destination}' doesn't exist`,
+                message: `User with email '${email}' doesn't exist`,
             });
         }
 
@@ -167,45 +166,108 @@ export class AuthService {
                 errors: {
                     email: 'blocked',
                 },
-                message: `User with email '${destination}' is blocked`,
+                message: `User with email '${email}' is blocked`,
             });
         }
 
-        return user;
+        const key = `auth:requestLoginPwdlessHash:${user._id.toString()}`;
+        const hash = await this.jwtService.signAsync(
+            {
+                userId: user._id,
+                email: user.email,
+            },
+            {
+                secret: this.configService.getOrThrow('AUTH_PASSWORDLESS_SECRET'),
+                expiresIn: this.configService.getOrThrow<string>('AUTH_PASSWORDLESS_EXPIRES_IN'),
+            },
+        );
+
+        const urlInMail = new URL(returnUrl);
+        urlInMail.searchParams.set('hash', hash);
+
+        const data = await Promise.all([
+            this.redisService.set(
+                key,
+                { hash, userId: user._id.toString() },
+                ms(this.configService.getOrThrow<string>('AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN')),
+            ),
+            this.bgQueue.add(
+                'sendEmailLogin',
+                { email: user.email, url: urlInMail.toString() },
+                {
+                    removeOnComplete: true,
+                    removeOnFail: true,
+                    keepLogs: 20,
+                },
+            ),
+        ]);
+        this.logger.debug(data);
+        return 'OK';
     }
 
-    async validatePassword({
-        destination,
-        password = '',
-    }: AuthEmailLoginDto): Promise<LoginResponseDto> {
-        const user = await this.validatePasswordless({ destination });
+    async validateRequestLoginPwdless(hash: string): Promise<LoginResponseDto> {
+        let userId: UserDto['_id'];
+        let jwtData: { hash: string; userId: string };
 
-        if (!user?.password) {
+        // Validate jwt, then get userId, jwtData
+        try {
+            jwtData = await this.jwtService.verifyAsync<{ hash: string; userId: string }>(hash, {
+                secret: this.configService.getOrThrow('AUTH_PASSWORDLESS_SECRET'),
+            });
+            userId = convertToObjectId(jwtData.userId);
+        } catch (error) {
+            this.logger.debug(error);
             throw new UnprocessableEntityException({
                 errors: {
-                    password: 'notSet',
+                    hash: `invalidHash`,
                 },
-                message: `User with email '${destination}' doesn't set password up`,
+                message: 'Your login link is expired or invalid',
             });
         }
 
-        const isValidPassword = await bcrypt.compare(password, user.password);
-        if (!isValidPassword) {
+        // Check user
+        const user = await this.usersService.findByIdOrThrow(userId);
+
+        if (user?.block?.isBlocked) {
             throw new UnprocessableEntityException({
                 errors: {
-                    password: 'invalidPassword',
+                    email: 'blocked',
                 },
-                message: 'Invalid password',
+                message: `User with email '${user.email}' is blocked`,
             });
         }
 
-        const { accessToken, refreshToken } = await this.generateTokens(user);
+        // Get the hash is saved into redis
+        const key = `auth:requestLoginPwdlessHash:${user._id.toString()}`;
+        const hashData = await this.redisService.get<
+            NullableType<{
+                hash: string;
+                userId: string;
+            }>
+        >(key);
 
-        return {
-            accessToken,
-            refreshToken,
-            ...user,
-        };
+        // Compare the hash
+        // Ensure one time use only
+        if (hashData?.hash !== hash) {
+            throw new UnprocessableEntityException({
+                errors: {
+                    hash: `invalidHash`,
+                },
+                message: 'Your login link is expired or invalid',
+            });
+        }
+
+        const promise: (Promise<LoginResponseDto> | Promise<number> | Promise<User>)[] = [
+            this.generateTokens(user),
+            this.redisService.del(key),
+        ];
+
+        if (!user.emailVerified) {
+            promise.push(this.usersService.update(user._id, { ...user, emailVerified: true }));
+        }
+
+        const [token] = await Promise.all(promise);
+        return token as LoginResponseDto;
     }
 
     async generateTokens(user: UserDto): Promise<LoginResponseDto> {
@@ -243,8 +305,25 @@ export class AuthService {
         };
     }
 
-    async refreshToken(data: JwtPayloadType): Promise<LoginResponseDto> {
-        const user = await this.validatePasswordless({ destination: data.email });
+    async refreshToken({ email }: JwtPayloadType): Promise<LoginResponseDto> {
+        const user = await this.usersService.findByEmail(email);
+        if (!user) {
+            throw new UnprocessableEntityException({
+                errors: {
+                    email: 'notFound',
+                },
+                message: `User with email '${email}' doesn't exist`,
+            });
+        }
+
+        if (user?.block?.isBlocked) {
+            throw new UnprocessableEntityException({
+                errors: {
+                    email: 'blocked',
+                },
+                message: `User with email '${email}' is blocked`,
+            });
+        }
         const { accessToken, refreshToken } = await this.generateTokens(user);
         return { accessToken, refreshToken, ...user };
     }
