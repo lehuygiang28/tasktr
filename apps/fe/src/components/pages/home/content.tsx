@@ -73,7 +73,7 @@ export default function HomePageContent() {
                             <Space direction="vertical" size="large">
                                 <Link href={'/tasks'} style={{ all: 'unset' }}>
                                     <Button type="primary" size="large">
-                                        Get Started for Free
+                                        Schedule Your First Task Now
                                     </Button>
                                 </Link>
                             </Space>
