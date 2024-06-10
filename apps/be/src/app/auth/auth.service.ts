@@ -57,9 +57,6 @@ export class AuthService {
         });
 
         const key = `auth:confirmEmailHash:${userCreated._id.toString()}`;
-        const expiresIn = ms(
-            this.configService.getOrThrow<string>('AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN'),
-        );
         const hash = await this.jwtService.signAsync(
             {
                 confirmEmailUserId: userCreated._id,
@@ -67,12 +64,18 @@ export class AuthService {
             },
             {
                 secret: this.configService.getOrThrow('AUTH_CONFIRM_EMAIL_SECRET'),
-                expiresIn: expiresIn,
+                expiresIn: this.configService.getOrThrow<string>(
+                    'AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN',
+                ),
             },
         );
 
         const data = await Promise.all([
-            this.redisService.set(key, { hash }, expiresIn),
+            this.redisService.set(
+                key,
+                { hash },
+                ms(this.configService.getOrThrow<string>('AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN')),
+            ),
             this.bgQueue.add(
                 'sendEmailRegister',
                 { email: userCreated.email, hash },
@@ -215,9 +218,7 @@ export class AuthService {
                 } as Omit<JwtPayloadType, 'iat' | 'exp'>,
                 {
                     secret: this.configService.getOrThrow('AUTH_JWT_SECRET'),
-                    expiresIn: ms(
-                        this.configService.getOrThrow<string>('AUTH_JWT_TOKEN_EXPIRES_IN'),
-                    ),
+                    expiresIn: this.configService.getOrThrow<string>('AUTH_JWT_TOKEN_EXPIRES_IN'),
                 },
             ),
             await this.jwtService.signAsync(
@@ -228,8 +229,8 @@ export class AuthService {
                 } as Omit<JwtPayloadType, 'iat' | 'exp'>,
                 {
                     secret: this.configService.getOrThrow('AUTH_REFRESH_SECRET'),
-                    expiresIn: ms(
-                        this.configService.getOrThrow<string>('AUTH_REFRESH_TOKEN_EXPIRES_IN'),
+                    expiresIn: this.configService.getOrThrow<string>(
+                        'AUTH_REFRESH_TOKEN_EXPIRES_IN',
                     ),
                 },
             ),

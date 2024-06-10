@@ -6,7 +6,6 @@ import { AuthService } from '../auth.service';
 import { AuthEmailLoginDto } from '../dtos';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from '~be/common/mail';
-import ms from 'ms';
 
 @Injectable()
 export class PasswordlessStrategy extends PassportStrategy(Strategy, 'pwdless') {
@@ -19,9 +18,7 @@ export class PasswordlessStrategy extends PassportStrategy(Strategy, 'pwdless') 
         super({
             secret: configService.getOrThrow<string>('AUTH_PASSWORDLESS_SECRET'),
             jwtOptions: {
-                expiresIn:
-                    Date.now() +
-                    ms(configService.getOrThrow<string>('AUTH_PASSWORDLESS_EXPIRES_IN')),
+                expiresIn: configService.getOrThrow<string>('AUTH_PASSWORDLESS_EXPIRES_IN'),
             },
             callbackUrl:
                 configService.getOrThrow<string>('FE_DOMAIN') +
