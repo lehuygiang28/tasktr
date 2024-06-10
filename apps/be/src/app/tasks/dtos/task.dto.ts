@@ -42,7 +42,10 @@ export class TaskDto implements Task {
 
     @ApiProperty({ example: 'http://localhost:3000/ping' })
     @IsString()
-    @IsUrl()
+    @IsUrl({
+        require_protocol: true,
+        protocols: ['http', 'https'],
+    })
     endpoint: string;
 
     @ApiProperty({ example: '{ "Content-Type": "application/json" }' })

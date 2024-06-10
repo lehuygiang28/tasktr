@@ -17,7 +17,13 @@ export class TaskCreateValidator implements Omit<CreateTaskDto, 'alert' | 'heade
     name: string;
 
     @IsNotEmpty()
-    @IsUrl(undefined, { message: 'Please enter a url' })
+    @IsUrl(
+        {
+            require_protocol: true,
+            protocols: ['http', 'https'],
+        },
+        { message: 'Please enter a valid URL, example: https://example.com' },
+    )
     endpoint: string;
 
     @IsEnum(HttpMethodEnum, { message: 'Please select an option' })

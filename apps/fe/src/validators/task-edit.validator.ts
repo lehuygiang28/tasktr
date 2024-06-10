@@ -7,11 +7,10 @@ import {
     IsTimeZone,
     IsUrl,
 } from 'class-validator';
-import { CreateTaskDto } from '~be/app/tasks/dtos';
+import { type CreateTaskDto } from '~be/app/tasks/dtos';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 // import { IsCron } from '~be/common/utils/decorators';
 import { IsCron } from '@kovalenko/is-cron';
-
 
 export class TaskEditValidator implements Omit<CreateTaskDto, 'alert'> {
     constructor(data?: unknown) {
@@ -32,7 +31,13 @@ export class TaskEditValidator implements Omit<CreateTaskDto, 'alert'> {
     name: string;
 
     @IsNotEmpty()
-    @IsUrl(undefined, { message: 'Please enter a url' })
+    @IsUrl(
+        {
+            require_protocol: true,
+            protocols: ['http', 'https'],
+        },
+        { message: 'Please enter a valid URL, example: https://example.com' },
+    )
     endpoint: string;
 
     @IsEnum(HttpMethodEnum, { message: 'Please select an option' })
