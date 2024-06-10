@@ -32,7 +32,6 @@ export default function TaskEdit() {
         queryResult: { data: taskResponse },
     } = useFormAnt<FormValues>({});
 
-    const [values, dispatchValues] = useCronReducer('* * * * *');
     const { data: timeZones } = useList({
         dataProviderName: worldTimeAPIProvider.name,
     });
@@ -55,11 +54,14 @@ export default function TaskEdit() {
             }));
             setValue('headers', formattedHeaders);
         }
+    }, [taskResponse?.data?.headers, setValue]);
 
+    const [cronValues, dispatchCronValues] = useCronReducer(taskResponse?.data?.cron);
+    useEffect(() => {
         if (taskResponse?.data?.cron) {
-            dispatchValues({ type: 'set_values', value: taskResponse.data.cron });
+            dispatchCronValues({ type: 'set_values', value: taskResponse.data.cron });
         }
-    }, [taskResponse, setValue, dispatchValues]);
+    }, [taskResponse?.data?.cron, dispatchCronValues]);
 
     const { fields, append, remove } = useFieldArray({
         control,
@@ -79,7 +81,11 @@ export default function TaskEdit() {
                   };
               }, {})
             : undefined;
-        onFinish({ ...rest, headers: JSON.stringify(transformedHeaders) });
+        onFinish({
+            ...rest,
+            cron: cronValues.inputValue,
+            headers: JSON.stringify(transformedHeaders),
+        });
     };
 
     return (
@@ -219,33 +225,33 @@ export default function TaskEdit() {
                     render={({ field: { ref, ...field } }) => (
                         <Item<FormValues>
                             {...field}
-                            label={'Cron'}
                             name={'cron'}
+                            label={'Cron'}
                             validateStatus={errors?.cron ? 'error' : 'validating'}
                             help={<>{errors?.cron?.message}</>}
                         >
                             <Space direction="vertical" style={{ width: '100%' }}>
                                 <Input
-                                    ref={ref}
+                                    name={'cron'}
                                     placeholder="Cron expression"
-                                    value={values.inputValue}
+                                    value={cronValues.inputValue}
                                     onChange={(event) => {
-                                        dispatchValues({
+                                        dispatchCronValues({
                                             type: 'set_input_value',
                                             value: event.target.value,
                                         });
                                     }}
                                     onBlur={() => {
-                                        dispatchValues({
+                                        dispatchCronValues({
                                             type: 'set_cron_value',
-                                            value: values.inputValue,
+                                            value: cronValues.inputValue,
                                         });
                                     }}
                                 />
                                 <Cron
-                                    value={values.cronValue}
+                                    value={cronValues.cronValue}
                                     setValue={(newValue: string) => {
-                                        dispatchValues({
+                                        dispatchCronValues({
                                             type: 'set_values',
                                             value: newValue,
                                         });
