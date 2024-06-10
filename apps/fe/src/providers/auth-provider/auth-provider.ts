@@ -15,40 +15,7 @@ import {
 
 export const authProvider: AuthProvider = {
     login: async ({ type, ...data }: LoginActionPayload) => {
-        if (type === 'login') {
-            const loginData = data as LoginAction;
-            const { hash, provider = null, to = '/' } = loginData;
-
-            if (provider === 'google') {
-                signIn('google', {
-                    callbackUrl: to ? to.toString() : '/',
-                    redirect: true,
-                });
-
-                return {
-                    success: true,
-                    redirectTo: to ? to.toString() : '/',
-                };
-            }
-
-            try {
-                await signIn('credentials', {
-                    hash,
-                });
-                return {
-                    success: true,
-                    redirectTo: to ? to.toString() : '/',
-                };
-            } catch (error) {
-                return {
-                    success: false,
-                    error: {
-                        name: 'LoginError',
-                        message: 'Invalid email, please try again',
-                    },
-                };
-            }
-        } else {
+        if (type === 'request-login') {
             const path = '/auth/login/pwdless';
             const requestData = data as RequestLoginAction;
 
@@ -94,6 +61,39 @@ export const authProvider: AuthProvider = {
 
                     return resultResponse;
                 });
+        } else {
+            const loginData = data as LoginAction;
+            const { hash, provider = null, to = '/' } = loginData;
+
+            if (provider === 'google') {
+                signIn('google', {
+                    callbackUrl: to ? to.toString() : '/',
+                    redirect: true,
+                });
+
+                return {
+                    success: true,
+                    redirectTo: to ? to.toString() : '/',
+                };
+            }
+
+            try {
+                await signIn('credentials', {
+                    hash,
+                });
+                return {
+                    success: true,
+                    redirectTo: to ? to.toString() : '/tasks',
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: {
+                        name: 'LoginError',
+                        message: 'Invalid email, please try again',
+                    },
+                };
+            }
         }
     },
     register: async ({ type, ...data }: RegisterActionPayload) => {
