@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
+import { Session } from 'next-auth';
 import axios from '~/libs/axios';
 import { LoginResponseDto } from '~be/app/auth/dtos';
 
 export function useRefreshToken() {
-    const { data: session } = useSession();
+    const { data: session, update } = useSession();
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const refreshToken = async () => {
@@ -21,6 +22,7 @@ export function useRefreshToken() {
             });
 
             session.user = res.data;
+            update((prev: Session) => ({ ...prev, ...session }));
         } catch (error) {
             console.error('Failed to refresh tokens:', error);
             signIn();

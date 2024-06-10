@@ -4,10 +4,14 @@ import { useRefreshToken } from './useRefreshToken';
 import axiosInstance from '~/libs/axios';
 
 export function useAxiosAuth() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const refreshToken = useRefreshToken();
 
     useEffect(() => {
+        if (status === 'loading') {
+            return;
+        }
+
         const requestIntercept = axiosInstance.interceptors.request.use(
             (config) => {
                 if (!config.headers['Authorization']) {
@@ -36,7 +40,7 @@ export function useAxiosAuth() {
             axiosInstance.interceptors.request.eject(requestIntercept);
             axiosInstance.interceptors.response.eject(responseIntercept);
         };
-    }, [session, refreshToken]);
+    }, [session, refreshToken, status]);
 
     return axiosInstance;
 }
