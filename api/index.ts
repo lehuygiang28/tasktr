@@ -29,4 +29,5 @@ if (tsConfig?.compilerOptions?.paths) {
 }
 
 require('../apps/be/common/src/index');
+require('../apps/be/src/app/index');
 require('../apps/be/src/main');
