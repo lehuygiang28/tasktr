@@ -12,7 +12,7 @@ import { ConfigService } from '@nestjs/config';
     imports: [
         I18nModuleCore.forRootAsync({
             useFactory: (configService: ConfigService) => ({
-                fallbackLanguage: configService.getOrThrow('FALLBACK_LANGUAGE'),
+                fallbackLanguage: configService.get('FALLBACK_LANGUAGE') || 'en',
                 loaderOptions: {
                     path: join(
                         __dirname,

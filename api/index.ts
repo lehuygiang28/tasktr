@@ -7,11 +7,11 @@ const moduleAlias = require('module-alias');
 const tsConfigPaths = require('tsconfig-paths');
 const tsConfig = require('./tsconfig.json');
 
-const baseUrl = '../';
+const baseUrl = tsConfig?.compilerOptions?.baseUrl ?? '../';
 
 // Register tsconfig-paths, use for TS
 tsConfigPaths.register({
-    baseUrl: tsConfig.compilerOptions.baseUrl || baseUrl,
+    baseUrl: baseUrl,
     paths: tsConfig.compilerOptions.paths,
     cwd: __dirname,
 });
@@ -31,6 +31,7 @@ if (tsConfig?.compilerOptions?.paths) {
 
 /**
  * Require the needed modules, that serverless can compile it to JS
+ * Then the server can be import and run it
  */
 require('../apps/be/common/src/index');
 require('../apps/be/src/app/index');

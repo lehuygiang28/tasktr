@@ -1,3 +1,7 @@
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/lehuygiang28/tasktr&env=DEPLOY_ENV,NODE_ENV,MONGODB_URI,REDIS_HOST,REDIS_PORT,REDIS_PASSWORD)
+
+
+
 # Tasktr
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
