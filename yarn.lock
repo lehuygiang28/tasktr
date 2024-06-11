@@ -2778,18 +2778,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/cache-manager@npm:^2.2.2":
-  version: 2.2.2
-  resolution: "@nestjs/cache-manager@npm:2.2.2"
-  peerDependencies:
-    "@nestjs/common": ^9.0.0 || ^10.0.0
-    "@nestjs/core": ^9.0.0 || ^10.0.0
-    cache-manager: <=5
-    rxjs: ^7.0.0
-  checksum: 10c0/03c1049bcf875e60e88eb9578e5e59290aa61747e5fcd418e7c23c1cb251597c2b0dbe0ec5f4b3b567beb8bd41fb507a4738c9c677a7925d2f712ae2628cf481
-  languageName: node
-  linkType: hard
-
 "@nestjs/common@npm:^10.0.2":
   version: 10.3.8
   resolution: "@nestjs/common@npm:10.3.8"
@@ -4704,7 +4692,6 @@ __metadata:
     "@nestjs-modules/mailer": "npm:^2.0.2"
     "@nestjs/axios": "npm:^3.0.2"
     "@nestjs/bullmq": "npm:^10.1.1"
-    "@nestjs/cache-manager": "npm:^2.2.2"
     "@nestjs/common": "npm:^10.0.2"
     "@nestjs/config": "npm:^3.2.2"
     "@nestjs/core": "npm:^10.0.2"
@@ -4758,7 +4745,6 @@ __metadata:
     babel-jest: "npm:^29.4.1"
     bcryptjs: "npm:^2.4.3"
     bullmq: "npm:^5.7.14"
-    cache-manager-ioredis-yet: "npm:^2.0.4"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.14.1"
     copy-webpack-plugin: "npm:^12.0.2"
@@ -7446,29 +7432,6 @@ __metadata:
     tar: "npm:^6.1.11"
     unique-filename: "npm:^3.0.0"
   checksum: 10c0/dfda92840bb371fb66b88c087c61a74544363b37a265023223a99965b16a16bbb87661fe4948718d79df6e0cc04e85e62784fbcf1832b2a5e54ff4c46fbb45b7
-  languageName: node
-  linkType: hard
-
-"cache-manager-ioredis-yet@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "cache-manager-ioredis-yet@npm:2.0.4"
-  dependencies:
-    cache-manager: "npm:*"
-    ioredis: "npm:^5.4.1"
-    telejson: "npm:^7.2.0"
-  checksum: 10c0/ea3d3e163a3fc8f5e412e28eb3973f505d05bbee36f4d878f28244236c585a20404837492434c5f02916e53f827a948fd55909580b2235a48009ec4c2078458b
-  languageName: node
-  linkType: hard
-
-"cache-manager@npm:*":
-  version: 5.5.3
-  resolution: "cache-manager@npm:5.5.3"
-  dependencies:
-    eventemitter3: "npm:^5.0.1"
-    lodash.clonedeep: "npm:^4.5.0"
-    lru-cache: "npm:^10.2.2"
-    promise-coalesce: "npm:^1.1.2"
-  checksum: 10c0/1697163f70936c69d9c3b74ebef788aa4fe9c8ef88890bb427f6a410d03593d95e2f5f9ddded18999356da27883aaffd8a045e58009ad9aa72ab4f5c4a538b16
   languageName: node
   linkType: hard
 
@@ -10391,13 +10354,6 @@ __metadata:
   version: 4.0.7
   resolution: "eventemitter3@npm:4.0.7"
   checksum: 10c0/5f6d97cbcbac47be798e6355e3a7639a84ee1f7d9b199a07017f1d2f1e2fe236004d14fa5dfaeba661f94ea57805385e326236a6debbc7145c8877fbc0297c6b
-  languageName: node
-  linkType: hard
-
-"eventemitter3@npm:^5.0.1":
-  version: 5.0.1
-  resolution: "eventemitter3@npm:5.0.1"
-  checksum: 10c0/4ba5c00c506e6c786b4d6262cfbce90ddc14c10d4667e5c83ae993c9de88aa856033994dd2b35b83e8dc1170e224e66a319fa80adc4c32adcd2379bbc75da814
   languageName: node
   linkType: hard
 
@@ -14099,13 +14055,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.clonedeep@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "lodash.clonedeep@npm:4.5.0"
-  checksum: 10c0/2caf0e4808f319d761d2939ee0642fa6867a4bbf2cfce43276698828380756b99d4c4fa226d881655e6ac298dd453fe12a5ec8ba49861777759494c534936985
-  languageName: node
-  linkType: hard
-
 "lodash.debounce@npm:^4.0.8":
   version: 4.0.8
   resolution: "lodash.debounce@npm:4.0.8"
@@ -14281,7 +14230,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^10.0.1, lru-cache@npm:^10.2.0, lru-cache@npm:^10.2.2":
+"lru-cache@npm:^10.0.1, lru-cache@npm:^10.2.0":
   version: 10.2.2
   resolution: "lru-cache@npm:10.2.2"
   checksum: 10c0/402d31094335851220d0b00985084288136136992979d0e015f0f1697e15d1c86052d7d53ae86b614e5b058425606efffc6969a31a091085d7a2b80a8a1e26d6
@@ -14444,13 +14393,6 @@ __metadata:
   dependencies:
     tmpl: "npm:1.0.5"
   checksum: 10c0/b0e6e599780ce6bab49cc413eba822f7d1f0dfebd1c103eaa3785c59e43e22c59018323cf9e1708f0ef5329e94a745d163fcbb6bff8e4c6742f9be9e86f3500c
-  languageName: node
-  linkType: hard
-
-"map-or-similar@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "map-or-similar@npm:1.5.0"
-  checksum: 10c0/33c6ccfdc272992e33e4e99a69541a3e7faed9de3ac5bc732feb2500a9ee71d3f9d098980a70b7746e7eeb7f859ff7dfb8aa9b5ecc4e34170a32ab78cfb18def
   languageName: node
   linkType: hard
 
@@ -14660,15 +14602,6 @@ __metadata:
   dependencies:
     fs-monkey: "npm:^1.0.4"
   checksum: 10c0/038fc81bce17ea92dde15aaa68fa0fdaf4960c721ce3ffc7c2cb87a259333f5159784ea48b3b72bf9e054254d9d0d0d5209d0fdc3d07d08653a09933b168fbd7
-  languageName: node
-  linkType: hard
-
-"memoizerific@npm:^1.11.3":
-  version: 1.11.3
-  resolution: "memoizerific@npm:1.11.3"
-  dependencies:
-    map-or-similar: "npm:^1.5.0"
-  checksum: 10c0/661bf69b7afbfad57f0208f0c63324f4c96087b480708115b78ee3f0237d86c7f91347f6db31528740b2776c2e34c709bcb034e1e910edee2270c9603a0a469e
   languageName: node
   linkType: hard
 
@@ -17715,13 +17648,6 @@ __metadata:
     "@opentelemetry/api": "npm:^1.4.0"
     tdigest: "npm:^0.1.1"
   checksum: 10c0/a221db148fa64e29dfd4c6cdcaaae14635495a4272b68917e2b44fcfd988bc57027d275b04489ceeea4d0c4d64d058af842c1300966d2c1ffa255f1fa6af1277
-  languageName: node
-  linkType: hard
-
-"promise-coalesce@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "promise-coalesce@npm:1.1.2"
-  checksum: 10c0/9bcdc954a645b30ccb094ae76e36212af2ee7ecc6b9fc67634d7d4f490d082c1efc39590737d957a32f6df93e7c5f51ca232549095e9e2d7291c0482d1bb1557
   languageName: node
   linkType: hard
 
@@ -20839,15 +20765,6 @@ __metadata:
   dependencies:
     bintrees: "npm:1.0.2"
   checksum: 10c0/10187b8144b112fcdfd3a5e4e9068efa42c990b1e30cd0d4f35ee8f58f16d1b41bc587e668fa7a6f6ca31308961cbd06cd5d4a4ae1dc388335902ae04f7d57df
-  languageName: node
-  linkType: hard
-
-"telejson@npm:^7.2.0":
-  version: 7.2.0
-  resolution: "telejson@npm:7.2.0"
-  dependencies:
-    memoizerific: "npm:^1.11.3"
-  checksum: 10c0/d26e6cc93e54bfdcdb207b49905508c5db45862e811a2e2193a735409e47b14530e1c19351618a3e03ad2fd4ffc3759364fcd72851aba2df0300fab574b6151c
   languageName: node
   linkType: hard
 
