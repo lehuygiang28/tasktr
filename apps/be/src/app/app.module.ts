@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 
 import { MongodbModule } from '~be/common/mongodb';
@@ -20,11 +20,16 @@ import { TasksModule } from './tasks/tasks.module';
         }),
         RedisModule,
         BullModule.forRootAsync({
-            imports: [RedisModule],
-            useFactory: async (redisService: RedisService) => ({
+            imports: [RedisModule, ConfigModule],
+            useFactory: async (redisService: RedisService, configService: ConfigService) => ({
                 connection: redisService.getClient,
+                streams: {
+                    events: {
+                        maxLen: configService.get<number>('BULLMQ_EVENTS_MAXLEN') || 100,
+                    },
+                },
             }),
-            inject: [RedisService],
+            inject: [RedisService, ConfigService],
         }),
         LoggerModule,
         I18nModule,
