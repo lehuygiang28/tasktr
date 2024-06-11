@@ -15,13 +15,12 @@ tsConfigPaths.register({
     cwd: __dirname,
 });
 
-if (tsConfig.compilerOptions.paths) {
+if (tsConfig?.compilerOptions?.paths) {
     for (const alias in tsConfig.compilerOptions.paths) {
         const paths = tsConfig.compilerOptions.paths[alias];
         if (paths) {
             const targetPath = paths[0];
-            const formattedAlias = alias.replace('/*', '');
-            moduleAlias.addAlias(formattedAlias, path.resolve(baseUrl, targetPath));
+            const formattedAlias = alias.replace(/(\/\*|\*|\\*)$/g, '');
         }
     }
 }
