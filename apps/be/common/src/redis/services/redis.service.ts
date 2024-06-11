@@ -1,9 +1,23 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Redis } from 'ioredis';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
-export class RedisService {
-    constructor(@Inject('REDIS_CLIENT') private readonly redisClient: Redis) {}
+export class RedisService implements OnModuleDestroy {
+    constructor(
+        @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
+        private readonly logger: PinoLogger,
+    ) {}
+
+    private async cleanConnection() {
+        this.logger.info('Redis service is cleaning connection...');
+        return this.redisClient.quit();
+    }
+
+    async onModuleDestroy() {
+        this.logger.info('Redis service is destroying...');
+        await this.cleanConnection();
+    }
 
     public get getClient(): Redis {
         return this.redisClient;
