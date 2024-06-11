@@ -1,0 +1,12 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "regions": ["sin1"],
+    "installCommand": "cd ../ && yarn install --immutable",
+    "buildCommand": "",
+    "functions": {
+        "api/**/*.ts": {
+            "maxDuration": 60
+        }
+    },
+    "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+}

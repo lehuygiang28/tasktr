@@ -1,12 +1,8 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
+    "framework": "nextjs",
     "regions": ["sin1"],
     "installCommand": "yarn install --immutable",
-    "buildCommand": "",
-    "functions": {
-        "api/**/*.ts": {
-            "maxDuration": 60
-        }
-    },
-    "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+    "buildCommand": "yarn nx build fe",
+    "outputDirectory": "dist/apps/fe/.next"
 }
