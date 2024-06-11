@@ -6,9 +6,7 @@
     "outputDirectory": ".",
     "functions": {
         "api/**/*.ts": {
-            "maxDuration": 60,
-            "excludeFiles": "./tsconfig.json",
-            "includeFiles": "./api/tsconfig.json"
+            "maxDuration": 60
         }
     },
     "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
