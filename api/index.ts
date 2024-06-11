@@ -19,9 +19,11 @@ if (tsConfig?.compilerOptions?.paths) {
     for (const alias in tsConfig.compilerOptions.paths) {
         const paths = tsConfig.compilerOptions.paths[alias];
         if (paths) {
-            const targetPath = paths[0];
+            let targetPath = paths[0];
+            targetPath = targetPath.replace(/(\/\*|\*|\\*)$/g, '');
             const formattedAlias = alias.replace(/(\/\*|\*|\\*)$/g, '');
             moduleAlias.addAlias(formattedAlias, path.resolve(baseUrl, targetPath));
+            console.log({ formattedAlias, path: path.resolve(baseUrl, targetPath) });
         }
     }
 }
