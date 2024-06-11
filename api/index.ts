@@ -2,8 +2,6 @@
  * Config for using path-aliases
  */
 
-console.log(process.cwd());
-
 const tsConfigPaths = require('tsconfig-paths');
 const tsConfig = require('./tsconfig.json');
 
