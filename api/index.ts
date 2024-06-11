@@ -22,8 +22,8 @@ if (tsConfig?.compilerOptions?.paths) {
             let targetPath = paths[0];
             targetPath = targetPath.replace(/(\/\*|\*|\\*)$/g, '');
             const formattedAlias = alias.replace(/(\/\*|\*|\\*)$/g, '');
-            moduleAlias.addAlias(formattedAlias, path.resolve(baseUrl, targetPath));
-            console.log({ formattedAlias, path: path.resolve(baseUrl, targetPath) });
+            moduleAlias.addAlias(formattedAlias, targetPath);
+            console.log({ formattedAlias, path: targetPath });
         }
     }
 }
