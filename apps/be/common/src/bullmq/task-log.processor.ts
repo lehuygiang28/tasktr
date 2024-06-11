@@ -39,6 +39,9 @@ export class TaskLogProcessor extends WorkerHost implements OnModuleInit {
     async saveTaskLog(job: Job<unknown, unknown, TaskJobName>): Promise<boolean> {
         try {
             const res = await this.taskLogsService.create(job.data as CreateTaskLogDto);
+            if (res) {
+                this.logger.info(`Saved task log: ${res._id}`);
+            }
             return !!res;
         } catch (error) {
             this.logger.error(`Error saving task log: ${error}`);

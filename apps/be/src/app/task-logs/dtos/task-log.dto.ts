@@ -38,6 +38,10 @@ export class TaskLogDto implements TaskLog {
     @IsNumber()
     statusCode: number;
 
+    @ApiProperty({ type: String })
+    @IsString()
+    workerName: string;
+
     @ApiProperty({ type: Date, required: false })
     @IsDate()
     @IsOptional()
