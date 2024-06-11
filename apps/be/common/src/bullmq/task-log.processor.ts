@@ -10,7 +10,7 @@ export type TaskJobName = 'saveTaskLog';
 
 @Injectable()
 @Processor(BULLMQ_TASK_LOG_QUEUE, {
-    concurrency: Number(process.env['BULL_SAVE_LOG_CONCURRENCY']) || 1,
+    concurrency: Number(process.env['BULL_SAVE_LOG_CONCURRENCY']) || 10,
 })
 export class TaskLogProcessor extends WorkerHost implements OnModuleInit {
     constructor(
@@ -22,7 +22,7 @@ export class TaskLogProcessor extends WorkerHost implements OnModuleInit {
     }
 
     onModuleInit() {
-        this.logger.debug(
+        this.logger.info(
             `${TaskLogProcessor.name} for ${BULLMQ_TASK_LOG_QUEUE} is initialized and ready.`,
         );
     }
@@ -41,7 +41,7 @@ export class TaskLogProcessor extends WorkerHost implements OnModuleInit {
             const res = await this.taskLogsService.create(job.data as CreateTaskLogDto);
             return !!res;
         } catch (error) {
-            this.logger.debug(`Error saving task log: ${error}`);
+            this.logger.error(`Error saving task log: ${error}`);
             throw new Error(`Failed to save task log: ${error}`);
         }
     }

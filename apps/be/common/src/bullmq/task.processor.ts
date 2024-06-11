@@ -11,7 +11,7 @@ import { CreateTaskLogDto } from '~be/app/task-logs';
 
 @Injectable()
 @Processor(BULLMQ_TASK_QUEUE, {
-    concurrency: Number(process.env['BULL_TASK_CONCURRENCY']) || 1,
+    concurrency: Number(process.env['BULL_TASK_CONCURRENCY']) || 10,
 })
 export class TaskProcessor extends WorkerHost implements OnModuleInit {
     private readonly axios: AxiosInstance;
@@ -29,7 +29,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     }
 
     onModuleInit() {
-        this.logger.debug(`BullMQProcessor for ${BULLMQ_TASK_QUEUE} is initialized and ready.`);
+        this.logger.info(`BullMQProcessor for ${BULLMQ_TASK_QUEUE} is initialized and ready.`);
     }
 
     async process(job: Job<unknown>): Promise<unknown> {
@@ -54,7 +54,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         let response: AxiosResponse | null;
         try {
             response = await this.httpService.axiosRef.request(config);
-            this.logger.debug(
+            this.logger.info(
                 `FETCH ${name} - ${response?.status} - ${response?.headers[DURATION_KEY]} ms - ${response?.headers[RESPONSE_SIZE_KEY]} bytes`,
             );
         } catch (error: AxiosError | unknown) {

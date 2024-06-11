@@ -10,7 +10,7 @@ export type BackgroundJobName = 'sendEmailRegister' | 'sendEmailLogin';
 
 @Injectable()
 @Processor(BULLMQ_BG_JOB_QUEUE, {
-    concurrency: Number(process.env['BULL_BACKGROUND_CONCURRENCY']) || 1,
+    concurrency: Number(process.env['BULL_BACKGROUND_CONCURRENCY']) || 5,
 })
 export class BackgroundProcessor extends WorkerHost implements OnModuleInit {
     constructor(
@@ -22,7 +22,7 @@ export class BackgroundProcessor extends WorkerHost implements OnModuleInit {
     }
 
     onModuleInit() {
-        this.logger.debug(
+        this.logger.info(
             `${BackgroundProcessor.name} for ${BULLMQ_BG_JOB_QUEUE} is initialized and ready.`,
         );
     }
