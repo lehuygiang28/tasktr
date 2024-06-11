@@ -1,7 +1,3 @@
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/lehuygiang28/tasktr&env=DEPLOY_ENV,NODE_ENV,MONGODB_URI,REDIS_HOST,REDIS_PORT,REDIS_PASSWORD)
-
-
-
 # Tasktr
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
@@ -18,7 +14,7 @@ comes with a LSP for Vim users.
 
 Run `npx nx serve be` to start the development server. Happy coding!
 
-## Build for production
+## Build for **production**
 
 Run `npx nx build be` to build the application. The build artifacts are stored in the output directory (e.g. `dist/` or `build/`), ready to be deployed.
 
