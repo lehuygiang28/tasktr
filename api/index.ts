@@ -10,7 +10,6 @@ const baseUrl = '../';
 tsConfigPaths.register({
     baseUrl: tsConfig.compilerOptions.baseUrl || baseUrl,
     paths: tsConfig.compilerOptions.paths,
-    cwd: './tsconfig.json',
 });
 
 require('../apps/be/src/main');
