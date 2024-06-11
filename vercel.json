@@ -3,7 +3,6 @@
     "regions": ["sin1"],
     "installCommand": "yarn install --immutable",
     "buildCommand": "",
-    "outputDirectory": ".",
     "functions": {
         "api/**/*.ts": {
             "maxDuration": 60
