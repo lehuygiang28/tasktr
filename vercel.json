@@ -1,0 +1,15 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "regions": ["sin1"],
+    "installCommand": "yarn install --immutable",
+    "buildCommand": "",
+    "outputDirectory": ".",
+    "functions": {
+        "api/**/*.ts": {
+            "maxDuration": 60,
+            "excludeFiles": "./tsconfig.json",
+            "includeFiles": "./api/tsconfig.json"
+        }
+    },
+    "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+}

@@ -14,10 +14,18 @@ import { ConfigService } from '@nestjs/config';
             useFactory: (configService: ConfigService) => ({
                 fallbackLanguage: configService.getOrThrow('FALLBACK_LANGUAGE'),
                 loaderOptions: {
-                    path: join(__dirname, './assets/i18n/lang/'),
+                    path: join(
+                        __dirname,
+                        configService.get('DEPLOY_ENV')?.toLowerCase() === 'serverless'
+                            ? './lang/'
+                            : './assets/i18n/lang/',
+                    ),
                     watch: true,
                 },
-                typesOutputPath: join(process.cwd(), `./apps/be/common/src/i18n/i18n.generated.ts`),
+                typesOutputPath:
+                    configService.get('DEPLOY_ENV')?.toLowerCase() === 'serverless'
+                        ? undefined
+                        : join(process.cwd(), `./apps/be/common/src/i18n/i18n.generated.ts`),
             }),
             resolvers: [
                 new HeaderResolver(['x-lang', 'x-language', 'language']),

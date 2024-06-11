@@ -4814,6 +4814,7 @@ __metadata:
     tailwindcss: "npm:3.4.3"
     ts-jest: "npm:^29.1.0"
     ts-node: "npm:10.9.1"
+    tsconfig-paths: "npm:^4.2.0"
     tslib: "npm:^2.3.0"
     typescript: "npm:~5.4.2"
     uuid: "npm:^9.0.1"
@@ -21254,7 +21255,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsconfig-paths@npm:^4.0.0, tsconfig-paths@npm:^4.1.2":
+"tsconfig-paths@npm:^4.0.0, tsconfig-paths@npm:^4.1.2, tsconfig-paths@npm:^4.2.0":
   version: 4.2.0
   resolution: "tsconfig-paths@npm:4.2.0"
   dependencies:
