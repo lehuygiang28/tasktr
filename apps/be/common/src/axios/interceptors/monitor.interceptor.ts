@@ -15,7 +15,6 @@ export function addMonitorInterceptor(axiosClient: AxiosInstance) {
         // Calculate the duration of the request
         const startTime = response.config.headers[START_TIME_DURATION_KEY];
         const duration = Date.now() - (Number(startTime) || 0);
-        console.log(`Response: ${response.status}, Duration: ${duration} ms`);
 
         // Add the duration to the response headers
         response.headers[DURATION_KEY] = duration;
