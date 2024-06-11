@@ -33,10 +33,10 @@ if (tsConfig?.compilerOptions?.paths) {
  * Require the needed modules, that serverless can compile it to JS
  * Then the server can be import and run it
  */
-require('../apps/be/common/src/index');
-require('../apps/be/src/app/index');
+require('../../apps/be/common/src/index');
+require('../../apps/be/src/app/index');
 
 /**
  * Main file to run the server
  */
-require('../apps/be/src/main');
+require('../../apps/be/src/main');
