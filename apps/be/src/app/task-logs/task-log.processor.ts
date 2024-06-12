@@ -4,9 +4,10 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { PinoLogger } from 'nestjs-pino';
 
 import { BULLMQ_TASK_LOG_QUEUE } from '~be/common/bullmq';
-import { CreateTaskLogDto, TaskLogsService } from '~be/app/task-logs';
+import { TaskLogsService } from './task-logs.service';
+import { CreateTaskLogDto } from './dtos';
 
-export type TaskJobName = 'saveTaskLog';
+export type TaskLogsJobName = 'saveTaskLog';
 
 @Injectable()
 @Processor(BULLMQ_TASK_LOG_QUEUE, {
@@ -27,7 +28,7 @@ export class TaskLogProcessor extends WorkerHost implements OnModuleInit {
         );
     }
 
-    async process(job: Job<unknown, unknown, TaskJobName>): Promise<unknown> {
+    async process(job: Job<unknown, unknown, TaskLogsJobName>): Promise<unknown> {
         switch (job.name) {
             case 'saveTaskLog':
                 return this.saveTaskLog(job);
@@ -36,7 +37,7 @@ export class TaskLogProcessor extends WorkerHost implements OnModuleInit {
         }
     }
 
-    async saveTaskLog(job: Job<unknown, unknown, TaskJobName>): Promise<boolean> {
+    async saveTaskLog(job: Job<unknown, unknown, TaskLogsJobName>): Promise<boolean> {
         try {
             const res = await this.taskLogsService.create(job.data as CreateTaskLogDto);
             if (res) {

@@ -7,15 +7,15 @@ import ms from 'ms';
 import { Queue } from 'bullmq';
 import { faker } from '@faker-js/faker';
 
-import { BackgroundJobName, BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
+import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 import { RedisService } from '~be/common/redis';
-
 import { UsersService, UserRoleEnum, UserDto } from '~be/app/users';
+import { convertToObjectId, NullableType } from '~be/common/utils';
 
 import { AuthLoginPasswordlessDto, AuthSignupDto, LoginResponseDto } from './dtos';
 import { JwtPayloadType } from './strategies/types';
-import { convertToObjectId, NullableType } from '~be/common/utils';
 import { User } from '../users/schemas';
+import { MailJobName } from './mail.processor';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +26,7 @@ export class AuthService {
         private readonly usersService: UsersService,
         private readonly redisService: RedisService,
         @InjectQueue(BULLMQ_BG_JOB_QUEUE)
-        readonly bgQueue: Queue<unknown, unknown, BackgroundJobName>,
+        readonly bgQueue: Queue<unknown, unknown, MailJobName>,
     ) {
         this.logger.setContext(AuthService.name);
     }

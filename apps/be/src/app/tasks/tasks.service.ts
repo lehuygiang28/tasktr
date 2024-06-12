@@ -17,8 +17,8 @@ import { TaskLogsService } from '../task-logs';
 @Injectable()
 export class TasksService {
     constructor(
-        private readonly taskRepo: TasksRepository,
         @InjectQueue(BULLMQ_TASK_QUEUE) readonly taskQueue: Queue,
+        private readonly taskRepo: TasksRepository,
         private readonly taskLogsService: TaskLogsService,
     ) {}
 

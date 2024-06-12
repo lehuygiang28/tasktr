@@ -6,11 +6,12 @@ import { BullModule } from '@nestjs/bullmq';
 import { UsersModule } from '~be/app/users';
 import { MailModule } from '~be/common/mail';
 import { RedisModule } from '~be/common/redis';
-import { BackgroundProcessor, BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
+import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 
 import { AuthService } from './auth.service';
 import { AnonymousStrategy, JwtRefreshStrategy, JwtStrategy } from './strategies';
 import { AuthController } from './auth.controller';
+import { MailProcessor } from './mail.processor';
 
 @Module({
     imports: [
@@ -24,13 +25,7 @@ import { AuthController } from './auth.controller';
         UsersModule,
     ],
     controllers: [AuthController],
-    providers: [
-        AuthService,
-        AnonymousStrategy,
-        JwtStrategy,
-        JwtRefreshStrategy,
-        BackgroundProcessor,
-    ],
-    exports: [AuthService, BackgroundProcessor],
+    providers: [AuthService, AnonymousStrategy, JwtStrategy, JwtRefreshStrategy, MailProcessor],
+    exports: [AuthService, MailProcessor],
 })
 export class AuthModule {}

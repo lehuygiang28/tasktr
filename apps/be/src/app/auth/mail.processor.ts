@@ -6,28 +6,28 @@ import { PinoLogger } from 'nestjs-pino';
 import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 import { MailService } from '~be/common/mail';
 
-export type BackgroundJobName = 'sendEmailRegister' | 'sendEmailLogin';
+export type MailJobName = 'sendEmailRegister' | 'sendEmailLogin';
 
 @Injectable()
 @Processor(BULLMQ_BG_JOB_QUEUE, {
     concurrency: Number(process.env['BULL_BACKGROUND_CONCURRENCY']) || 5,
 })
-export class BackgroundProcessor extends WorkerHost implements OnModuleInit {
+export class MailProcessor extends WorkerHost implements OnModuleInit {
     constructor(
         private readonly logger: PinoLogger,
         private readonly mailService: MailService,
     ) {
         super();
-        this.logger.setContext(BackgroundProcessor.name);
+        this.logger.setContext(MailProcessor.name);
     }
 
     onModuleInit() {
         this.logger.info(
-            `${BackgroundProcessor.name} for ${BULLMQ_BG_JOB_QUEUE} is initialized and ready.`,
+            `${MailProcessor.name} for ${BULLMQ_BG_JOB_QUEUE} is initialized and ready.`,
         );
     }
 
-    async process(job: Job<unknown, unknown, BackgroundJobName>): Promise<unknown> {
+    async process(job: Job<unknown, unknown, MailJobName>): Promise<unknown> {
         switch (job.name) {
             case 'sendEmailRegister':
                 return this.sendEmailRegister(job);
@@ -38,7 +38,7 @@ export class BackgroundProcessor extends WorkerHost implements OnModuleInit {
         }
     }
 
-    async sendEmailRegister(job: Job<unknown, unknown, BackgroundJobName>): Promise<unknown> {
+    async sendEmailRegister(job: Job<unknown, unknown, MailJobName>): Promise<unknown> {
         const { email, url } = job.data as { email: string; url: string };
         return this.mailService.sendConfirmMail({
             to: email,
@@ -48,7 +48,7 @@ export class BackgroundProcessor extends WorkerHost implements OnModuleInit {
         });
     }
 
-    async sendEmailLogin(job: Job<unknown, unknown, BackgroundJobName>): Promise<unknown> {
+    async sendEmailLogin(job: Job<unknown, unknown, MailJobName>): Promise<unknown> {
         const { email, url } = job.data as { email: string; url: string };
         return this.mailService.sendLogin({
             to: email,

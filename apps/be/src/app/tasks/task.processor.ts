@@ -4,10 +4,11 @@ import { HttpService } from '@nestjs/axios';
 import { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
-import { TaskJobName, BULLMQ_TASK_LOG_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
+import { BULLMQ_TASK_LOG_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
 import { Task } from '~be/app/tasks/schemas/task.schema';
 import { addMonitorInterceptor, DURATION_KEY, RESPONSE_SIZE_KEY } from '~be/common/axios';
 import { CreateTaskLogDto } from '~be/app/task-logs';
+import { TaskLogsJobName } from '../task-logs/task-log.processor';
 
 @Injectable()
 @Processor(BULLMQ_TASK_QUEUE, {
@@ -20,7 +21,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         private readonly logger: PinoLogger,
         private readonly httpService: HttpService,
         @InjectQueue(BULLMQ_TASK_LOG_QUEUE)
-        readonly taskLogQueue: Queue<unknown, unknown, TaskJobName>,
+        readonly taskLogQueue: Queue<unknown, unknown, TaskLogsJobName>,
     ) {
         super();
         this.logger.setContext(TaskProcessor.name);
@@ -29,7 +30,9 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     }
 
     onModuleInit() {
-        this.logger.info(`BullMQProcessor for ${BULLMQ_TASK_QUEUE} is initialized and ready.`);
+        this.logger.info(
+            `${TaskProcessor.name} for ${BULLMQ_TASK_QUEUE} is initialized and ready.`,
+        );
     }
 
     async process(job: Job<unknown>): Promise<unknown> {
