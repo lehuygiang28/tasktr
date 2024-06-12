@@ -13,31 +13,36 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TasksModule } from './tasks/tasks.module';
 
-@Module({
-    imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-        }),
-        RedisModule,
-        BullModule.forRootAsync({
-            imports: [RedisModule, ConfigModule],
-            useFactory: async (redisService: RedisService, configService: ConfigService) => ({
-                connection: redisService.getClient,
-                streams: {
-                    events: {
-                        maxLen: configService.get<number>('BULLMQ_EVENTS_MAXLEN') || 100,
-                    },
+const imports = [
+    ConfigModule.forRoot({
+        isGlobal: true,
+    }),
+    RedisModule,
+    BullModule.forRootAsync({
+        imports: [RedisModule, ConfigModule],
+        useFactory: async (redisService: RedisService, configService: ConfigService) => ({
+            connection: redisService.getClient,
+            streams: {
+                events: {
+                    maxLen: configService.get<number>('BULLMQ_EVENTS_MAXLEN') || 100,
                 },
-            }),
-            inject: [RedisService, ConfigService],
+            },
         }),
-        LoggerModule,
-        I18nModule,
-        MongodbModule,
-        AuthModule,
-        UsersModule,
-        TasksModule,
-    ],
+        inject: [RedisService, ConfigService],
+    }),
+    LoggerModule,
+    I18nModule,
+    MongodbModule,
+    UsersModule,
+    TasksModule,
+];
+
+if (!process?.env?.WORKER_MODE || process.env.WORKER_MODE === 'false') {
+    imports.push(AuthModule);
+}
+
+@Module({
+    imports: imports,
     controllers: [AppController],
     providers: [AppService],
 })

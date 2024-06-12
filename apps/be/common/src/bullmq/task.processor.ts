@@ -70,7 +70,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             taskId: job.data._id,
             endpoint,
             method,
-            workerName: process.env['BULL_NAME'] ?? 'default',
+            workerName: process.env['WORKER_NAME'] ?? 'default',
             scheduledAt: new Date(job?.processedOn ?? now),
             executedAt: new Date(job?.finishedOn ?? now),
             duration: 0,
