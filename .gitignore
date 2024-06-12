@@ -54,6 +54,8 @@ out
 !.yarn/sdks
 !.yarn/versions
 
+install-state.gz
+
 .pnp.cjs
 .pnp.loader.mjs
 
