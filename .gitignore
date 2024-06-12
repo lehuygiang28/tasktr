@@ -48,6 +48,7 @@ out
 /build
 
 .yarn/*
+.yarn/install-state.gz
 !.yarn/releases
 !.yarn/plugins
 !.yarn/sdks
