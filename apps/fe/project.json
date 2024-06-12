@@ -30,14 +30,14 @@
             "executor": "@nx/next:build",
             "outputs": ["{options.outputPath}"],
             "defaultConfiguration": "production",
+            "cache": true,
             "options": {
                 "outputPath": "dist/apps/fe"
             },
             "configurations": {
                 "development": {
                     "outputPath": "."
-                },
-                "production": {}
+                }
             }
         },
         "start": {

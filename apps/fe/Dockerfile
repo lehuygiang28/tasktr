@@ -1,43 +1,34 @@
-FROM refinedev/node:18 AS base
+FROM node:18-alpine AS base
 
-FROM base AS deps
+FROM base AS build-stage
 
-RUN apk add --no-cache libc6-compat
+WORKDIR /usr/src/app
 
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
 
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+RUN yarn workspaces focus --all
 
-FROM base AS builder
+COPY . . 
 
-COPY --from=deps /app/refine/node_modules ./node_modules
+RUN yarn nx build fe
 
-COPY . .
+FROM base AS production
 
-RUN npm run build
+LABEL git="https://github.com/lehuygiang28/tasktr"
+LABEL author="lehuygiang28 <lehuygiang28@gmail.com>"
+LABEL org.opencontainers.image.maintainer="lehuygiang28 <lehuygiang28@gmail.com>"
 
-FROM base AS runner
+USER node
 
-ENV NODE_ENV production
+WORKDIR /usr/src/app
 
-COPY --from=builder /app/refine/public ./public
+COPY --from=build-stage --chown=node /usr/src/app/dist/apps/fe/.next/standalone ./dist/apps/fe/.next/standalone
 
-RUN mkdir .next
-RUN chown refine:nodejs .next
-
-COPY --from=builder --chown=refine:nodejs /app/refine/.next/standalone ./
-COPY --from=builder --chown=refine:nodejs /app/refine/.next/static ./.next/static
-
-USER refine
+ENV PORT 3000
+ENV HOST 0.0.0.0
+ENV NEXT_TELEMETRY_DISABLED 1
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
-
-CMD ["node", "server.js"]
+CMD ["node", "dist/apps/fe/.next/standalone/apps/fe/server"]

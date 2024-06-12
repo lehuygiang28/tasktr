@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+    tasktr_be:
+        container_name: tasktr_be
+        hostname: tasktr_be
+        build:
+            context: ./
+            dockerfile: ./apps/be/Dockerfile
+        image: lehuygiang28/tasktr_be:${COMPOSE_TAG:-latest}
+        env_file:
+            - ./apps/be/.env
+        ports:
+            - 8000:${API_PORT:-8000}
+        networks:
+            - tasktr_net
+        restart: unless-stopped
+
+    tasktr_fe:
+        container_name: tasktr_fe
+        hostname: tasktr_fe
+        build:
+            context: ./
+            dockerfile: ./apps/fe/Dockerfile
+        image: lehuygiang28/tasktr_fe:${COMPOSE_TAG:-latest}
+        env_file:
+            - ./apps/fe/.env
+        ports:
+            - 3000:${FE_PORT:-3000}
+        networks:
+            - tasktr_net
+        restart: unless-stopped
+
+networks:
+    tasktr_net:

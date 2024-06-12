@@ -1,0 +1,9 @@
+.git/
+.vscode/
+.vercel/
+compodoc/
+node_modules/
+dist/
+.next/
+
+.env*
