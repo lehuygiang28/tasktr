@@ -28,6 +28,8 @@ COPY --from=build-stage --chown=node /usr/src/app/dist/apps/fe/.next/standalone 
 ENV PORT 3000
 ENV HOST 0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
+
 
 EXPOSE 3000
 

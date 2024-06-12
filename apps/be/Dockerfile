@@ -30,4 +30,6 @@ RUN yarn workspaces focus --production && yarn cache clean --all
 
 COPY --from=build-stage --chown=node /usr/src/app/dist ./dist
 
+ENV NODE_ENV production
+
 CMD ["node", "dist/apps/be/main"]
