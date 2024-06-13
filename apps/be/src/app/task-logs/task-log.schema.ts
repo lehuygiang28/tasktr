@@ -32,7 +32,7 @@ export class TaskLog extends AbstractDocument {
     @Prop({ required: true, type: Date })
     executedAt: Date;
 
-    @Prop({ required: false, default: '' })
+    @Prop({ required: false, default: 'default' })
     workerName: string;
 
     @Prop({ required: false, default: new Date() })
