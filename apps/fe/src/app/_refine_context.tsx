@@ -7,6 +7,7 @@ import { DataProvider, Refine } from '@refinedev/core';
 import { RefineKbar, RefineKbarProvider } from '@refinedev/kbar';
 import { SessionProvider } from 'next-auth/react';
 import { useNotificationProvider } from '@refinedev/antd';
+import { DeleteOutlined, ScheduleOutlined } from '@ant-design/icons';
 import routerProvider from '@refinedev/nextjs-router';
 
 import { AntdRegistry } from '@ant-design/nextjs-registry';
@@ -62,6 +63,7 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                                         show: '/tasks/show/:id',
                                         meta: {
                                             canDelete: true,
+                                            icon: <ScheduleOutlined />,
                                         },
                                     },
                                     {
@@ -69,6 +71,7 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                                         list: '/recycle-bin',
                                         meta: {
                                             canDelete: true,
+                                            icon: <DeleteOutlined />,
                                         },
                                     },
                                 ]}
