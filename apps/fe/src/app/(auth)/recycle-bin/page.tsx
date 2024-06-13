@@ -1,15 +1,14 @@
 'use client';
 
-import { HttpError, useUpdate } from '@refinedev/core';
-import { DeleteButton, EditButton, List, ShowButton, useTable } from '@refinedev/antd';
-import { Space, Table, Switch, Typography, Button } from 'antd';
-import { FileProtectOutlined } from '@ant-design/icons';
+import { HttpError, useDelete, useUpdate } from '@refinedev/core';
+import { List, useTable } from '@refinedev/antd';
+import { Space, Table, Typography, Button, Popconfirm } from 'antd';
+import { FileProtectOutlined, RollbackOutlined, DeleteOutlined } from '@ant-design/icons';
 import { toString as cronReadable } from 'cronstrue';
 import { getSchedule, stringToArray } from 'cron-converter';
 
 import { type TaskDto } from '~be/app/tasks/dtos';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
-import { useDebouncedCallback } from '~/hooks/useDebouncedCallback';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import Link from 'next/link';
 
@@ -23,13 +22,24 @@ export default function TaskList() {
     const {
         tableProps: { pagination, ...tableProps },
     } = useTable<TaskDto, HttpError, TableSearch>({
+        resource: 'tasks',
         syncWithLocation: true,
         pagination: {
             mode: 'server',
         },
+        filters: {
+            mode: 'server',
+            initial: [
+                {
+                    field: 'isDeleted',
+                    value: true,
+                    operator: 'eq',
+                },
+            ],
+        },
     });
-    const { mutate: update } = useUpdate<TaskDto>({});
-    const debouncedUpdate = useDebouncedCallback(update, 200);
+    const { mutate: mutateDelete } = useDelete<TaskDto>({});
+    const { mutate: mutateRestore } = useUpdate<TaskDto>({});
 
     return (
         <List>
@@ -122,56 +132,57 @@ export default function TaskList() {
                     }}
                 />
                 <Table.Column
-                    dataIndex="isEnable"
-                    title={'On/Off'}
-                    render={(_, record: TaskDto) => (
-                        <Switch
-                            onChange={(val) =>
-                                debouncedUpdate({
-                                    resource: 'tasks',
-                                    id: record._id.toString(),
-                                    values: { isEnable: val },
-                                    mutationMode: 'optimistic',
-                                    successNotification: false,
-                                })
-                            }
-                            checked={record.isEnable}
-                            checkedChildren={true}
-                            unCheckedChildren={false}
-                        />
-                    )}
-                    filters={[
-                        { text: 'On', value: true },
-                        { text: 'Off', value: false },
-                    ]}
-                    onFilter={(value, record) => record.isEnable === value}
-                    sorter={(a: TaskDto, b: TaskDto) => Number(a.isEnable) - Number(b.isEnable)}
-                />
-                <Table.Column
                     title={'Actions'}
                     dataIndex="actions"
                     render={(_, record: TaskDto) => (
                         <Space>
-                            <EditButton
-                                hideText
-                                size="small"
-                                recordItemId={record._id.toString()}
-                            />
-                            <ShowButton
-                                hideText
-                                size="small"
-                                recordItemId={record._id.toString()}
-                            />
                             <Link href={`/tasks/logs/${record._id}`}>
                                 <Button size="small" type="default">
                                     <FileProtectOutlined />
                                 </Button>
                             </Link>
-                            <DeleteButton
-                                hideText
-                                size="small"
-                                recordItemId={record._id.toString()}
-                            />
+                            <Popconfirm
+                                key={'restore'}
+                                okText="Yes"
+                                cancelText="No"
+                                icon={<RollbackOutlined style={{ color: 'green' }} />}
+                                title="Are you sure you want to restore this task?"
+                                onConfirm={() => {
+                                    mutateRestore({
+                                        id: record._id.toString(),
+                                        resource: 'tasks',
+                                        invalidates: ['list', 'detail'],
+                                        values: {
+                                            deletedAt: null,
+                                        },
+                                    });
+                                }}
+                            >
+                                <Button size="small" type="default" icon={<RollbackOutlined />} />
+                            </Popconfirm>
+                            <Popconfirm
+                                key={'delete'}
+                                okText="Yes"
+                                cancelText="No"
+                                title="Are you sure you want to delete this task forever?"
+                                description="This action cannot be undone. Your task data will be permanently deleted."
+                                onConfirm={() => {
+                                    mutateDelete({
+                                        id: record._id.toString(),
+                                        resource: 'tasks',
+                                        invalidates: ['list', 'detail'],
+                                        meta: {
+                                            params: ['hard'],
+                                        },
+                                    });
+                                }}
+                            >
+                                <Button
+                                    size="small"
+                                    type="default"
+                                    icon={<DeleteOutlined style={{ color: 'red' }} />}
+                                />
+                            </Popconfirm>
                         </Space>
                     )}
                 />

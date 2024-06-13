@@ -61,7 +61,14 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                                         edit: '/tasks/edit/:id',
                                         show: '/tasks/show/:id',
                                         meta: {
-                                            canDelete: false,
+                                            canDelete: true,
+                                        },
+                                    },
+                                    {
+                                        name: 'recycle-bin',
+                                        list: '/recycle-bin',
+                                        meta: {
+                                            canDelete: true,
                                         },
                                     },
                                 ]}

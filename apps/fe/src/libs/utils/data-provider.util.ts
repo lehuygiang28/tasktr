@@ -1,4 +1,4 @@
-import { CrudSort, Pagination } from '@refinedev/core';
+import { CrudFilters, CrudSort, Pagination } from '@refinedev/core';
 
 export function handlePagination(searchParams: URLSearchParams, pagination?: Pagination) {
     if (pagination) {
@@ -10,10 +10,12 @@ export function handlePagination(searchParams: URLSearchParams, pagination?: Pag
     return searchParams;
 }
 
-export function handleFilter(searchParams: URLSearchParams, filters?: object) {
+export function handleFilter(searchParams: URLSearchParams, filters?: CrudFilters) {
     if (filters) {
-        Object.entries(filters).forEach(([key, value]) => {
-            searchParams.set(key, String(value));
+        filters.forEach((filter) => {
+            if (filter['field']) {
+                searchParams.set(filter['field'], String(filter.value));
+            }
         });
     }
 

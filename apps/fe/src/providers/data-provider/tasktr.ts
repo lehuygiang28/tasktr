@@ -1,6 +1,11 @@
 'use client';
 
-import { GetListResponse, GetListParams, BaseRecord } from '@refinedev/core';
+import {
+    GetListResponse,
+    GetListParams,
+    BaseRecord,
+    DeleteOneParams,
+} from '@refinedev/core';
 import dataProviderSimpleRest from '@refinedev/simple-rest';
 import { AxiosInstance } from 'axios';
 import { handleFilter, handlePagination, handleSort } from '~/libs/utils/data-provider.util';
@@ -33,6 +38,14 @@ export const tasktrDataProvider = (axios: AxiosInstance) => ({
             data: tasks.map((task) => ({ ...task, id: task._id.toString() })),
             total: total,
         };
+    },
+    deleteOne: async ({ resource, id, meta, variables }: DeleteOneParams) => {
+        if (meta?.params && Array.isArray(meta?.params)) {
+            const url = `${API_URL}/${resource}/${meta?.params.join('/')}/${id}`;
+            return axios.delete(url);
+        }
+
+        return dataProviderSimpleRest(API_URL, axios).deleteOne({ resource, id, meta, variables });
     },
 });
 
