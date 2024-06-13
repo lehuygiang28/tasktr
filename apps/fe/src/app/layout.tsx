@@ -13,8 +13,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
     children,
+    noauth,
 }: Readonly<{
     children: React.ReactNode;
+    noauth: React.ReactNode;
 }>) {
     const cookieStore = cookies();
     const theme = cookieStore.get('theme');
@@ -24,7 +26,10 @@ export default function RootLayout({
         <html lang="en">
             <body>
                 <Suspense>
-                    <RefineContext defaultMode={defaultMode}>{children}</RefineContext>
+                    <RefineContext defaultMode={defaultMode}>
+                        {children}
+                        {noauth}
+                    </RefineContext>
                 </Suspense>
             </body>
         </html>
