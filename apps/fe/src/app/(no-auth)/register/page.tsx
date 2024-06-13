@@ -69,64 +69,70 @@ export default function RegisterPage() {
                 alignItems: 'center',
             }}
         >
-            <Space direction="vertical" align="center">
-                <Title level={3} style={{ marginBottom: '4px' }}>
-                    Create an account
-                </Title>
-                <Text>Enter your email to sign up for Tasktr</Text>
+            <div>
+                <Space direction="vertical" align="center">
+                    <Title level={3} style={{ marginBottom: '4px' }}>
+                        Create an account
+                    </Title>
+                    <Text>Enter your email to sign up for Tasktr</Text>
 
-                <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
-                    <Controller<RegisterValidator>
-                        name={'email'}
-                        control={control}
-                        render={({ field }) => (
-                            <Form.Item<RegisterValidator>
-                                name={'email'}
-                                validateStatus={errors?.email ? 'error' : 'validating'}
-                                help={<>{errors?.email?.message}</>}
-                                rules={[{ required: false }]}
-                            >
-                                <Input
-                                    {...field}
-                                    prefix={<MailOutlined className="site-form-item-icon" />}
-                                    placeholder="Email"
-                                />
-                            </Form.Item>
-                        )}
-                    />
-                    <Controller<RegisterValidator>
-                        name={'fullName'}
-                        control={control}
-                        render={({ field }) => (
-                            <Form.Item<RegisterValidator>
-                                name={'fullName'}
-                                validateStatus={errors?.fullName ? 'error' : 'validating'}
-                                help={<>{errors?.fullName?.message}</>}
-                                rules={[{ required: false }]}
-                            >
-                                <Input
-                                    {...field}
-                                    prefix={<UserAddOutlined className="site-form-item-icon" />}
-                                    placeholder="Your Name"
-                                />
-                            </Form.Item>
-                        )}
-                    />
+                    <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+                        <Controller<RegisterValidator>
+                            name={'email'}
+                            control={control}
+                            render={({ field }) => (
+                                <Form.Item<RegisterValidator>
+                                    name={'email'}
+                                    validateStatus={errors?.email ? 'error' : 'validating'}
+                                    help={<>{errors?.email?.message}</>}
+                                    rules={[{ required: true }]}
+                                >
+                                    <Input
+                                        {...field}
+                                        prefix={<MailOutlined className="site-form-item-icon" />}
+                                        placeholder="Email"
+                                    />
+                                </Form.Item>
+                            )}
+                        />
+                        <Controller<RegisterValidator>
+                            name={'fullName'}
+                            control={control}
+                            render={({ field }) => (
+                                <Form.Item<RegisterValidator>
+                                    name={'fullName'}
+                                    validateStatus={errors?.fullName ? 'error' : 'validating'}
+                                    help={<>{errors?.fullName?.message}</>}
+                                    rules={[{ required: false }]}
+                                >
+                                    <Input
+                                        {...field}
+                                        prefix={<UserAddOutlined className="site-form-item-icon" />}
+                                        placeholder="Your Name"
+                                    />
+                                </Form.Item>
+                            )}
+                        />
 
-                    <LoadingBtn
-                        content="Sign in"
-                        type="primary"
-                        style={{ width: '240px', marginBottom: '32px' }}
-                        size="middle"
-                        htmlType="submit"
-                        isValid={isValid}
-                    />
-                </form>
-            </Space>
+                        <LoadingBtn
+                            content="Sign in"
+                            type="primary"
+                            style={{ width: '240px', marginBottom: '32px' }}
+                            size="middle"
+                            htmlType="submit"
+                            isValid={isValid}
+                        />
+                    </form>
 
-            <Text>
-                If you already have an account, <Link href="/login/">login</Link>
-            </Text>
+                    <Text>
+                        If you already have an account, go <Link href="/login/">login</Link>
+                    </Text>
+                    <Text type="secondary">
+                        By continue to register you agree to our{' '}
+                        <Link href="/privacy">Privacy Policy</Link>
+                    </Text>
+                </Space>
+            </div>
         </Layout>
     );
 }

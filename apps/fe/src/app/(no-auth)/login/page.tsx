@@ -64,11 +64,11 @@ export default function Login() {
             }}
         >
             <div>
-                <Space direction="vertical" align="center">
+                <Space direction="vertical" align="center" size="small">
                     <Title level={3} style={{ marginBottom: '4px' }}>
-                        Sign in to your account
+                        Login to your account
                     </Title>
-                    <Text>Sign in to your Tasktr</Text>
+                    <Text>Login to your Tasktr</Text>
 
                     <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
                         <Controller<LoginPwdless>
@@ -91,21 +91,19 @@ export default function Login() {
                         />
 
                         <LoadingBtn
-                            content="Sign in"
+                            content="Login"
                             type="primary"
-                            style={{ width: '240px', marginBottom: '32px' }}
+                            style={{ width: '240px' }}
                             size="middle"
                             htmlType="submit"
                             isValid={isValid}
                         />
                     </form>
-                </Space>
-                {/* <Divider plain>or continue with</Divider>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Divider plain>or continue with</Divider>
                     <Space direction="horizontal" align="center">
                         <LoadingBtn
                             type="primary"
-                            style={{ width: '100px', marginBottom: '32px' }}
+                            style={{ width: '100px' }}
                             size="middle"
                             isValid={isValid}
                         >
@@ -113,19 +111,23 @@ export default function Login() {
                         </LoadingBtn>
                         <LoadingBtn
                             type="primary"
-                            style={{ width: '100px', marginBottom: '32px' }}
+                            style={{ width: '100px' }}
                             size="middle"
                             isValid={isValid}
                         >
                             <GithubOutlined /> Github
                         </LoadingBtn>
                     </Space>
-                </div> */}
+                    <Text>
+                        Don&apos;t have an account yet? <Link href="/register">Register</Link>
+                    </Text>
+                    <Divider plain></Divider>
+                    <Text type="secondary">
+                        By continue to login you agree to our{' '}
+                        <Link href="/privacy">Privacy Policy</Link>
+                    </Text>
+                </Space>
             </div>
-
-            <Text>
-                Don&apos;t have an account yet? <Link href="/register">Sign up </Link>
-            </Text>
         </Layout>
     );
 }
