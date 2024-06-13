@@ -356,14 +356,23 @@ export class TasksService implements OnModuleInit {
     }
 
     async softDeleteTask({ id, user }: { id: string; user: JwtPayloadType }): Promise<void> {
-        const foundTask = await this.taskRepo.findOneOrThrow({
+        const foundTask = await this.taskRepo.findOne({
             filterQuery: {
                 _id: convertToObjectId(id),
                 userId: convertToObjectId(user.userId),
             },
         });
 
-        await this.taskRepo.softDelete(foundTask._id);
+        if (!foundTask) {
+            throw new UnprocessableEntityException({
+                message: 'This task does not exist or already deleted',
+                errors: {
+                    task: 'notExistOrAlreadyDeleted',
+                },
+            });
+        }
+
+        await Promise.all([this.taskRepo.softDelete(foundTask._id), this.stopCronTask(foundTask)]);
     }
 
     /**
@@ -406,8 +415,9 @@ export class TasksService implements OnModuleInit {
         this.logger.info(`Hard delete task with id: ${foundTask._id}`);
 
         await Promise.all([
-            this.taskRepo.softDelete(foundTask._id),
+            this.taskRepo.hardDelete(foundTask._id),
             this.taskLogsService.clearLogsByTaskId(foundTask._id),
+            this.stopCronTask(foundTask),
         ]);
     }
 
