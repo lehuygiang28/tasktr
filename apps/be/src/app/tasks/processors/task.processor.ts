@@ -7,8 +7,7 @@ import { Job, Queue } from 'bullmq';
 import { BULLMQ_TASK_LOG_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
 import { Task } from '~be/app/tasks/schemas/task.schema';
 import { addMonitorInterceptor, DURATION_KEY, RESPONSE_SIZE_KEY } from '~be/common/axios';
-import { CreateTaskLogDto } from '~be/app/task-logs';
-import { TaskLogsJobName } from '../task-logs/task-log.processor';
+import { CreateTaskLogDto, TaskLogsJobName } from '~be/app/task-logs';
 
 @Injectable()
 @Processor(BULLMQ_TASK_QUEUE, {

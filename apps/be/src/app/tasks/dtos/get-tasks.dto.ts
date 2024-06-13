@@ -1,22 +1,21 @@
 import { ApiPropertyOptional, IntersectionType, PartialType, PickType } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsArray, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
 
 import { TaskDto } from './task.dto';
 import { HttpMethodEnum } from '../tasks.enum';
-import { PaginationRequestDto } from '~be/common/utils';
+import { PaginationRequestDto, ToBoolean } from '~be/common/utils';
 
 export class GetTasksDto extends IntersectionType(
     PickType(PartialType(TaskDto), ['name', 'endpoint', 'cron', 'isEnable'] as const),
     PaginationRequestDto,
 ) {
     @ApiPropertyOptional({
+        type: [HttpMethodEnum],
         enum: HttpMethodEnum,
-        isArray: true,
-        example: [HttpMethodEnum.GET, HttpMethodEnum.POST],
         description: 'Filter by HTTP methods',
+        example: [HttpMethodEnum.GET, HttpMethodEnum.POST],
     })
     @IsOptional()
-    @IsArray()
     @IsEnum(HttpMethodEnum, { each: true })
     methods?: HttpMethodEnum[];
 
@@ -24,4 +23,10 @@ export class GetTasksDto extends IntersectionType(
     @IsOptional()
     @IsString()
     search?: string;
+
+    @ApiPropertyOptional({ example: false, description: 'Filter deleted tasks' })
+    @IsOptional()
+    @ToBoolean()
+    @IsBoolean()
+    isDeleted?: boolean;
 }

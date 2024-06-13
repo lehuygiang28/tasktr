@@ -89,6 +89,10 @@ export class TaskDto implements Task {
     @IsString()
     note: string;
 
+    @ApiPropertyOptional({ type: Date, default: null })
+    @IsOptional()
+    deletedAt?: Date;
+
     @ApiProperty()
     @IsOptional()
     createdAt?: Date;

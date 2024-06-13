@@ -1,10 +1,10 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, OnModuleInit, UnprocessableEntityException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue, JobsOptions } from 'bullmq';
-import { FilterQuery, QueryOptions, UpdateQuery } from 'mongoose';
+import { FilterQuery, QueryOptions, Types, UpdateQuery } from 'mongoose';
 
-import { BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
-import { convertToObjectId, validateCronFrequency } from '~be/common/utils';
+import { BULLMQ_CLEAR_TASK_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
+import { convertToObjectId, MaybeType, validateCronFrequency } from '~be/common/utils';
 import { JwtPayloadType } from '~be/app/auth/strategies';
 
 import { TasksRepository } from './tasks.repository';
@@ -13,16 +13,70 @@ import { CreateTaskDto, GetTasksResponseDto, TaskDto, UpdateTaskDto } from './dt
 import { GetTasksDto } from './dtos/get-tasks.dto';
 import { GetLogsByTaskIdDto, GetLogsByTaskIdResponseDto } from '../task-logs/dtos';
 import { TaskLogsService } from '../task-logs';
+import { ConfigService } from '@nestjs/config';
+import { ClearTasksJobName } from './processors';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
-export class TasksService {
+export class TasksService implements OnModuleInit {
+    private readonly SCAN_DELETED_TASK_CRON = '0 6 * * *'; // 6AM daily
+    private readonly SCAN_DELETED_TASK_CRON_HISTORIC: string[] = [];
+
     constructor(
         @InjectQueue(BULLMQ_TASK_QUEUE) readonly taskQueue: Queue,
+        @InjectQueue(BULLMQ_CLEAR_TASK_QUEUE)
+        readonly clearTaskQueue: Queue<unknown, unknown, ClearTasksJobName>,
+        private readonly logger: PinoLogger,
+        private readonly configService: ConfigService,
         private readonly taskRepo: TasksRepository,
         private readonly taskLogsService: TaskLogsService,
     ) {}
 
+    async onModuleInit() {
+        /**
+         * Add cron background job to scan and delete tasks that have been soft deleted
+         */
+        if (this.SCAN_DELETED_TASK_CRON_HISTORIC) {
+            await Promise.allSettled(
+                this.SCAN_DELETED_TASK_CRON_HISTORIC.map((cron) => {
+                    this.clearTaskQueue.removeRepeatable(
+                        'clearTasks',
+                        {
+                            pattern: cron,
+                        },
+                        'clearTasks_id',
+                    );
+                }),
+            );
+        }
+
+        await this.clearTaskQueue.add(
+            'clearTasks',
+            {},
+            {
+                jobId: 'clearTasks_id',
+                removeOnComplete: true,
+                removeOnFail: true,
+                priority: 900,
+                attempts: 9,
+                repeat: {
+                    pattern: this.SCAN_DELETED_TASK_CRON,
+                },
+            },
+        );
+    }
+
     private async startCronTask(task: Task) {
+        if (task?.deletedAt) {
+            await this.stopCronTask(task);
+            throw new UnprocessableEntityException({
+                message: 'Task has been deleted',
+                errors: {
+                    task: 'deleted',
+                },
+            });
+        }
+
         const jobOptions: JobsOptions = {
             jobId: task._id.toString(),
             repeat: {
@@ -242,6 +296,7 @@ export class TasksService {
     }): Promise<GetTasksResponseDto> {
         const filter: FilterQuery<TaskDto> = {
             userId: convertToObjectId(user.userId),
+            deletedAt: query?.isDeleted ? { $ne: null } : null,
         };
         const options: Partial<QueryOptions<Task>> = {};
 
@@ -298,5 +353,83 @@ export class TasksService {
         });
 
         return this.taskLogsService.getLogsByTaskId({ taskId: foundTask._id, query });
+    }
+
+    async softDeleteTask({ id, user }: { id: string; user: JwtPayloadType }): Promise<void> {
+        const foundTask = await this.taskRepo.findOneOrThrow({
+            filterQuery: {
+                _id: convertToObjectId(id),
+                userId: convertToObjectId(user.userId),
+            },
+        });
+
+        await this.taskRepo.softDelete(foundTask._id);
+    }
+
+    /**
+     * User will trigger this to delete a task immediately
+     */
+    async triggerDeletedTask({ id, user }: { id: string; user: JwtPayloadType }): Promise<void> {
+        const foundTask = await this.taskRepo.findOne({
+            filterQuery: {
+                _id: convertToObjectId(id),
+                userId: convertToObjectId(user.userId),
+                deletedAt: { $ne: null },
+            },
+        });
+
+        if (!foundTask) {
+            throw new UnprocessableEntityException({
+                message: 'This task does not exist in recycle bin',
+                errors: {
+                    task: 'notExistInRecycleBin',
+                },
+            });
+        }
+
+        await Promise.all([
+            this.taskRepo.hardDelete(foundTask._id),
+            this.taskLogsService.clearLogsByTaskId(foundTask._id),
+        ]);
+    }
+
+    /**
+     * Hard delete tasks with its logs
+     */
+    private async hardDeleteTask({ id }: { id: string | Types.ObjectId }): Promise<void> {
+        const foundTask = await this.taskRepo.findOneOrThrow({
+            filterQuery: {
+                _id: convertToObjectId(id),
+            },
+        });
+
+        this.logger.info(`Hard delete task with id: ${foundTask._id}`);
+
+        await Promise.all([
+            this.taskRepo.softDelete(foundTask._id),
+            this.taskLogsService.clearLogsByTaskId(foundTask._id),
+        ]);
+    }
+
+    /**
+     * Use in cronjob - background job to scan and delete tasks that have been soft deleted
+     */
+    async scanToHardDeleteTasks(): Promise<void> {
+        const deletionThreshold =
+            Number(this.configService.get<MaybeType<number>>('SOFT_DELETE_THRESHOLD_DAYS')) || 30;
+        const thresholdDate = new Date();
+        thresholdDate.setDate(thresholdDate.getDate() - deletionThreshold);
+
+        const taskToDeletes = await this.taskRepo.find({
+            filterQuery: {
+                deletedAt: { $lt: thresholdDate },
+            },
+        });
+
+        this.logger.info(
+            `Found ${taskToDeletes.length} tasks to be deleted: ${taskToDeletes?.map((t) => t?._id?.toString())?.join(', ')}`,
+        );
+
+        await Promise.all(taskToDeletes.map((task) => this.hardDeleteTask({ id: task._id })));
     }
 }

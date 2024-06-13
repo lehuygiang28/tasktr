@@ -89,4 +89,8 @@ export class TaskLogsService {
             limit: query.limit || logs?.length || 0,
         };
     }
+
+    async clearLogsByTaskId(taskId: string | Types.ObjectId): Promise<void> {
+        await this.taskLogsRepository.clearLogs(taskId);
+    }
 }

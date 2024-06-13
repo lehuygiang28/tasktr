@@ -34,7 +34,7 @@ export class MailProcessor extends WorkerHost implements OnModuleInit {
             case 'sendEmailLogin':
                 return this.sendEmailLogin(job);
             default:
-                throw new Error(`Process ${job.name} not implemented`);
+                return;
         }
     }
 

@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
     HttpCode,
     HttpStatus,
@@ -11,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto, GetTasksResponseDto, TaskDto } from './dtos';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UpdateTaskDto } from './dtos/update-task.dto';
 import { AuthRoles } from '../auth/guards/auth.guard';
 import { CurrentUser, IdParamDto } from '~be/common/utils';
@@ -62,5 +63,19 @@ export class TasksController {
         @CurrentUser() user: JwtPayloadType,
     ): Promise<GetLogsByTaskIdResponseDto> {
         return this.tasksService.getLogsByTaskId({ taskId: id, query, user });
+    }
+
+    @ApiParam({ name: 'id' })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Delete('/:id')
+    deleteTask(@Param() { id }: IdParamDto, @CurrentUser() user: JwtPayloadType) {
+        return this.tasksService.softDeleteTask({ id, user });
+    }
+
+    @ApiParam({ name: 'id' })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Delete('/hard/:id')
+    hardDeleteTask(@Param() { id }: IdParamDto, @CurrentUser() user: JwtPayloadType) {
+        return this.tasksService.triggerDeletedTask({ id, user });
     }
 }

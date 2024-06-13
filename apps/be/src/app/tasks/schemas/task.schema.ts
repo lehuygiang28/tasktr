@@ -56,6 +56,9 @@ export class Task extends AbstractDocument {
     @Prop({ required: false, default: false, type: Boolean })
     isEnable: boolean;
 
+    @Prop({ required: false, type: Date, default: null })
+    deletedAt?: Date;
+
     @Prop({ required: false, default: new Date() })
     createdAt?: Date;
 

@@ -1,5 +1,5 @@
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Connection, FilterQuery, Model } from 'mongoose';
+import { Connection, FilterQuery, Model, Types } from 'mongoose';
 import { PinoLogger } from 'nestjs-pino';
 
 import { AbstractRepository } from '~be/common/utils/abstract/abstract.repository';
@@ -28,5 +28,11 @@ export class TaskLogsRepository extends AbstractRepository<TaskLog> {
 
     async delete(id: TaskLog['_id']): Promise<void> {
         await this.model.deleteOne({ _id: convertToObjectId(id) });
+    }
+
+    async clearLogs(taskId: string | Types.ObjectId): Promise<void> {
+        await this.model.deleteMany({
+            taskId: convertToObjectId(taskId),
+        });
     }
 }
