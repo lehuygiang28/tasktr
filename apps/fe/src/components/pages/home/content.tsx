@@ -7,9 +7,15 @@ import {
     RocketOutlined,
     FileDoneOutlined,
 } from '@ant-design/icons';
-import { TypeAnimation } from 'react-type-animation';
+// import { TypeAnimation } from 'react-type-animation';
 import Link from 'next/link';
 import AnimatedCard, { type CardData } from '~/components/card/animated-card';
+import dynamic from 'next/dynamic';
+
+const TypeAnimation = dynamic(
+    () => import('react-type-animation').then((type) => type.TypeAnimation),
+    { ssr: false },
+);
 
 const { Content } = Layout;
 const { Title } = Typography;
