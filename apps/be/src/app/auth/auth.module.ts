@@ -11,7 +11,6 @@ import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 import { AuthService } from './auth.service';
 import { AnonymousStrategy, JwtRefreshStrategy, JwtStrategy } from './strategies';
 import { AuthController } from './auth.controller';
-import { MailProcessor } from './mail.processor';
 
 @Module({
     imports: [
@@ -25,7 +24,7 @@ import { MailProcessor } from './mail.processor';
         UsersModule,
     ],
     controllers: [AuthController],
-    providers: [AuthService, AnonymousStrategy, JwtStrategy, JwtRefreshStrategy, MailProcessor],
-    exports: [AuthService, MailProcessor],
+    providers: [AuthService, AnonymousStrategy, JwtStrategy, JwtRefreshStrategy],
+    exports: [AuthService],
 })
 export class AuthModule {}

@@ -13,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class MailService {
     constructor(
-        private mailerService: MailerService,
+        private readonly mailerService: MailerService,
         private readonly logger: PinoLogger,
         private readonly configService: ConfigService,
         private readonly i18n: I18nService<I18nTranslations>,
@@ -98,17 +98,6 @@ export class MailService {
             text3 = this.i18n.t('mail-context.CONFIRM_EMAIL.text3');
             btn1 = this.i18n.t('mail-context.CONFIRM_EMAIL.btn1');
         }
-
-        this.logger.debug(
-            JSON.stringify({
-                emailConfirmTitle,
-                text1,
-                text2,
-                text3,
-                btn1,
-            }),
-            'mail text',
-        );
 
         const transporterName = this.resolveTransporter(transporter);
         this.logger.debug(`Sending confirm mail to ${to} with transporter: ${transporterName}`);
@@ -268,7 +257,6 @@ export class MailService {
                 context: {
                     title: emailConfirmTitle,
                     url: mailData.url,
-                    app_name: 'TechCell.cloud',
                     text1,
                     text2,
                     text3,

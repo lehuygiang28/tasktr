@@ -6,6 +6,7 @@ import { MongodbModule } from '~be/common/mongodb';
 import { LoggerModule } from '~be/common/pino-logger';
 import { I18nModule } from '~be/common/i18n';
 import { RedisModule, RedisService } from '~be/common/redis';
+import { MailModule } from '~be/common/mail';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -32,6 +33,7 @@ const imports = [
     }),
     LoggerModule,
     I18nModule,
+    MailModule,
     MongodbModule,
     UsersModule,
     TasksModule,

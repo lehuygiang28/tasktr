@@ -5,23 +5,28 @@ import { PinoLogger } from 'nestjs-pino';
 
 import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 import { MailService } from '~be/common/mail';
+import { ModuleRef } from '@nestjs/core';
 
 export type MailJobName = 'sendEmailRegister' | 'sendEmailLogin';
 
-@Injectable()
 @Processor(BULLMQ_BG_JOB_QUEUE, {
     concurrency: Number(process.env['BULL_BACKGROUND_CONCURRENCY']) || 5,
+    useWorkerThreads: true,
 })
+@Injectable()
 export class MailProcessor extends WorkerHost implements OnModuleInit {
+    private mailService: MailService;
+
     constructor(
         private readonly logger: PinoLogger,
-        private readonly mailService: MailService,
+        private readonly moduleRef: ModuleRef,
     ) {
         super();
         this.logger.setContext(MailProcessor.name);
     }
 
     onModuleInit() {
+        this.mailService = this.moduleRef.get<MailService>(MailService);
         this.logger.info(
             `${MailProcessor.name} for ${BULLMQ_BG_JOB_QUEUE} is initialized and ready.`,
         );
