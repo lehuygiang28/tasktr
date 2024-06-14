@@ -3,11 +3,13 @@ import { useEffect } from 'react';
 import { useRefreshToken } from './useRefreshToken';
 import { axiosInstance } from '~/libs/axios';
 
-export type UseAxiosAuthPayload = {
-    baseURL?: string;
-};
+export type UseAxiosAuthPayload =
+    | {
+          baseURL?: string;
+      }
+    | undefined;
 
-export function useAxiosAuth({ baseURL }: UseAxiosAuthPayload) {
+export function useAxiosAuth(payload?: UseAxiosAuthPayload) {
     const { data: session, status } = useSession();
     const refreshToken = useRefreshToken();
 
@@ -17,7 +19,7 @@ export function useAxiosAuth({ baseURL }: UseAxiosAuthPayload) {
         }
 
         if (!axiosInstance.defaults?.baseURL) {
-            axiosInstance.defaults.baseURL = baseURL ?? process.env.NEXT_PUBLIC_API_URL;
+            axiosInstance.defaults.baseURL = payload?.baseURL ?? process.env.NEXT_PUBLIC_API_URL;
         }
         const requestIntercept = axiosInstance.interceptors.request.use(
             (config) => {
@@ -47,7 +49,7 @@ export function useAxiosAuth({ baseURL }: UseAxiosAuthPayload) {
             axiosInstance.interceptors.request.eject(requestIntercept);
             axiosInstance.interceptors.response.eject(responseIntercept);
         };
-    }, [session, refreshToken, status, baseURL]);
+    }, [session, refreshToken, status, payload]);
 
     return axiosInstance;
 }
