@@ -1,6 +1,6 @@
 'use client';
 
-import { useLogin } from '@refinedev/core';
+import { useLogin, useNotification } from '@refinedev/core';
 import { Space, Form, Input, Typography, Divider, Button } from 'antd';
 import { MailOutlined, GithubOutlined, GoogleOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import type { LoginActionPayload } from '~/providers/auth-provider/types';
@@ -25,6 +25,7 @@ export type LoginProps = {
 export default function Login({ onBack }: LoginProps) {
     const router = useRouter();
     const params = useSearchParams();
+    const { open } = useNotification();
     const { mutate: login } = useLogin();
 
     const {
@@ -47,14 +48,24 @@ export default function Login({ onBack }: LoginProps) {
 
     useEffect(() => {
         const hash = params.get('hash');
-        if (hash && hash.length > SEEM_SAFE_HASH_LENGTH) {
+        if (hash && hash.length >= SEEM_SAFE_HASH_LENGTH) {
             login({ type: 'login', hash });
         } else if (hash) {
             const cloneParams = new URLSearchParams(params);
             cloneParams.delete('hash');
             return router.replace(`/login?${cloneParams.toString()}`);
         }
-    }, [params, login, router]);
+    }, [params, router, login, open]);
+
+    useEffect(() => {
+        if (params.get('error') === 'failed_to_login') {
+            open({
+                type: 'error',
+                message: 'Failed to login, please try again.',
+                key: 'failed_to_login',
+            });
+        }
+    }, [params, open]);
 
     if (params.get('hash')) {
         return <Loading />;

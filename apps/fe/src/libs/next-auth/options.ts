@@ -44,9 +44,6 @@ export const authOptions = {
         async signIn({ user, account }: { user: User; account: Account | null }) {
             if (account?.provider === 'google') {
                 try {
-                    console.log(account);
-                    console.log(account.id_token);
-
                     const { data: userData } = await axios.post<LoginResponseDto>(
                         '/auth/login/google',
                         {
@@ -70,13 +67,10 @@ export const authOptions = {
                     return true;
                 } catch (error) {
                     console.error(error);
-                    return false;
+                    throw new Error('failed_to_login');
                 }
             } else if (account?.provider === 'github') {
                 try {
-                    console.log(account);
-                    console.log(account.id_token);
-
                     const { data: userData } = await axios.post<LoginResponseDto>(
                         '/auth/login/github',
                         {
@@ -100,7 +94,7 @@ export const authOptions = {
                     return true;
                 } catch (error) {
                     console.error(error);
-                    return false;
+                    throw new Error('failed_to_login');
                 }
             }
             return true;
@@ -124,6 +118,10 @@ export const authOptions = {
             else if (new URL(url).origin === baseUrl) return url;
             return baseUrl;
         },
+    },
+    pages: {
+        signIn: '/login',
+        error: '/login',
     },
     logger: {
         debug: (...data: unknown[]) => console.debug({ ...data }),

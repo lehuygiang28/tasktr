@@ -1,22 +1,21 @@
-import { getServerSession } from 'next-auth/next';
-import { redirect } from 'next/navigation';
+'use client';
+
 import { PropsWithChildren } from 'react';
-import { authOptions } from '~/libs/next-auth';
+import { useIsAuthenticated } from '@refinedev/core';
+import { useRouter } from 'next/navigation';
+import LoadingPage from '../loading';
 
-export default async function NoAuthLayout({ children }: PropsWithChildren) {
-    const data = await getData();
+export default function NoAuthLayout({ children }: PropsWithChildren) {
+    const router = useRouter();
+    const { data, isLoading } = useIsAuthenticated();
 
-    if (data.session?.user) {
-        return redirect('/');
+    if (isLoading) {
+        return <LoadingPage />;
+    }
+
+    if (!isLoading && data?.authenticated) {
+        return router.replace('/');
     }
 
     return <>{children}</>;
-}
-
-async function getData() {
-    const session = await getServerSession(authOptions);
-
-    return {
-        session,
-    };
 }
