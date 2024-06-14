@@ -1,5 +1,6 @@
 import { Account, Session, User } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import GithubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { AuthValidatePasswordlessDto, LoginResponseDto } from '~be/app/auth/dtos';
 import { AxiosError } from 'axios';
@@ -7,10 +8,13 @@ import axios from '../axios';
 
 export const authOptions = {
     providers: [
-        // !!! Should be stored in .env file.
         GoogleProvider({
-            clientId: `1041339102270-e1fpe2b6v6u1didfndh7jkjmpcashs4f.apps.googleusercontent.com`,
-            clientSecret: `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`,
+            clientId: process.env.GOOGLE_ID,
+            clientSecret: process.env.GOOGLE_SECRET,
+        }),
+        GithubProvider({
+            clientId: process.env.GITHUB_ID,
+            clientSecret: process.env.GITHUB_SECRET,
         }),
         CredentialsProvider({
             credentials: {
@@ -38,35 +42,67 @@ export const authOptions = {
     secret: process.env.NEXTAUTH_SECRET,
     callbacks: {
         async signIn({ user, account }: { user: User; account: Account | null }) {
-            // if (account?.provider === 'google') {
-            //     try {
-            //         const { data: userData } = await loginserv
+            if (account?.provider === 'google') {
+                try {
+                    console.log(account);
+                    console.log(account.id_token);
 
-            //         Object.assign(userData.user, {
-            //             accessToken: userData.accessToken,
-            //             refreshToken: userData.refreshToken,
-            //             accessTokenExpires: userData.accessTokenExpires,
-            //         });
-            //         Object.assign(user, {
-            //             // assign custom properties of backend
-            //             ...userData.user,
+                    const { data: userData } = await axios.post<LoginResponseDto>(
+                        '/auth/login/google',
+                        {
+                            idToken: account.id_token,
+                        },
+                    );
 
-            //             //remove default properties of google
-            //             id: undefined,
-            //             name: undefined,
-            //             sub: undefined,
-            //             picture: undefined,
-            //             image: undefined,
-            //             iat: undefined,
-            //             exp: undefined,
-            //             jti: undefined,
-            //         });
-            //         return true;
-            //     } catch (error) {
-            //         console.error(error);
-            //         return false;
-            //     }
-            // }
+                    Object.assign(user, {
+                        ...userData,
+
+                        //remove default properties of google
+                        id: undefined,
+                        name: undefined,
+                        sub: undefined,
+                        picture: undefined,
+                        image: undefined,
+                        iat: undefined,
+                        exp: undefined,
+                        jti: undefined,
+                    });
+                    return true;
+                } catch (error) {
+                    console.error(error);
+                    return false;
+                }
+            } else if (account?.provider === 'github') {
+                try {
+                    console.log(account);
+                    console.log(account.id_token);
+
+                    const { data: userData } = await axios.post<LoginResponseDto>(
+                        '/auth/login/github',
+                        {
+                            accessToken: account.access_token,
+                        },
+                    );
+
+                    Object.assign(user, {
+                        ...userData,
+
+                        //remove default properties of github
+                        id: undefined,
+                        name: undefined,
+                        sub: undefined,
+                        picture: undefined,
+                        image: undefined,
+                        iat: undefined,
+                        exp: undefined,
+                        jti: undefined,
+                    });
+                    return true;
+                } catch (error) {
+                    console.error(error);
+                    return false;
+                }
+            }
             return true;
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

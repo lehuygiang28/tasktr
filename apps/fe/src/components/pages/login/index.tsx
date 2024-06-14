@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import Loading from '~/app/loading';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { signIn } from 'next-auth/react';
 
 const { Title, Text } = Typography;
 const SEEM_SAFE_HASH_LENGTH = 30;
@@ -110,6 +111,12 @@ export default function Login({ onBack }: LoginProps) {
                         style={{ width: '100px' }}
                         size="middle"
                         isValid={isValid}
+                        onClick={() =>
+                            signIn('google', {
+                                callbackUrl: window?.location?.href ?? '',
+                                redirect: false,
+                            })
+                        }
                     >
                         <GoogleOutlined /> Google
                     </LoadingBtn>
@@ -118,6 +125,12 @@ export default function Login({ onBack }: LoginProps) {
                         style={{ width: '100px' }}
                         size="middle"
                         isValid={isValid}
+                        onClick={() =>
+                            signIn('github', {
+                                callbackUrl: window?.location?.href ?? '',
+                                redirect: false,
+                            })
+                        }
                     >
                         <GithubOutlined /> Github
                     </LoadingBtn>

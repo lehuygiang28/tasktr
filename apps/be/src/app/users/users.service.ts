@@ -87,6 +87,7 @@ export class UsersService {
             document: {
                 ...clonedPayload,
                 role: UserRoleEnum.Customer,
+                password: clonedPayload?.password ?? null,
             },
         });
         return userCreated;

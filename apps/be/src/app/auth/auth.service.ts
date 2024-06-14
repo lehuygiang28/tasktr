@@ -1,4 +1,4 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -6,19 +6,30 @@ import { PinoLogger } from 'nestjs-pino';
 import ms from 'ms';
 import { Queue } from 'bullmq';
 import { faker } from '@faker-js/faker';
+import { OAuth2Client } from 'google-auth-library';
 
 import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 import { RedisService } from '~be/common/redis';
-import { UsersService, UserRoleEnum, UserDto } from '~be/app/users';
 import { convertToObjectId, NullableType } from '~be/common/utils';
+import { MailJobName } from '~be/common/mail';
+import { UsersService, UserRoleEnum, UserDto } from '~be/app/users';
 
-import { AuthLoginPasswordlessDto, AuthSignupDto, LoginResponseDto } from './dtos';
+import {
+    AuthLoginGithubDto,
+    AuthLoginGoogleDto,
+    AuthLoginPasswordlessDto,
+    AuthSignupDto,
+    LoginResponseDto,
+} from './dtos';
 import { JwtPayloadType } from './strategies/types';
 import { User } from '../users/schemas';
-import { MailJobName } from './mail.processor';
+import { Octokit } from '@octokit/rest';
 
 @Injectable()
 export class AuthService {
+    private readonly googleClient: OAuth2Client;
+    private readonly octokit: Octokit;
+
     constructor(
         private readonly logger: PinoLogger,
         private readonly configService: ConfigService,
@@ -29,6 +40,11 @@ export class AuthService {
         readonly bgQueue: Queue<unknown, unknown, MailJobName>,
     ) {
         this.logger.setContext(AuthService.name);
+        this.googleClient = new OAuth2Client(
+            configService.getOrThrow('AUTH_GOOGLE_ID'),
+            configService.getOrThrow('AUTH_GOOGLE_SECRET'),
+        );
+        this.octokit = new Octokit({});
     }
 
     async register(dto: AuthSignupDto): Promise<void> {
@@ -268,6 +284,70 @@ export class AuthService {
 
         const [token] = await Promise.all(promise);
         return token as LoginResponseDto;
+    }
+
+    async validateLoginGoogle({ idToken }: AuthLoginGoogleDto) {
+        const ticket = await this.googleClient.verifyIdToken({
+            idToken: idToken,
+            audience: [this.configService.getOrThrow<string>('AUTH_GOOGLE_ID')],
+        });
+        const data = ticket.getPayload();
+
+        if (!data) {
+            throw new UnauthorizedException({
+                errors: {
+                    google: 'wrongIdToken',
+                },
+                message: 'Google login failed',
+            });
+        }
+
+        let user = await this.usersService.findByEmail(data.email);
+        if (!user) {
+            user = await this.usersService.create({
+                email: data.email,
+                fullName: data.name,
+                avatar: {
+                    publicId: data.picture,
+                    url: data.picture,
+                },
+                emailVerified: true,
+            });
+        }
+
+        return this.generateTokens(user);
+    }
+
+    async validateLoginGithub({ accessToken }: AuthLoginGithubDto) {
+        const data = await this.octokit.request('GET /user', {
+            headers: {
+                authorization: `token ${accessToken}`,
+            },
+        });
+
+        if (!data) {
+            throw new UnauthorizedException({
+                errors: {
+                    github: 'wrongAccessToken',
+                },
+                message: 'Github login failed',
+            });
+        }
+
+        const { data: usrGithub } = data;
+        let user = await this.usersService.findByEmail(usrGithub.email);
+        if (!user) {
+            user = await this.usersService.create({
+                email: usrGithub.email,
+                fullName: usrGithub.name,
+                avatar: {
+                    publicId: usrGithub.avatar_url,
+                    url: usrGithub.avatar_url,
+                },
+                emailVerified: true,
+            });
+        }
+        return this.generateTokens(user);
     }
 
     async generateTokens(user: UserDto): Promise<LoginResponseDto> {

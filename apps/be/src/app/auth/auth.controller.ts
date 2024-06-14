@@ -16,6 +16,8 @@ import {
     AuthSignupDto,
     LoginResponseDto,
     RefreshTokenDto,
+    AuthLoginGoogleDto,
+    AuthLoginGithubDto,
 } from './dtos';
 import { AuthRegisterConfirmDto } from './dtos/auth-register-confirm.dto';
 import { ApiOkResponse, ApiTags, ApiBody } from '@nestjs/swagger';
@@ -49,6 +51,20 @@ export class AuthController {
     @Post('login/pwdless/validate')
     validateLoginPwdless(@Body() { hash = '' }: AuthValidatePasswordlessDto) {
         return this.authService.validateRequestLoginPwdless(hash);
+    }
+
+    @ApiOkResponse({ type: LoginResponseDto })
+    @HttpCode(HttpStatus.OK)
+    @Post('login/google')
+    async loginGoogle(@Body() data: AuthLoginGoogleDto) {
+        return this.authService.validateLoginGoogle(data);
+    }
+
+    @ApiOkResponse({ type: LoginResponseDto })
+    @HttpCode(HttpStatus.OK)
+    @Post('login/github')
+    async loginGithub(@Body() data: AuthLoginGithubDto) {
+        return this.authService.validateLoginGithub(data);
     }
 
     @ApiBody({

@@ -2,6 +2,6 @@ import { IntersectionType, OmitType, PartialType, PickType } from '@nestjs/swagg
 import { UserDto } from './user.dto';
 
 export class CreateUserDto extends IntersectionType(
-    OmitType(UserDto, ['_id', 'block', 'createdAt', 'updatedAt', 'role']),
+    OmitType(UserDto, ['_id', 'block', 'createdAt', 'updatedAt', 'role', 'password']),
     PickType(PartialType(UserDto), ['password']),
 ) {}
