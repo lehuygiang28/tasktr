@@ -1,9 +1,13 @@
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { useRefreshToken } from './useRefreshToken';
-import axiosInstance from '~/libs/axios';
+import { axiosInstance } from '~/libs/axios';
 
-export function useAxiosAuth() {
+export type UseAxiosAuthPayload = {
+    baseURL?: string;
+};
+
+export function useAxiosAuth({ baseURL }: UseAxiosAuthPayload) {
     const { data: session, status } = useSession();
     const refreshToken = useRefreshToken();
 
@@ -12,6 +16,9 @@ export function useAxiosAuth() {
             return;
         }
 
+        if (!axiosInstance.defaults?.baseURL) {
+            axiosInstance.defaults.baseURL = baseURL ?? process.env.NEXT_PUBLIC_API_URL;
+        }
         const requestIntercept = axiosInstance.interceptors.request.use(
             (config) => {
                 if (!config.headers['Authorization']) {
@@ -40,7 +47,7 @@ export function useAxiosAuth() {
             axiosInstance.interceptors.request.eject(requestIntercept);
             axiosInstance.interceptors.response.eject(responseIntercept);
         };
-    }, [session, refreshToken, status]);
+    }, [session, refreshToken, status, baseURL]);
 
     return axiosInstance;
 }

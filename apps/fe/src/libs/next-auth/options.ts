@@ -4,7 +4,7 @@ import GithubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { AuthValidatePasswordlessDto, LoginResponseDto } from '~be/app/auth/dtos';
 import { AxiosError } from 'axios';
-import axios from '../axios';
+import { axiosInstance } from '~/libs/axios';
 
 export const authOptions = {
     providers: [
@@ -28,7 +28,7 @@ export const authOptions = {
                     hash: credentials?.hash || '',
                 };
 
-                return axios
+                return axiosInstance
                     .post<LoginResponseDto>(path, payload)
                     .then((response) => {
                         return response.data as unknown as User;
@@ -44,7 +44,7 @@ export const authOptions = {
         async signIn({ user, account }: { user: User; account: Account | null }) {
             if (account?.provider === 'google') {
                 try {
-                    const { data: userData } = await axios.post<LoginResponseDto>(
+                    const { data: userData } = await axiosInstance.post<LoginResponseDto>(
                         '/auth/login/google',
                         {
                             idToken: account.id_token,
@@ -71,7 +71,7 @@ export const authOptions = {
                 }
             } else if (account?.provider === 'github') {
                 try {
-                    const { data: userData } = await axios.post<LoginResponseDto>(
+                    const { data: userData } = await axiosInstance.post<LoginResponseDto>(
                         '/auth/login/github',
                         {
                             accessToken: account.access_token,
