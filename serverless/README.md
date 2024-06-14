@@ -1,14 +1,15 @@
 # Serve BE on serverless platform
 
-## Here we use [vercel](https://vercel.com/) to deploy BE on serverless platform.
+## Here we use [vercel](https://vercel.com/) to deploy BE on serverless platform
 
-### Notes: When deploying BE on serverless platform, some functions and features may not work as expected.
+### Notes: When deploying BE on serverless platform, some functions and features may not work as expected
 
-### Required: 
+### Required
+
 - Set `DEPLOY_ENV` to `serverless`
 - Set root directory on vercel project's settings to `serverless`
 
-### Steps:
+### Steps
 
 1. Fork this repository [lehuygiang28/tasktr](https://github.com/lehuygiang28/tasktr) to your own github account.
 2. Create a new vercel project
@@ -20,5 +21,5 @@
 8. After first deploy, goto settings and set root directory on vercel project's settings to `serverless`
     ![alt text](../readme-assets/root-dir.png)
 
-9.  Redeploy to apply settings
-10. Done! 
+9. Redeploy to apply settings
+10. Done!
