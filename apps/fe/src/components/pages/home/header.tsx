@@ -193,9 +193,7 @@ export default function HomePageHeader() {
                                     >
                                         <Space>
                                             <NextLink href="/login">
-                                                <Button type="text" ghost>
-                                                    Login
-                                                </Button>
+                                                <Button type="text">Login</Button>
                                             </NextLink>
                                             <NextLink href="/register">
                                                 <Button type="primary" ghost>
