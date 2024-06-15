@@ -38,6 +38,7 @@
         "@refinedev/nextjs-router": "^6.0.4",
         "@refinedev/react-hook-form": "^4.8.18",
         "@refinedev/simple-rest": "^5.0.6",
+        "@szmarczak/http-timer": "^5.0.1",
         "antd": "^5.17.4",
         "axios": "^1.7.2",
         "bcryptjs": "^2.4.3",

@@ -6,8 +6,8 @@ import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { BULLMQ_TASK_LOG_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
 import { Task } from '~be/app/tasks/schemas/task.schema';
-import { addMonitorInterceptor, DURATION_KEY, RESPONSE_SIZE_KEY } from '~be/common/axios';
 import { CreateTaskLogDto, TaskLogsJobName } from '~be/app/task-logs';
+import { type Timings } from '@szmarczak/http-timer';
 
 @Injectable()
 @Processor(BULLMQ_TASK_QUEUE, {
@@ -25,7 +25,6 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         super();
         this.logger.setContext(TaskProcessor.name);
         this.axios = this.httpService.axiosRef;
-        addMonitorInterceptor(this.axios);
     }
 
     onModuleInit() {
@@ -54,10 +53,13 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         };
 
         let response: AxiosResponse | null;
+        let timings: Timings | null;
         try {
             response = await this.httpService.axiosRef.request(config);
+            timings = response.request['timings'] || null;
+
             this.logger.info(
-                `FETCH ${name} - ${response?.status} - ${response?.headers[DURATION_KEY]} ms - ${response?.headers[RESPONSE_SIZE_KEY]} bytes`,
+                `FETCH ${name} - ${response?.status} - ${timings?.phases?.total} ms - ${JSON.stringify(response?.data)?.length ?? 0} bytes`,
             );
         } catch (error: AxiosError | unknown) {
             if (error instanceof AxiosError) {
@@ -66,28 +68,22 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
                 this.logger.error(error);
             }
             response = null;
+            timings = null;
         }
 
-        let taskLog: CreateTaskLogDto = {
+        const taskLog: CreateTaskLogDto = {
             taskId: job.data._id,
             endpoint,
             method,
             workerName: process.env['WORKER_NAME'] ?? 'default',
             scheduledAt: new Date(job?.processedOn ?? now),
             executedAt: new Date(job?.finishedOn ?? now),
-            duration: 0,
-            statusCode: 500,
-            responseSizeBytes: 0,
-        };
 
-        if (response) {
-            taskLog = {
-                ...taskLog,
-                statusCode: response.status,
-                duration: response.headers[DURATION_KEY],
-                responseSizeBytes: response.headers[RESPONSE_SIZE_KEY],
-            };
-        }
+            duration: timings?.phases?.total ?? 0,
+            statusCode: response?.status ?? 0,
+            responseSizeBytes: JSON.stringify(response?.data)?.length ?? 0,
+            timings: timings?.phases || {},
+        };
 
         await this.taskLogQueue.add(`saveTaskLog`, taskLog, {
             removeOnComplete: 1,

@@ -8,6 +8,7 @@ import {
     BULLMQ_TASK_LOG_QUEUE,
     BULLMQ_CLEAR_TASK_QUEUE,
 } from '~be/common/bullmq/bullmq.constant';
+import { axiosConfig } from '~be/common/axios';
 
 import { Task, TaskSchema } from './schemas';
 import { TasksController } from './tasks.controller';
@@ -18,7 +19,7 @@ import { ClearTasksProcessor, TaskProcessor } from './processors';
 
 @Module({
     imports: [
-        HttpModule,
+        HttpModule.register(axiosConfig),
         MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
         TaskLogsModule,
         BullModule.registerQueue({

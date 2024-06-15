@@ -1,7 +1,36 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { type Timings } from '@szmarczak/http-timer';
 import { HydratedDocument, Types } from 'mongoose';
 
 import { AbstractDocument } from '~be/common/utils/abstract/abstract.schema';
+
+type Phases = Timings['phases'];
+
+export class LogTimingPhases implements Phases {
+    @Prop({ type: Number, required: false, default: 0 })
+    wait?: number;
+
+    @Prop({ type: Number, required: false, default: 0 })
+    dns?: number;
+
+    @Prop({ type: Number, required: false, default: 0 })
+    tcp?: number;
+
+    @Prop({ type: Number, required: false, default: 0 })
+    tls?: number;
+
+    @Prop({ type: Number, required: false, default: 0 })
+    request?: number;
+
+    @Prop({ type: Number, required: false, default: 0 })
+    firstByte?: number;
+
+    @Prop({ type: Number, required: false, default: 0 })
+    download?: number;
+
+    @Prop({ type: Number, required: false, default: 0 })
+    total?: number;
+}
 
 @Schema({
     timestamps: true,
@@ -34,6 +63,9 @@ export class TaskLog extends AbstractDocument {
 
     @Prop({ required: false, default: 'default' })
     workerName: string;
+
+    @Prop({ required: false, type: LogTimingPhases })
+    timings?: LogTimingPhases;
 
     @Prop({ required: false, default: new Date() })
     createdAt?: Date;
