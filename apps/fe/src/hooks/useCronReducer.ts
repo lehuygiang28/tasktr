@@ -1,4 +1,4 @@
-import { Dispatch, useReducer } from 'react';
+import { Dispatch, useEffect, useReducer } from 'react';
 
 /**
  * Custom hook to update cron value and input value.
@@ -8,7 +8,13 @@ import { Dispatch, useReducer } from 'react';
  * @param defaultValue - The default value of the input and cron component.
  * @returns - The cron and input values with the dispatch function.
  */
-export function useCronReducer(defaultValue: string): [
+export function useCronReducer({
+    defaultValue,
+    setFormValue,
+}: {
+    defaultValue: string;
+    setFormValue?: (value: string) => void;
+}): [
     {
         inputValue: string;
         cronValue: string;
@@ -52,6 +58,12 @@ export function useCronReducer(defaultValue: string): [
             cronValue: defaultValue,
         },
     );
+
+    useEffect(() => {
+        if (typeof setFormValue === 'function' && values.inputValue) {
+            setFormValue(values.inputValue);
+        }
+    }, [values.inputValue, setFormValue]);
 
     return [values, dispatchValues];
 }
