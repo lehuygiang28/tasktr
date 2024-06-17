@@ -10,7 +10,7 @@
             "defaultConfiguration": "development",
             "options": {
                 "buildTarget": "be:build",
-                "inspect": false
+                "inspect": true
             },
             "configurations": {
                 "development": {
