@@ -18,9 +18,14 @@ export function useAxiosAuth(payload?: UseAxiosAuthPayload) {
             return;
         }
 
-        if (!axiosInstance.defaults?.baseURL) {
-            axiosInstance.defaults.baseURL = payload?.baseURL ?? process.env.NEXT_PUBLIC_API_URL;
+        if (payload?.baseURL) {
+            axiosInstance.defaults.baseURL = payload.baseURL;
         }
+
+        if (session?.user?.accessToken) {
+            axiosInstance.defaults.headers['Authorization'] = `Bearer ${session.user.accessToken}`;
+        }
+
         const requestIntercept = axiosInstance.interceptors.request.use(
             (config) => {
                 if (!config.headers['Authorization']) {

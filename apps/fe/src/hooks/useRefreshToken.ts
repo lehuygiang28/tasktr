@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
-import axios from '~/libs/axios';
+import { axiosInstance } from '~/libs/axios';
 import { LoginResponseDto } from '~be/app/auth/dtos';
 
 export function useRefreshToken() {
@@ -16,7 +16,7 @@ export function useRefreshToken() {
 
         try {
             const path = '/auth/refresh';
-            const res = await axios.post<LoginResponseDto>(path, {
+            const res = await axiosInstance.post<LoginResponseDto>(path, {
                 refreshToken: session.user.refreshToken,
             });
 
