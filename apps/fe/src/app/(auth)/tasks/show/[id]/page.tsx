@@ -2,8 +2,8 @@
 
 import { useContext, useEffect, useState } from 'react';
 import { Descriptions, Typography, Spin, Button } from 'antd';
-import { Show } from '@refinedev/antd';
-import { useShow } from '@refinedev/core';
+import { ExportButton, Show } from '@refinedev/antd';
+import { useExport, useShow } from '@refinedev/core';
 import { Highlight, themes } from 'prism-react-renderer';
 import { format } from 'prettier';
 import * as prettierBabel from 'prettier/plugins/babel';
@@ -23,6 +23,14 @@ export default function TaskShow() {
     const {
         queryResult: { data: { data: record } = {}, isLoading },
     } = useShow<TaskDto>({});
+    const { triggerExport, isLoading: exportLoading } = useExport<TaskDto>({
+        maxItemCount: 1,
+        filters: [{ field: '_id', operator: 'eq', value: record?._id }],
+        mapData: (item) => {
+            const { cronHistory, ...rest } = item;
+            return rest;
+        },
+    });
 
     const [formattedHeaders, setFormattedHeaders] = useState<string | null>(null);
     const [formattedBody, setFormattedBody] = useState<string | null>(null);
@@ -62,6 +70,7 @@ export default function TaskShow() {
                             <FileProtectOutlined /> See Logs
                         </Button>
                     </Link>
+                    <ExportButton onClick={triggerExport} loading={exportLoading} />
                 </>
             )}
         >

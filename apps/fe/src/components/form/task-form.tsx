@@ -44,7 +44,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
         handleSubmit,
         formState: { errors },
         setValue,
-        getValues,
     } = useForm<FormValues, HttpError, FormValues>({
         resolver: classValidatorResolver(TaskFormValidator),
         defaultValues,
@@ -96,7 +95,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
                     }
                 }
             });
-            console.log(getValues());
         }
     }, [defaultValues, setValue, dispatchCronValues]);
 

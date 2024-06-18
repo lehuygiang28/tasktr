@@ -307,6 +307,10 @@ export class TasksService implements OnModuleInit {
             ];
         }
 
+        if (query._id) {
+            filter._id = convertToObjectId(query._id);
+        }
+
         if (query.methods?.length) {
             filter.method = { $in: query.methods };
         }

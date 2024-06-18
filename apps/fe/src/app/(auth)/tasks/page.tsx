@@ -1,7 +1,14 @@
 'use client';
 
-import { HttpError, useUpdate } from '@refinedev/core';
-import { DeleteButton, EditButton, List, ShowButton, useTable } from '@refinedev/antd';
+import { HttpError, useUpdate, useExport } from '@refinedev/core';
+import {
+    DeleteButton,
+    EditButton,
+    List,
+    ShowButton,
+    useTable,
+    ExportButton,
+} from '@refinedev/antd';
 import { Space, Table, Switch, Typography, Button } from 'antd';
 import { FileProtectOutlined } from '@ant-design/icons';
 import { toString as cronReadable } from 'cronstrue';
@@ -30,9 +37,15 @@ export default function TaskList() {
     });
     const { mutate: update } = useUpdate<TaskDto>({});
     const debouncedUpdate = useDebouncedCallback(update, 200);
+    const { triggerExport, isLoading: exportLoading } = useExport<TaskDto>({
+        mapData: (item) => {
+            const { cronHistory, ...rest } = item;
+            return rest;
+        },
+    });
 
     return (
-        <List>
+        <List headerButtons={<ExportButton onClick={triggerExport} loading={exportLoading} />}>
             <Table<TaskDto>
                 {...tableProps}
                 rowKey="_id"
