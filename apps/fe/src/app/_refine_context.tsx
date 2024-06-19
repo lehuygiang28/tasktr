@@ -68,6 +68,7 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                                         create: '/tasks/create',
                                         edit: '/tasks/edit/:id',
                                         show: '/tasks/show/:id',
+                                        clone: '/tasks/logs/:id',
                                         meta: {
                                             canDelete: true,
                                             icon: <ScheduleOutlined />,

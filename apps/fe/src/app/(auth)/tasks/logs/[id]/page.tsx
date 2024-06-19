@@ -145,19 +145,27 @@ export default function LogList() {
 
     return (
         <>
-            <Breadcrumb>
-                <Breadcrumb.Item>
-                    <Link href="/tasks">Tasks</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                    <Link href={`/tasks/show/${pathname?.replace(/\/$/, '')?.split('/')?.pop()}`}>
-                        Show
-                    </Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>Task Logs</Breadcrumb.Item>
-                <Breadcrumb.Item>{pathname?.replace(/\/$/, '')?.split('/')?.pop()}</Breadcrumb.Item>
-            </Breadcrumb>
-            <List>
+            <List
+                title="Task Logs"
+                breadcrumb={
+                    <Breadcrumb>
+                        <Breadcrumb.Item>
+                            <Link href="/tasks">Tasks</Link>
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item>
+                            <Link
+                                href={`/tasks/show/${pathname?.replace(/\/$/, '')?.split('/')?.pop()}`}
+                            >
+                                Show
+                            </Link>
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item>Task Logs</Breadcrumb.Item>
+                        <Breadcrumb.Item>
+                            {pathname?.replace(/\/$/, '')?.split('/')?.pop()}
+                        </Breadcrumb.Item>
+                    </Breadcrumb>
+                }
+            >
                 <Space direction="vertical" style={{ width: '100%' }}>
                     <Line
                         style={{ width: '100%', maxHeight: '500px' }}
