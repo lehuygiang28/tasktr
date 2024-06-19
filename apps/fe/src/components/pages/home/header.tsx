@@ -11,8 +11,9 @@ import {
     LoginOutlined,
     DownOutlined,
     UpOutlined,
-    UnorderedListOutlined,
     ArrowRightOutlined,
+    ScheduleOutlined,
+    DashboardOutlined,
 } from '@ant-design/icons';
 import { useIsAuthenticated, useGetIdentity, useLogout } from '@refinedev/core';
 import { LoginResponseDto } from '~be/app/auth/dtos';
@@ -52,6 +53,36 @@ export default function HomePageHeader() {
     const handleVisibleChange = (flag: boolean) => {
         setDropdownOpen(flag);
     };
+
+    const loggedItems = [
+        {
+            key: 'dashboard',
+            icon: <DashboardOutlined />,
+            title: 'Dashboard',
+            href: '/dashboard',
+        },
+        {
+            key: 'tasks',
+            icon: <ScheduleOutlined />,
+            title: 'Tasks',
+            href: '/tasks',
+        },
+        {
+            key: 'logout',
+            icon: <LogoutOutlined />,
+            title: 'Logout',
+            onClick: handleLogout,
+        },
+    ];
+    const unloggedItems = [
+        {
+            key: 'login',
+            icon: <LoginOutlined />,
+            title: 'Login',
+            href: '/login',
+            onClick: undefined,
+        },
+    ];
 
     return (
         <Header
@@ -136,32 +167,26 @@ export default function HomePageHeader() {
                                 ) : isAuthData?.authenticated ? (
                                     <Dropdown
                                         menu={{
-                                            items: [
-                                                {
-                                                    key: 'tasks',
+                                            items: loggedItems.map((item) => {
+                                                return {
+                                                    key: item.key,
                                                     label: (
-                                                        <Link key="tasks" href="/tasks">
+                                                        <NextLink
+                                                            key={item.key}
+                                                            href={item?.href || '#'}
+                                                            onClick={item?.onClick || undefined}
+                                                        >
                                                             <Space>
-                                                                <UnorderedListOutlined />
-                                                                Tasks
+                                                                {item.icon}
+                                                                {item.title}
                                                             </Space>
-                                                        </Link>
+                                                        </NextLink>
                                                     ),
-                                                },
-                                                {
-                                                    key: 'logout',
-                                                    label: (
-                                                        <Link key="logout" onClick={handleLogout}>
-                                                            <Space>
-                                                                <LogoutOutlined /> Logout
-                                                            </Space>
-                                                        </Link>
-                                                    ),
-                                                },
-                                            ],
+                                                };
+                                            }),
                                         }}
                                         trigger={['click']}
-                                        onVisibleChange={handleVisibleChange}
+                                        onOpenChange={handleVisibleChange}
                                     >
                                         <div
                                             style={{
@@ -192,9 +217,18 @@ export default function HomePageHeader() {
                                         }}
                                     >
                                         <Space>
-                                            <NextLink href="/login">
-                                                <Button type="text">Login</Button>
-                                            </NextLink>
+                                            {unloggedItems.map((item) => (
+                                                <NextLink
+                                                    key={item.key}
+                                                    href={item?.href || '#'}
+                                                    onClick={item?.onClick || undefined}
+                                                >
+                                                    <Button type="text">
+                                                        {item.icon}
+                                                        {item.title}
+                                                    </Button>
+                                                </NextLink>
+                                            ))}
                                             <NextLink href="/register">
                                                 <Button type="primary" ghost>
                                                     Register <ArrowRightOutlined />
@@ -229,24 +263,35 @@ export default function HomePageHeader() {
                         border: 'none',
                     }}
                 >
-                    {menuItems.map((item) => (
-                        <Menu.Item key={item.key} icon={item.icon}>
-                            <Link href={item.key}>{item.label}</Link>
-                        </Menu.Item>
-                    ))}
-
                     {isLoadingAuth ? (
                         <Skeleton.Button active size="small" shape="round" />
                     ) : isAuthData?.authenticated ? (
-                        <Menu.Item key="logout" icon={<LogoutOutlined />}>
-                            <Link onClick={handleLogout} href="#">
-                                Logout
-                            </Link>
-                        </Menu.Item>
+                        <>
+                            {loggedItems.map((item) => (
+                                <Menu.Item key={item.key} icon={item.icon}>
+                                    <Link onClick={item?.onClick} href={item?.href || '#'}>
+                                        {item.title}
+                                    </Link>
+                                </Menu.Item>
+                            ))}
+                        </>
                     ) : (
-                        <Menu.Item key="login" icon={<LoginOutlined />}>
-                            <Link href="/login">Login</Link>
-                        </Menu.Item>
+                        <>
+                            {unloggedItems.map((item) => (
+                                <Menu.Item key={item.key} icon={item.icon}>
+                                    <Link onClick={item?.onClick} href={item?.href || '#'}>
+                                        {item.title}
+                                    </Link>
+                                </Menu.Item>
+                            ))}
+                            <Menu.Item key="register">
+                                <NextLink href="/register">
+                                    <Button type="primary" ghost>
+                                        Register <ArrowRightOutlined />
+                                    </Button>
+                                </NextLink>
+                            </Menu.Item>
+                        </>
                     )}
                 </Menu>
             </Drawer>

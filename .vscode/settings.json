@@ -18,7 +18,8 @@
         "Redlock",
         "refinedev",
         "Sider",
-        "tasktr"
+        "tasktr",
+        "unlogged"
     ],
     "conventionalCommits.scopes": [
         "be/auth",
