@@ -35,4 +35,15 @@ export class TaskLogsRepository extends AbstractRepository<TaskLog> {
             taskId: convertToObjectId(taskId),
         });
     }
+
+    async findLastLogsByUserId(userId: string, limit = 20): Promise<TaskLog[]> {
+        return this.taskLogModel.aggregate([
+            { $lookup: { from: 'tasks', localField: 'taskId', foreignField: '_id', as: 'task' } },
+            { $unwind: '$task' },
+            { $match: { 'task.userId': convertToObjectId(userId) } },
+            { $sort: { executedAt: -1 } },
+            { $limit: limit },
+            { $project: { task: 0 } },
+        ]);
+    }
 }

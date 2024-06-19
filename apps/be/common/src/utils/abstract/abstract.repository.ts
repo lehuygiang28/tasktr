@@ -10,6 +10,8 @@ import {
     QueryOptions,
     ProjectionType,
     UpdateQuery,
+    PipelineStage,
+    AggregateOptions,
 } from 'mongoose';
 import { NotFoundException } from '@nestjs/common';
 import type { NullableType } from '../types';
@@ -208,5 +210,13 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
         if (session.inTransaction()) {
             await session.endSession();
         }
+    }
+
+    async aggregate(
+        pipeline: PipelineStage[],
+        options?: AggregateOptions,
+    ): Promise<NullableType<TDocument[]>> {
+        const documents = await this.model.aggregate(pipeline, options);
+        return documents as unknown as TDocument[];
     }
 }

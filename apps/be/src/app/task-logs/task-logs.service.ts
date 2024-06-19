@@ -93,4 +93,15 @@ export class TaskLogsService {
     async clearLogsByTaskId(taskId: string | Types.ObjectId): Promise<void> {
         await this.taskLogsRepository.clearLogs(taskId);
     }
+
+    async findLastLogsByUserId(userId: string, limit = 20): Promise<TaskLog[]> {
+        return this.taskLogsRepository.aggregate([
+            { $lookup: { from: 'tasks', localField: 'taskId', foreignField: '_id', as: 'task' } },
+            { $unwind: '$task' },
+            { $match: { 'task.userId': convertToObjectId(userId) } },
+            { $sort: { executedAt: -1 } },
+            { $limit: limit },
+            { $project: { task: 0 } },
+        ]);
+    }
 }

@@ -446,4 +446,17 @@ export class TasksService implements OnModuleInit {
 
         await Promise.all(taskToDeletes.map((task) => this.hardDeleteTask({ id: task._id })));
     }
+
+    async countUserTasks({
+        user,
+        query,
+    }: {
+        user: JwtPayloadType;
+        query: FilterQuery<TaskDto>;
+    }): Promise<number> {
+        return this.taskRepo.count({
+            userId: convertToObjectId(user.userId),
+            ...query,
+        });
+    }
 }

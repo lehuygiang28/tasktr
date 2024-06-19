@@ -14,7 +14,7 @@ export default function NoAuthLayout({ children }: PropsWithChildren) {
     }
 
     if (!isLoading && data?.authenticated) {
-        return router.replace('/');
+        return router.replace('/dashboard');
     }
 
     return <>{children}</>;

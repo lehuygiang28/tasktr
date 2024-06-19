@@ -49,7 +49,7 @@ export default function Login({ onBack }: LoginProps) {
     useEffect(() => {
         const hash = params.get('hash');
         if (hash && hash.length >= SEEM_SAFE_HASH_LENGTH) {
-            login({ type: 'login', hash });
+            login({ type: 'login', hash, redirect: true, to: '/dashboard' });
         } else if (hash) {
             const cloneParams = new URLSearchParams(params);
             cloneParams.delete('hash');

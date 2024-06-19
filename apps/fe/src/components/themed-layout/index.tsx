@@ -17,22 +17,14 @@ function CustomSider({ mode }: { mode: string }) {
             Title={() => (
                 <>
                     <Link href={'/'} style={{ all: 'unset', cursor: 'pointer' }}>
-                        {mode === 'dark' && (
-                            <Image
-                                src={'/images/logo-pp.webp'}
-                                alt="logo tasktr"
-                                width={80}
-                                height={24}
-                            />
-                        )}
-                        {mode === 'light' && (
-                            <Image
-                                src={'/images/logo-black.webp'}
-                                alt="logo tasktr"
-                                width={80}
-                                height={24}
-                            />
-                        )}{' '}
+                        <Image
+                            src={
+                                mode === 'dark' ? '/images/logo-pp.webp' : '/images/logo-black.webp'
+                            }
+                            alt="logo tasktr"
+                            width={80}
+                            height={24}
+                        />
                     </Link>
                 </>
             )}

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { HttpError, useParsed } from '@refinedev/core';
 import { List, ShowButton, useTable } from '@refinedev/antd';
-import { Breadcrumb, Space, Table, Tag, Modal, Typography, Descriptions } from 'antd';
+import { Breadcrumb, Space, Table, Modal, Typography, Descriptions } from 'antd';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import {
@@ -24,6 +24,7 @@ import { HttpMethodTag } from '~/components/tag/http-method-tag';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import { type TaskLogDto } from '~be/app/task-logs';
 import { formatDateToHumanReadable, sortArrayByKey } from '~/libs/utils/common';
+import { HttpStatusTag } from '~/components/tag/http-status-tag';
 
 const { Title: TextTitle, Text } = Typography;
 const { Item: DesItem } = Descriptions;
@@ -255,15 +256,7 @@ export default function LogList() {
                         <Table.Column<TaskLogDto>
                             dataIndex="statusCode"
                             title={'Status'}
-                            render={(_, record) => {
-                                let color = 'green';
-                                if (record.statusCode >= 400 && record.statusCode < 500) {
-                                    color = 'orange';
-                                } else if (record.statusCode >= 500 || record.statusCode === 0) {
-                                    color = 'red';
-                                }
-                                return <Tag color={color}>{record.statusCode}</Tag>;
-                            }}
+                            render={(_, record) => <HttpStatusTag statusCode={record.statusCode} />}
                         />
                         <Table.Column<TaskLogDto>
                             dataIndex="executedAt"

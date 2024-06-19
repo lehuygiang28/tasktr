@@ -13,6 +13,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { TasksModule } from './tasks/tasks.module';
+import { StatsModule } from './stats/stats.module';
 
 const imports = [
     ConfigModule.forRoot({
@@ -37,6 +38,7 @@ const imports = [
     MongodbModule,
     UsersModule,
     TasksModule,
+    StatsModule,
 ];
 
 if (!process?.env?.WORKER_MODE || process.env.WORKER_MODE === 'false') {
