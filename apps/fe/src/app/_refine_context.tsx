@@ -37,7 +37,7 @@ type AppProps = {
 
 const App = (props: React.PropsWithChildren<AppProps>) => {
     const defaultMode = props?.defaultMode;
-    const axiosAuth = useAxiosAuth();
+    const axiosAuth = useAxiosAuth({ baseURL: process.env.NEXT_PUBLIC_API_URL });
     const taskTr = { ...tasktrDataProvider(axiosAuth) };
 
     return (

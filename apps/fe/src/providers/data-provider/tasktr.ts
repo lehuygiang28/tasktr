@@ -1,21 +1,14 @@
 'use client';
 
-import {
-    GetListResponse,
-    GetListParams,
-    BaseRecord,
-    DeleteOneParams,
-} from '@refinedev/core';
+import { GetListResponse, GetListParams, BaseRecord, DeleteOneParams } from '@refinedev/core';
 import dataProviderSimpleRest from '@refinedev/simple-rest';
 import { AxiosInstance } from 'axios';
 import { handleFilter, handlePagination, handleSort } from '~/libs/utils/data-provider.util';
 
 import { GetTasksResponseDto, TaskDto } from '~be/app/tasks/dtos';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
-
 export const tasktrDataProvider = (axios: AxiosInstance) => ({
-    ...dataProviderSimpleRest(API_URL, axios),
+    ...dataProviderSimpleRest('', axios),
     getList: async ({
         resource,
         pagination,
@@ -23,7 +16,7 @@ export const tasktrDataProvider = (axios: AxiosInstance) => ({
         sorters,
         meta,
     }: GetListParams): Promise<GetListResponse<BaseRecord & TaskDto>> => {
-        const url = `${API_URL}/${resource}`;
+        const url = `${resource}`;
 
         let searchParams = new URLSearchParams();
         searchParams = handlePagination(searchParams, pagination);
@@ -41,11 +34,11 @@ export const tasktrDataProvider = (axios: AxiosInstance) => ({
     },
     deleteOne: async ({ resource, id, meta, variables }: DeleteOneParams) => {
         if (meta?.params && Array.isArray(meta?.params)) {
-            const url = `${API_URL}/${resource}/${meta?.params.join('/')}/${id}`;
+            const url = `${resource}/${meta?.params.join('/')}/${id}`;
             return axios.delete(url);
         }
 
-        return dataProviderSimpleRest(API_URL, axios).deleteOne({ resource, id, meta, variables });
+        return dataProviderSimpleRest('', axios).deleteOne({ resource, id, meta, variables });
     },
 });
 
