@@ -11,7 +11,7 @@ import { TasksRepository } from './tasks.repository';
 import { Task } from './schemas/task.schema';
 import { CreateTaskDto, GetTasksResponseDto, TaskDto, UpdateTaskDto } from './dtos';
 import { GetTasksDto } from './dtos/get-tasks.dto';
-import { GetLogsByTaskIdDto, GetLogsByTaskIdResponseDto } from '../task-logs/dtos';
+import { GetLogsByTaskIdDto, GetLogsByTaskIdResponseDto, TaskLogDto } from '../task-logs/dtos';
 import { TaskLogsService } from '../task-logs';
 import { ConfigService } from '@nestjs/config';
 import { ClearTasksJobName } from './processors';
@@ -349,11 +349,18 @@ export class TasksService implements OnModuleInit {
         query: GetLogsByTaskIdDto;
         user: JwtPayloadType;
     }): Promise<GetLogsByTaskIdResponseDto> {
+        const queryOptions: Partial<QueryOptions<TaskLogDto>> = {};
+
+        if (query.sortBy && query.sortOrder) {
+            queryOptions.sort = { [query.sortBy]: query.sortOrder };
+        }
+
         const foundTask = await this.taskRepo.findOneOrThrow({
             filterQuery: {
                 _id: convertToObjectId(taskId),
                 userId: convertToObjectId(user.userId),
             },
+            queryOptions,
         });
 
         return this.taskLogsService.getLogsByTaskId({ taskId: foundTask._id, query });

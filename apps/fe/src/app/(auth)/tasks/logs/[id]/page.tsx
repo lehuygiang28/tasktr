@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { HttpError, useParsed } from '@refinedev/core';
-import { List, ShowButton, useTable } from '@refinedev/antd';
+import { HttpError, useParsed, useInvalidate } from '@refinedev/core';
+import { List, ShowButton, useTable, RefreshButton } from '@refinedev/antd';
 import { Breadcrumb, Space, Table, Modal, Typography, Descriptions } from 'antd';
 import { format } from 'date-fns';
 import { useState } from 'react';
@@ -23,8 +23,9 @@ import { Line, Bar } from 'react-chartjs-2';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import { type TaskLogDto } from '~be/app/task-logs';
-import { formatDateToHumanReadable, sortArrayByKey } from '~/libs/utils/common';
+import { formatDateToHumanReadable, getJitter, sortArrayByKey } from '~/libs/utils/common';
 import { HttpStatusTag } from '~/components/tag/http-status-tag';
+import { HttpStatus } from '@nestjs/common';
 
 const { Title: TextTitle, Text } = Typography;
 const { Item: DesItem } = Descriptions;
@@ -42,26 +43,37 @@ ChartJS.register(
 
 export default function LogList() {
     const { pathname } = useParsed();
+    const id = pathname?.replace(/\/$/, '')?.split('/')?.pop();
     const {
         tableProps: { pagination, ...tableProps },
         tableQueryResult: { data },
     } = useTable<TaskLogDto, HttpError>({
-        resource: `tasks/logs/${pathname?.replace(/\/$/, '')?.split('/')?.pop()}`,
+        resource: `tasks/logs/${id}`,
         syncWithLocation: true,
         pagination: {
             mode: 'server',
         },
+        sorters: {
+            mode: 'server',
+            initial: [
+                {
+                    field: 'executedAt',
+                    order: 'desc',
+                },
+            ],
+        },
     });
+    const invalidate = useInvalidate();
 
     const [selectedLog, setSelectedLog] = useState<TaskLogDto | null>(null);
 
-    const sortedData = sortArrayByKey(data?.data, 'executedAt');
+    const ascSortedData = sortArrayByKey(data?.data, 'executedAt', 'asc');
     const chartData: ChartData<'line'> = {
-        labels: sortedData?.map((log) => format(new Date(log.executedAt), 'HH:mm:ss dd/MM/yy')),
+        labels: ascSortedData?.map((log) => format(new Date(log.executedAt), 'HH:mm:ss dd/MM/yy')),
         datasets: [
             {
                 label: 'Duration',
-                data: sortedData?.map((log) => log.timings?.total),
+                data: ascSortedData?.map((log) => log.timings?.total),
                 borderColor: 'rgb(53, 162, 235)',
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',
                 tension: 0.4,
@@ -70,7 +82,7 @@ export default function LogList() {
             },
             {
                 label: 'Wait',
-                data: sortedData?.map((log) => log.timings?.wait),
+                data: ascSortedData?.map((log) => log.timings?.wait),
                 borderColor: 'rgb(255, 205, 86)',
                 backgroundColor: 'rgba(255, 205, 86, 0.5)',
                 tension: 0.4,
@@ -79,7 +91,7 @@ export default function LogList() {
             },
             {
                 label: 'DNS',
-                data: sortedData?.map((log) => log.timings?.dns),
+                data: ascSortedData?.map((log) => log.timings?.dns),
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.5)',
                 tension: 0.4,
@@ -88,7 +100,7 @@ export default function LogList() {
             },
             {
                 label: 'TCP',
-                data: sortedData?.map((log) => log.timings?.tcp),
+                data: ascSortedData?.map((log) => log.timings?.tcp),
                 borderColor: 'rgb(153, 102, 255)',
                 backgroundColor: 'rgba(153, 102, 255, 0.5)',
                 tension: 0.4,
@@ -97,7 +109,7 @@ export default function LogList() {
             },
             {
                 label: 'TLS',
-                data: sortedData?.map((log) => log.timings?.tls),
+                data: ascSortedData?.map((log) => log.timings?.tls),
                 borderColor: 'rgb(255, 159, 64)',
                 backgroundColor: 'rgba(255, 159, 64, 0.5)',
                 tension: 0.4,
@@ -106,7 +118,7 @@ export default function LogList() {
             },
             {
                 label: 'Request',
-                data: sortedData?.map((log) => log.timings?.request),
+                data: ascSortedData?.map((log) => log.timings?.request),
                 borderColor: 'rgb(54, 162, 235)',
                 backgroundColor: 'rgba(54, 162, 235, 0.5)',
                 tension: 0.4,
@@ -115,7 +127,7 @@ export default function LogList() {
             },
             {
                 label: 'First Byte',
-                data: sortedData?.map((log) => log.timings?.firstByte),
+                data: ascSortedData?.map((log) => log.timings?.firstByte),
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
                 tension: 0.4,
@@ -124,7 +136,7 @@ export default function LogList() {
             },
             {
                 label: 'Download',
-                data: sortedData?.map((log) => log.timings?.download),
+                data: ascSortedData?.map((log) => log.timings?.download),
                 borderColor: 'rgb(201, 203, 207)',
                 backgroundColor: 'rgba(201, 203, 207, 0.5)',
                 tension: 0.4,
@@ -133,7 +145,7 @@ export default function LogList() {
             },
             {
                 label: 'Response Size (KB)',
-                data: sortedData?.map((log) => Number(log.responseSizeBytes / 1024)),
+                data: ascSortedData?.map((log) => Number(log.responseSizeBytes / 1024)),
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
                 tension: 0.4,
@@ -164,6 +176,19 @@ export default function LogList() {
                             {pathname?.replace(/\/$/, '')?.split('/')?.pop()}
                         </Breadcrumb.Item>
                     </Breadcrumb>
+                }
+                canCreate={false}
+                headerButtons={
+                    <>
+                        <RefreshButton
+                            onClick={() =>
+                                invalidate({
+                                    resource: `tasks/logs/${id}`,
+                                    invalidates: ['list'],
+                                })
+                            }
+                        />
+                    </>
                 }
             >
                 <Space direction="vertical" style={{ width: '100%' }}>
@@ -265,27 +290,37 @@ export default function LogList() {
                             dataIndex="statusCode"
                             title={'Status'}
                             render={(_, record) => <HttpStatusTag statusCode={record.statusCode} />}
+                            filters={Object.values(HttpStatus).map((value: number) => ({
+                                value: value,
+                                text: <HttpStatusTag statusCode={value} />,
+                            }))}
+                            onFilter={(value, record) => record.statusCode === value}
                         />
                         <Table.Column<TaskLogDto>
                             dataIndex="executedAt"
                             title={'Executed'}
                             render={(_, record) => formatDateToHumanReadable(record.executedAt)}
+                            sorter={(a: TaskLogDto, b: TaskLogDto) =>
+                                new Date(a.executedAt).getTime() - new Date(b.executedAt).getTime()
+                            }
+                            sortDirections={['descend', 'ascend']}
                         />
                         <Table.Column<TaskLogDto>
                             dataIndex="scheduledAt"
                             title={'Scheduled'}
                             render={(_, record) => formatDateToHumanReadable(record.scheduledAt)}
+                            sorter={(a: TaskLogDto, b: TaskLogDto) =>
+                                new Date(a.scheduledAt).getTime() -
+                                new Date(b.scheduledAt).getTime()
+                            }
+                            sortDirections={['descend', 'ascend']}
                         />
                         <Table.Column<TaskLogDto>
                             dataIndex="jitter"
                             title={'Jitter'}
-                            render={(_, record) => {
-                                const diff =
-                                    (new Date(record.executedAt).getTime() -
-                                        new Date(record?.scheduledAt).getTime()) /
-                                    1000;
-                                return <>{`${diff} s`}</>;
-                            }}
+                            render={(_, record) => <>{`${getJitter(record)} s`}</>}
+                            sorter={(a: TaskLogDto, b: TaskLogDto) => getJitter(a) - getJitter(b)}
+                            sortDirections={['descend', 'ascend']}
                         />
                         <Table.Column<TaskLogDto>
                             dataIndex="duration"

@@ -1,4 +1,5 @@
 import { format, isToday, isTomorrow, isYesterday } from 'date-fns';
+import { TaskLogDto } from '~be/app/task-logs';
 
 export function formatDateToHumanReadable(date: Date | string) {
     const d = new Date(date);
@@ -21,17 +22,28 @@ export function formatDateToHumanReadable(date: Date | string) {
     return formattedDate;
 }
 
-export function sortArrayByKey<T>(array: T[], key: keyof T): T[] {
+export function sortArrayByKey<T>(array: T[], key: keyof T, order: 'asc' | 'desc' = 'asc'): T[] {
     if (!array) {
         return [];
     }
-    return array.sort((a, b) => {
+    const cloneArray = [...array];
+    return cloneArray.sort((a, b) => {
         if (a[key] < b[key]) {
-            return -1;
+            return order === 'asc' ? -1 : 1;
         }
         if (a[key] > b[key]) {
-            return 1;
+            return order === 'asc' ? 1 : -1;
         }
         return 0;
     });
+}
+
+/**
+ * Get Jitter between two tasks, in seconds
+ * @returns
+ */
+export function getJitter(taskLog: TaskLogDto) {
+    const diff =
+        (new Date(taskLog.executedAt).getTime() - new Date(taskLog.scheduledAt).getTime()) / 1000;
+    return diff;
 }

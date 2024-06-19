@@ -37,6 +37,15 @@ export default function TaskList() {
                 },
             ],
         },
+        sorters: {
+            mode: 'server',
+            initial: [
+                {
+                    field: 'deletedAt',
+                    order: 'desc',
+                },
+            ],
+        },
     });
     const { mutate: mutateDelete } = useDelete<TaskDto>({});
     const { mutate: mutateRestore } = useUpdate<TaskDto>({});

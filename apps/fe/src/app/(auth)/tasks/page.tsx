@@ -34,6 +34,15 @@ export default function TaskList() {
         pagination: {
             mode: 'server',
         },
+        sorters: {
+            mode: 'server',
+            initial: [
+                {
+                    field: 'createdAt',
+                    order: 'desc',
+                },
+            ],
+        },
     });
     const { mutate: update } = useUpdate<TaskDto>({});
     const debouncedUpdate = useDebouncedCallback(update, 200);
