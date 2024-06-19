@@ -21,28 +21,34 @@ export class TaskLogsService {
     ) {}
     private readonly MAX_LOGS_PER_TASK = this.configsService.get<number>('MAX_LOGS_PER_TASK') || 10;
 
-    async create(taskLog: CreateTaskLogDto): Promise<TaskLog> {
+    async create(taskLog: CreateTaskLogDto): Promise<boolean> {
         const logs = await this.taskLogsRepository.find({
             filterQuery: {
                 taskId: convertToObjectId(taskLog.taskId),
             },
             queryOptions: {
                 limit: this.MAX_LOGS_PER_TASK,
-                sort: { createdAt: 1 },
+                sort: { executedAt: -1 }, // Fetch logs in descending order of execution time
             },
         });
 
+        const promises = [];
         if (logs?.length >= this.MAX_LOGS_PER_TASK) {
-            const oldestLog = logs[0];
-            await this.taskLogsRepository.delete(oldestLog._id);
+            const oldestLog = logs[logs.length - 1]; // The oldest log is now at the end of the array
+            promises.push(this.taskLogsRepository.delete(oldestLog._id));
         }
 
-        return this.taskLogsRepository.create({
-            document: {
-                ...taskLog,
-                taskId: convertToObjectId(taskLog.taskId),
-            },
-        });
+        const [created] = await Promise.allSettled([
+            this.taskLogsRepository.create({
+                document: {
+                    ...taskLog,
+                    taskId: convertToObjectId(taskLog.taskId),
+                },
+            }),
+            ...promises,
+        ]);
+
+        return created.status === 'fulfilled';
     }
 
     async getById(id: string): Promise<TaskLog> {
