@@ -1,11 +1,12 @@
 import { HttpError } from '@refinedev/core';
 import axios from 'axios';
+import { baseApiUrl } from '~/config';
 
 const axiosInstance = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    baseURL: baseApiUrl,
 });
 
 axiosInstance.interceptors.response.use(

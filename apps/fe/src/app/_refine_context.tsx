@@ -18,6 +18,7 @@ import { authProvider } from '~/providers/auth-provider';
 import { useAxiosAuth } from '~/hooks/useAxiosAuth';
 import worldTimeAPIProvider from '~/providers/data-provider/timezone';
 import { tasktrDataProvider } from '~/providers/data-provider/tasktr';
+import { baseApiUrl } from '~/config';
 
 type RefineContextProps = {
     defaultMode?: string;
@@ -37,7 +38,7 @@ type AppProps = {
 
 const App = (props: React.PropsWithChildren<AppProps>) => {
     const defaultMode = props?.defaultMode;
-    const axiosAuth = useAxiosAuth({ baseURL: process.env.NEXT_PUBLIC_API_URL });
+    const axiosAuth = useAxiosAuth({ baseURL: baseApiUrl });
 
     return (
         <>
