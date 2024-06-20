@@ -335,8 +335,6 @@ export class TasksService implements OnModuleInit {
         return {
             data: tasks,
             total,
-            page: query.page || 1,
-            limit: query.limit || tasks?.length,
         };
     }
 

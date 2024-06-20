@@ -91,8 +91,6 @@ export class TaskLogsService {
         return {
             data: logs,
             total,
-            page: query.page || 1,
-            limit: query.limit || logs?.length || 0,
         };
     }
 
