@@ -96,9 +96,9 @@ export function HighlightCode({ source = '', formatType }: HighlightCodeProps) {
             {({ style, tokens, getLineProps, getTokenProps }) => (
                 <pre style={{ ...style, whiteSpace: 'pre-wrap' }}>
                     {tokens.map((line, i) => (
-                        <div key={i} {...getLineProps({ line })}>
+                        <div key={`line-${i}`} {...getLineProps({ line })}>
                             {line.map((token, key) => (
-                                <span key={key} {...getTokenProps({ token })} />
+                                <span key={`token-${key}-${i}`} {...getTokenProps({ token })} />
                             ))}
                         </div>
                     ))}
