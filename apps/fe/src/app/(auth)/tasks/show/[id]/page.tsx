@@ -1,25 +1,18 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
-import { Descriptions, Typography, Spin, Button } from 'antd';
+import Link from 'next/link';
+import { Descriptions, Typography, Button } from 'antd';
 import { ExportButton, Show } from '@refinedev/antd';
 import { useExport, useShow } from '@refinedev/core';
-import { Highlight, themes } from 'prism-react-renderer';
-import { format } from 'prettier';
-import * as prettierBabel from 'prettier/plugins/babel';
-import * as prettierMd from 'prettier/plugins/markdown';
-import * as prettierEstree from 'prettier/plugins/estree';
+import { FileProtectOutlined } from '@ant-design/icons';
 
 import { type TaskDto } from '~be/app/tasks/dtos';
-import { ColorModeContext } from '~/contexts/color-mode';
 import { formatDateToHumanReadable } from '~/libs/utils/common';
-import Link from 'next/link';
-import { FileProtectOutlined } from '@ant-design/icons';
+import { HighlightCode } from '~/components/show';
 
 const { Text } = Typography;
 
 export default function TaskShow() {
-    const { mode } = useContext(ColorModeContext);
     const {
         queryResult: { data: { data: record } = {}, isLoading },
     } = useShow<TaskDto>({});
@@ -31,33 +24,6 @@ export default function TaskShow() {
             return rest;
         },
     });
-
-    const [formattedHeaders, setFormattedHeaders] = useState<string | null>(null);
-    const [formattedBody, setFormattedBody] = useState<string | null>(null);
-    const [formatting, setFormatting] = useState(false);
-
-    useEffect(() => {
-        const formatCode = async () => {
-            setFormatting(true);
-            if (record?.headers) {
-                const formatted = await format(record.headers, {
-                    plugins: [prettierEstree, prettierBabel],
-                    parser: 'json-stringify',
-                });
-                setFormattedHeaders(formatted);
-            }
-            if (record?.body) {
-                const formatted = await format(record.body, {
-                    plugins: [prettierEstree, prettierMd],
-                    parser: 'markdown',
-                });
-                setFormattedBody(formatted);
-            }
-            setFormatting(false);
-        };
-
-        formatCode();
-    }, [record?.headers, record?.body]);
 
     return (
         <Show
@@ -97,52 +63,10 @@ export default function TaskShow() {
                     {record?.updatedAt && formatDateToHumanReadable(record?.updatedAt)}
                 </Descriptions.Item>
                 <Descriptions.Item label="Headers" span={12}>
-                    {formatting ? (
-                        <Spin />
-                    ) : (
-                        <>
-                            <Highlight
-                                theme={mode === 'light' ? themes.duotoneLight : themes.vsDark}
-                                code={formattedHeaders ?? '// empty'}
-                                language="ts"
-                            >
-                                {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                                    <pre style={{ ...style, whiteSpace: 'pre-wrap' }}>
-                                        {tokens.map((line, i) => (
-                                            <div key={i} {...getLineProps({ line })}>
-                                                {line.map((token, key) => (
-                                                    <span key={key} {...getTokenProps({ token })} />
-                                                ))}
-                                            </div>
-                                        ))}
-                                    </pre>
-                                )}
-                            </Highlight>
-                        </>
-                    )}
+                    <HighlightCode source={record?.headers} formatType="json" />
                 </Descriptions.Item>
                 <Descriptions.Item label="Body" span={12}>
-                    {formatting ? (
-                        <Spin />
-                    ) : (
-                        <Highlight
-                            theme={mode === 'light' ? themes.duotoneLight : themes.vsDark}
-                            code={formattedBody ?? '// empty'}
-                            language="ts"
-                        >
-                            {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                                <pre style={{ ...style, whiteSpace: 'pre-wrap' }}>
-                                    {tokens.map((line, i) => (
-                                        <div key={i} {...getLineProps({ line })}>
-                                            {line.map((token, key) => (
-                                                <span key={key} {...getTokenProps({ token })} />
-                                            ))}
-                                        </div>
-                                    ))}
-                                </pre>
-                            )}
-                        </Highlight>
-                    )}
+                    <HighlightCode source={record?.body} formatType="markdown" />
                 </Descriptions.Item>
             </Descriptions>
         </Show>
