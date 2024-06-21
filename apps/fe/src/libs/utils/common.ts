@@ -47,3 +47,10 @@ export function getJitter(taskLog: TaskLogDto) {
         (new Date(taskLog.executedAt).getTime() - new Date(taskLog.scheduledAt).getTime()) / 1000;
     return diff;
 }
+
+export function camelCaseToCapitalizedWords(str: string) {
+    return str
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (s) => s.toUpperCase())
+        .trim();
+}

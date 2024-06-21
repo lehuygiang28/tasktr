@@ -67,3 +67,26 @@ export function valuesOfEnum<T extends object>(enumObj: T): (string | number)[] 
 
     return values;
 }
+
+/**
+ * Normalizes headers by converting all keys to lowercase and trimming whitespace.
+ * @param headers
+ * @returns
+ */
+export function normalizeHeaders(headers: Record<string, unknown>) {
+    if (typeof headers !== 'object' || headers === null || headers === undefined) {
+        throw new Error('Headers must be an object');
+    }
+
+    return Object.entries(headers).reduce((acc, [key, value]) => {
+        if (typeof key !== 'string') {
+            throw new Error('Header keys must be strings');
+        }
+
+        if (value === undefined || value === null) {
+            return acc;
+        }
+
+        return { ...acc, [key.trim().toLowerCase()]: value };
+    }, {});
+}

@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
-import { LogTimingPhases, TaskLog } from '../task-log.schema';
+import { LogTimingPhases, RequestObject, ResponseObject, TaskLog } from '../task-log.schema';
 
 export class LogTimingPhasesDto implements LogTimingPhases {
     @ApiProperty({ type: Number, required: false, description: 'The time spent waiting' })
@@ -110,6 +110,12 @@ export class TaskLogDto implements TaskLog {
 
     @ApiProperty({ type: LogTimingPhasesDto, required: false })
     timings?: LogTimingPhasesDto;
+
+    @ApiProperty({ type: RequestObject, required: false })
+    request?: RequestObject;
+
+    @ApiProperty({ type: ResponseObject, required: false })
+    response?: ResponseObject;
 
     @ApiProperty({ type: Date, required: false })
     @IsDate()

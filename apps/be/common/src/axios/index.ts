@@ -56,12 +56,14 @@ export const httpTimerAdapter = async (
     });
 };
 
+export const defaultHeaders = {
+    'Content-Type': 'application/json, text/plain, */*',
+    'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.142.86 Safari/537.36',
+};
+
 export const axiosConfig: HttpModuleOptions = {
-    headers: {
-        'Content-Type': 'application/text',
-        'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.142.86 Safari/537.36',
-    },
+    headers: defaultHeaders,
     httpAgent: new http.Agent({ keepAlive: true }),
     httpsAgent: new https.Agent({ keepAlive: true }),
     adapter: httpTimerAdapter,

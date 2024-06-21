@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { IntersectionType, PickType } from '@nestjs/swagger';
 import { type Timings } from '@szmarczak/http-timer';
 import { HydratedDocument, Types } from 'mongoose';
 
@@ -31,6 +32,19 @@ export class LogTimingPhases implements Phases {
     @Prop({ type: Number, required: false, default: 0 })
     total?: number;
 }
+
+export class RequestObject extends Object {
+    @Prop({ required: false, type: Object })
+    headers?: Record<string, unknown>;
+
+    @Prop({ required: false, type: String, default: '' })
+    body?: string;
+}
+
+export class ResponseObject extends IntersectionType(
+    Object,
+    PickType(RequestObject, ['headers', 'body']),
+) {}
 
 @Schema({
     timestamps: true,
@@ -66,6 +80,12 @@ export class TaskLog extends AbstractDocument {
 
     @Prop({ required: false, type: LogTimingPhases })
     timings?: LogTimingPhases;
+
+    @Prop({ required: false, type: RequestObject })
+    request?: RequestObject;
+
+    @Prop({ required: false, type: ResponseObject })
+    response?: ResponseObject;
 
     @Prop({ required: false, default: new Date() })
     createdAt?: Date;

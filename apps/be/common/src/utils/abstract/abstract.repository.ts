@@ -15,6 +15,7 @@ import {
 } from 'mongoose';
 import { NotFoundException } from '@nestjs/common';
 import type { NullableType } from '../types';
+import { PaginationRequestDto } from '../dtos';
 
 export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     protected abstract readonly logger: PinoLogger;
@@ -143,36 +144,61 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
         });
     }
 
+    /**
+     * Pagination will automatically calculate, if query is provided
+     * @returns
+     */
     async find({
         filterQuery,
         queryOptions,
         projectionType,
+        query,
     }: {
         filterQuery: FilterQuery<TDocument>;
         queryOptions?: Partial<QueryOptions<TDocument>>;
         projectionType?: ProjectionType<TDocument>;
+        query?: PaginationRequestDto;
     }): Promise<NullableType<TDocument[]>> {
-        const document = await this.model.find(filterQuery, projectionType, {
+        const filter: FilterQuery<TDocument> = { ...filterQuery };
+        const options: Partial<QueryOptions<TDocument>> = {
             lean: true,
             ...queryOptions,
-        });
+        };
+
+        if (query?.sortBy && query?.sortOrder) {
+            options.sort = { [query.sortBy]: query.sortOrder };
+        }
+
+        if (query?.page && query?.limit) {
+            options.skip = (query.page - 1) * query.limit;
+            options.limit = query.limit;
+        }
+
+        const document = await this.model.find(filter, projectionType, options);
 
         return document ?? null;
     }
 
+    /**
+     * Pagination will automatically calculate, if query is provided
+     * @returns
+     */
     async findOrThrow({
         filterQuery,
         queryOptions,
         projectionType,
+        query,
     }: {
         filterQuery: FilterQuery<TDocument>;
         queryOptions?: Partial<QueryOptions<TDocument>>;
         projectionType?: ProjectionType<TDocument>;
+        query?: PaginationRequestDto;
     }): Promise<TDocument[]> {
         const document = await this.find({
             filterQuery,
             queryOptions,
             projectionType,
+            query,
         });
 
         if (!document || document.length <= 0) {

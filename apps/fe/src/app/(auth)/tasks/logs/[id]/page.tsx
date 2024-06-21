@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { HttpError, useParsed, useInvalidate } from '@refinedev/core';
 import { List, ShowButton, useTable, RefreshButton } from '@refinedev/antd';
-import { Breadcrumb, Space, Table, Modal, Typography, Descriptions } from 'antd';
+import { Breadcrumb, Space, Table, Modal, Typography, Descriptions, Collapse } from 'antd';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import {
@@ -23,9 +23,15 @@ import { Line, Bar } from 'react-chartjs-2';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import { type TaskLogDto } from '~be/app/task-logs';
-import { formatDateToHumanReadable, getJitter, sortArrayByKey } from '~/libs/utils/common';
+import {
+    camelCaseToCapitalizedWords,
+    formatDateToHumanReadable,
+    getJitter,
+    sortArrayByKey,
+} from '~/libs/utils/common';
 import { HttpStatusTag } from '~/components/tag/http-status-tag';
 import { HttpStatus } from '@nestjs/common';
+import { HighlightCode } from '~/components/show';
 
 const { Title: TextTitle, Text } = Typography;
 const { Item: DesItem } = Descriptions;
@@ -363,7 +369,7 @@ export default function LogList() {
                     <div>
                         <Space direction="vertical">
                             <Descriptions
-                                layout="vertical"
+                                layout="horizontal"
                                 title={<TextTitle level={3}>Task Log Details</TextTitle>}
                             >
                                 <DesItem label="ID">
@@ -375,15 +381,75 @@ export default function LogList() {
                                 <DesItem label="Endpoint">
                                     <Text>{selectedLog.endpoint}</Text>
                                 </DesItem>
-                                <DesItem label="Method">{selectedLog.method}</DesItem>
-                                <DesItem label="Status Code">{selectedLog.statusCode}</DesItem>
+                                <DesItem label="Method">
+                                    <HttpMethodTag method={selectedLog.method} />
+                                </DesItem>
+                                <DesItem label="Status Code">
+                                    <HttpStatusTag statusCode={selectedLog.statusCode} />
+                                </DesItem>
                                 <DesItem label="Worker Name">
                                     <Text>{selectedLog.workerName}</Text>
+                                </DesItem>
+                                <DesItem label="Request" span={3}>
+                                    <Collapse
+                                        items={[
+                                            {
+                                                key: 'request-headers',
+                                                label: 'Headers',
+                                                children: (
+                                                    <HighlightCode
+                                                        source={JSON.stringify(
+                                                            selectedLog.request?.headers,
+                                                        )}
+                                                        formatType="json"
+                                                    />
+                                                ),
+                                            },
+                                            {
+                                                key: 'request-body',
+                                                label: 'Body',
+                                                children: (
+                                                    <HighlightCode
+                                                        source={selectedLog.request?.body}
+                                                        formatType="auto"
+                                                    />
+                                                ),
+                                            },
+                                        ]}
+                                    />
+                                </DesItem>
+                                <DesItem label="Response" span={3}>
+                                    <Collapse
+                                        items={[
+                                            {
+                                                key: 'response-headers',
+                                                label: 'Headers',
+                                                children: (
+                                                    <HighlightCode
+                                                        source={JSON.stringify(
+                                                            selectedLog.response?.headers,
+                                                        )}
+                                                        formatType="json"
+                                                    />
+                                                ),
+                                            },
+                                            {
+                                                key: 'response-body',
+                                                label: 'Body',
+                                                children: (
+                                                    <HighlightCode
+                                                        source={selectedLog.response?.body}
+                                                        formatType="auto"
+                                                    />
+                                                ),
+                                            },
+                                        ]}
+                                    />
                                 </DesItem>
                             </Descriptions>
 
                             <Descriptions
-                                layout="vertical"
+                                layout="horizontal"
                                 title={<TextTitle level={3}>Timings</TextTitle>}
                             >
                                 <DesItem label="Executed At">
@@ -394,14 +460,23 @@ export default function LogList() {
                                         {formatDateToHumanReadable(selectedLog.scheduledAt)}
                                     </Text>
                                 </DesItem>
-                                <DesItem label="Duration">
-                                    <Text>{selectedLog.timings?.total} ms</Text>
-                                </DesItem>
                                 <DesItem label="Response Size">
                                     <Text>
                                         {(selectedLog.responseSizeBytes / 1024).toFixed(2)} KB
                                     </Text>
                                 </DesItem>
+
+                                {selectedLog.timings &&
+                                    Object.entries(selectedLog.timings).map(([key, value]) => {
+                                        return (
+                                            <DesItem
+                                                label={camelCaseToCapitalizedWords(String(key))}
+                                                key={`timings-${key}-${value}`}
+                                            >
+                                                <Text>{value} ms</Text>
+                                            </DesItem>
+                                        );
+                                    })}
                             </Descriptions>
 
                             {selectedLog.timings && (
