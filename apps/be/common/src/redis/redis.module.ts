@@ -15,6 +15,7 @@ import { RedisService } from './services';
                     port: config.getOrThrow<number>('REDIS_PORT'),
                     password: config.getOrThrow<string>('REDIS_PASSWORD'),
                     connectTimeout: Number(config.get<number>('REDIS_CONNECT_TIMEOUT')) || 20000,
+                    keepAlive: Number(config.get<number>('REDIS_KEEP_ALIVE')) || 1000, // Send a PING every 10 seconds
                     maxRetriesPerRequest: null,
                     reconnectOnError: () => {
                         const reconnectAndResendFailedCmd = 2;
