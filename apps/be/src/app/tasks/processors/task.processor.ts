@@ -8,6 +8,8 @@ import { BULLMQ_TASK_LOG_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
 import { Task } from '~be/app/tasks/schemas/task.schema';
 import { CreateTaskLogDto, TaskLogsJobName } from '~be/app/task-logs';
 import { type Timings } from '@szmarczak/http-timer';
+import { defaultHeaders } from '~be/common/axios';
+import { normalizeHeaders } from '~be/common/utils';
 
 @Injectable()
 @Processor(BULLMQ_TASK_QUEUE, {
@@ -45,10 +47,14 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         const now = Date.now();
         const { name, endpoint, method, body, headers } = job.data;
 
+        const normalizedHeaders = headers ? normalizeHeaders(JSON.parse(headers)) : {};
+
+        const headersValidated = Object.assign(normalizeHeaders(defaultHeaders), normalizedHeaders);
+
         const config: AxiosRequestConfig = {
             url: endpoint,
             method,
-            headers: headers ? JSON.parse(headers) : undefined,
+            headers: headersValidated,
             data: body,
         };
 
@@ -59,7 +65,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             timings = response.request['timings'] || null;
 
             this.logger.info(
-                `FETCH ${name} - ${response?.status} - ${timings?.phases?.total} ms - ${JSON.stringify(response?.data)?.length ?? 0} bytes`,
+                `FETCH ${name} - ${response?.status} - ${timings?.phases?.total} ms - ${String(response?.data ?? '')?.length ?? 0} bytes`,
             );
         } catch (error: AxiosError | unknown) {
             if (error instanceof AxiosError) {
@@ -71,6 +77,8 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             timings = null;
         }
 
+        const stringBody = String(response?.data ?? '');
+
         const taskLog: CreateTaskLogDto = {
             taskId: job.data._id,
             endpoint,
@@ -81,13 +89,28 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
 
             duration: timings?.phases?.total ?? 0,
             statusCode: response?.status ?? 0,
-            responseSizeBytes: JSON.stringify(response?.data)?.length ?? 0,
+            responseSizeBytes: stringBody?.length ?? 0,
             timings: timings?.phases || {},
+
+            request: {
+                headers: headersValidated,
+                body: String(config?.data || ''),
+            },
+
+            response: {
+                headers: response?.headers,
+                body:
+                    stringBody?.length > Number(process.env['MAX_BODY_LOG_SIZE'] || 1024 * 50) // Default 50KB
+                        ? `Body too large (${stringBody?.length} bytes), will not be logged.`
+                        : stringBody,
+            },
         };
 
         await this.taskLogQueue.add(`saveTaskLog`, taskLog, {
             removeOnComplete: 1,
-            attempts: 5,
+            removeOnFail: 1,
+            attempts: 10,
+            // delay: 5000,
             backoff: {
                 type: 'exponential',
                 delay: 5000,
