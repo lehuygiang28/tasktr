@@ -60,6 +60,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
     });
 
     useEffect(() => {
+        setValue('isEnable', false);
         if (defaultValues && Object.keys(defaultValues).length > 0) {
             const taskForm = new TaskFormValidator();
             Object.entries(defaultValues).forEach(([key, value]) => {
