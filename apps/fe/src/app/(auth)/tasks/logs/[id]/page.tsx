@@ -178,8 +178,9 @@ export default function LogList() {
                     </Breadcrumb>
                 }
                 canCreate={false}
-                headerButtons={
+                headerButtons={({ defaultButtons }) => (
                     <>
+                        {defaultButtons}
                         <RefreshButton
                             onClick={() =>
                                 invalidate({
@@ -189,7 +190,7 @@ export default function LogList() {
                             }
                         />
                     </>
-                }
+                )}
             >
                 <Space direction="vertical" style={{ width: '100%' }}>
                     <Line

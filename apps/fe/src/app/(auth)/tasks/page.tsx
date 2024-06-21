@@ -54,7 +54,14 @@ export default function TaskList() {
     });
 
     return (
-        <List headerButtons={<ExportButton onClick={triggerExport} loading={exportLoading} />}>
+        <List
+            headerButtons={({ defaultButtons }) => (
+                <>
+                    {defaultButtons}
+                    <ExportButton onClick={triggerExport} loading={exportLoading} />
+                </>
+            )}
+        >
             <Table<TaskDto>
                 {...tableProps}
                 rowKey="_id"
