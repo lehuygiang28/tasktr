@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
+import {
+    Injectable,
+    OnModuleInit,
+    UnauthorizedException,
+    UnprocessableEntityException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -10,9 +15,9 @@ import { OAuth2Client } from 'google-auth-library';
 
 import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 import { RedisService } from '~be/common/redis';
-import { convertToObjectId, NullableType } from '~be/common/utils';
+import { convertToObjectId, getGravatarUrl, NullableType } from '~be/common/utils';
 import { MailJobName } from '~be/common/mail';
-import { UsersService, UserRoleEnum, UserDto } from '~be/app/users';
+import { UsersService, UserDto, UserRoleEnum } from '~be/app/users';
 
 import {
     AuthLoginGithubDto,
@@ -26,7 +31,7 @@ import { User } from '../users/schemas';
 import { Octokit } from '@octokit/rest';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
     private readonly googleClient: OAuth2Client;
     private readonly octokit: Octokit;
 
@@ -47,6 +52,42 @@ export class AuthService {
         this.octokit = new Octokit({});
     }
 
+    async onModuleInit() {
+        const adminEmail = this.configService.get<string>('ADMIN_EMAIL');
+        if (!adminEmail) {
+            return;
+        }
+
+        const adminFound = await this.usersService.findByEmail(adminEmail);
+        if (adminFound) {
+            if (adminFound.role !== UserRoleEnum.Admin) {
+                this.logger.error(
+                    `User with email: "${adminEmail}" already exists but not admin, please check again or change ADMIN_EMAIL in environment variables`,
+                );
+            } else if (adminFound.role === UserRoleEnum.Admin) {
+                this.logger.info(`Admin user with email: "${adminEmail}" already exists`);
+            }
+
+            return;
+        }
+
+        const adminCreate = await this.usersService.usersRepository.create({
+            document: {
+                email: adminEmail,
+                emailVerified: true,
+                fullName: 'Admin',
+                avatar: {
+                    url: getGravatarUrl(adminEmail),
+                },
+                password: '',
+                role: UserRoleEnum.Admin,
+            },
+        });
+        if (adminCreate) {
+            this.logger.info(`Created admin user with email: ${adminEmail}`);
+        }
+    }
+
     async register(dto: AuthSignupDto): Promise<void> {
         if (await this.usersService.findByEmail(dto.email)) {
             throw new UnprocessableEntityException({
@@ -57,14 +98,13 @@ export class AuthService {
             });
         }
 
-        const userCreated = await this.usersService.usersRepository.create({
-            document: {
-                ...dto,
-                email: dto.email,
-                emailVerified: false,
-                fullName: dto?.fullName || faker.person.fullName(),
-                role: UserRoleEnum.Customer,
-                password: '',
+        const userCreated = await this.usersService.create({
+            ...dto,
+            email: dto.email,
+            emailVerified: false,
+            fullName: dto?.fullName || faker.person.fullName(),
+            avatar: {
+                url: getGravatarUrl(dto.email),
             },
         });
 
@@ -308,8 +348,7 @@ export class AuthService {
                 email: data.email,
                 fullName: data.name,
                 avatar: {
-                    publicId: data.picture,
-                    url: data.picture,
+                    url: data?.picture,
                 },
                 emailVerified: true,
             });
@@ -341,8 +380,7 @@ export class AuthService {
                 email: usrGithub.email,
                 fullName: usrGithub.name,
                 avatar: {
-                    publicId: usrGithub.avatar_url,
-                    url: usrGithub.avatar_url,
+                    url: usrGithub?.avatar_url,
                 },
                 emailVerified: true,
             });
