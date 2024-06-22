@@ -50,7 +50,7 @@ export class ProblemDetails {
         example: {
             email: 'email is not a valid email',
             avatar: {
-                publicId: 'publicId is not a valid publicId',
+                url: 'url is not a valid url',
             },
         },
     })

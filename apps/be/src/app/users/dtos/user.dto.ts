@@ -19,10 +19,6 @@ import { UserRoleEnum } from '../users.enum';
 import { Transform, Type } from 'class-transformer';
 
 export class AvatarDto extends IntersectionType(AvatarSchema) implements AvatarSchema {
-    @IsNotEmpty()
-    @IsString()
-    publicId: string;
-
     @IsOptional()
     @IsUrl({ require_tld: false })
     url: string;
