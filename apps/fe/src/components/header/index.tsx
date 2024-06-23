@@ -46,7 +46,7 @@ export function Header({ sticky, user }: HeaderProps) {
                 {user && (
                     <Space style={{ marginLeft: '8px' }} size="middle">
                         <Text strong>{user.email}</Text>
-                        <Avatar src={user?.avatar.url} alt={`avatar of ${user?.email}`} />
+                        <Avatar src={user?.avatar?.url} alt={`avatar of ${user?.email}`} />
                     </Space>
                 )}
             </Space>
