@@ -2,16 +2,19 @@
 
 import { PropsWithChildren, useContext } from 'react';
 import Image from 'next/image';
-import { Header } from '../../components/header';
-import { ThemedLayoutV2, ThemedSiderV2 } from '@refinedev/antd';
-import { Layout, Typography } from 'antd';
-
-import { ColorModeContext } from '~/contexts/color-mode';
 import Link from 'next/link';
+import { Layout, Typography } from 'antd';
+import { useGetIdentity } from '@refinedev/core';
+import { ThemedLayoutV2, ThemedSiderV2 } from '@refinedev/antd';
+
+import { Header } from '~/components/header';
+import { ColorModeContext } from '~/contexts/color-mode';
+import { UserRoleEnum } from '~be/app/users/users.enum';
+import { type UserDto } from '~be/app/users/dtos';
 
 const { Text } = Typography;
 
-function CustomSider({ mode }: { mode: string }) {
+function CustomSider({ mode, user }: { mode: string; user: UserDto }) {
     return (
         <ThemedSiderV2
             Title={() => (
@@ -31,7 +34,13 @@ function CustomSider({ mode }: { mode: string }) {
             render={({ items, logout, collapsed }) => {
                 return (
                     <>
-                        {items}
+                        {items.map((item) => {
+                            if (item.key.includes('admin') && user?.role !== UserRoleEnum.Admin) {
+                                return <></>;
+                            }
+
+                            return item;
+                        })}
                         {logout}
                         {collapsed}
                     </>
@@ -61,13 +70,14 @@ function CustomFooter({ mode }: { mode: string }) {
 
 export function ThemedLayout({ children }: PropsWithChildren) {
     const { mode } = useContext(ColorModeContext);
+    const { data: user } = useGetIdentity<UserDto>();
 
     return (
         <ThemedLayoutV2
-            Header={() => <Header sticky />}
+            Header={() => <Header user={user} sticky />}
             Sider={() => (
                 <>
-                    <CustomSider mode={mode} />
+                    <CustomSider mode={mode} user={user} />
                 </>
             )}
             dashboard

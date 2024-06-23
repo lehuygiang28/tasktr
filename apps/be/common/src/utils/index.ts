@@ -10,3 +10,4 @@ export * from './types';
 export * from './validation-options';
 export * from './serializer.interceptor';
 export * from './import-helper';
+export * from './gravatar';

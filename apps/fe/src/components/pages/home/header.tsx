@@ -1,10 +1,22 @@
 'use client';
 
 import { useContext, useState } from 'react';
-import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import NextLink from 'next/link';
-import { Layout, Menu, Button, Typography, Drawer, Space, Skeleton, Row, Col } from 'antd';
+import {
+    Layout,
+    Menu,
+    Button,
+    Typography,
+    Drawer,
+    Space,
+    Skeleton,
+    Row,
+    Col,
+    Avatar,
+    Dropdown,
+} from 'antd';
+import { useIsAuthenticated, useGetIdentity, useLogout } from '@refinedev/core';
 import {
     LogoutOutlined,
     MenuOutlined,
@@ -12,18 +24,15 @@ import {
     DownOutlined,
     UpOutlined,
     ArrowRightOutlined,
-    ScheduleOutlined,
-    DashboardOutlined,
 } from '@ant-design/icons';
-import { useIsAuthenticated, useGetIdentity, useLogout } from '@refinedev/core';
-import { LoginResponseDto } from '~be/app/auth/dtos';
-import { ColorModeContext } from '~/contexts/color-mode';
+import { RiDashboardHorizontalLine } from 'react-icons/ri';
+import { GrSchedulePlay } from 'react-icons/gr';
 
-const Avatar = dynamic(() => import('antd').then((antd) => antd.Avatar), { ssr: false });
-const Dropdown = dynamic(() => import('antd').then((antd) => antd.Dropdown), { ssr: false });
+import { ColorModeContext } from '~/contexts/color-mode';
+import { type UserDto } from '~be/app/users/dtos';
 
 const { Header } = Layout;
-const { Link } = Typography;
+const { Link, Text } = Typography;
 
 const menuItems: { label: string; key: string; icon: React.ReactNode }[] = [];
 
@@ -34,7 +43,7 @@ export default function HomePageHeader() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const { data: isAuthData, isLoading: isLoadingAuth } = useIsAuthenticated();
-    const { data: identity, isLoading: isLoadingIdentity } = useGetIdentity<LoginResponseDto>();
+    const { data: identity, isLoading: isLoadingIdentity } = useGetIdentity<UserDto>();
     const { mutate: logout } = useLogout();
 
     const showDrawer = () => {
@@ -57,13 +66,13 @@ export default function HomePageHeader() {
     const loggedItems = [
         {
             key: 'dashboard',
-            icon: <DashboardOutlined />,
+            icon: <RiDashboardHorizontalLine />,
             title: 'Dashboard',
             href: '/dashboard',
         },
         {
             key: 'tasks',
-            icon: <ScheduleOutlined />,
+            icon: <GrSchedulePlay />,
             title: 'Tasks',
             href: '/tasks',
         },
@@ -196,9 +205,15 @@ export default function HomePageHeader() {
                                             }}
                                         >
                                             {!isLoadingIdentity && (
-                                                <Space size="middle" style={{ cursor: 'pointer' }}>
-                                                    <Avatar src={identity?.avatar?.url} />
-                                                    <span>{identity?.email}</span>
+                                                <Space
+                                                    size="middle"
+                                                    style={{ cursor: 'pointer', marginLeft: '8px' }}
+                                                >
+                                                    <Text strong>{identity?.email}</Text>
+                                                    <Avatar
+                                                        src={identity?.avatar?.url}
+                                                        alt={`avatar of ${identity?.email}`}
+                                                    />
                                                     {dropdownOpen ? (
                                                         <UpOutlined style={{ fontSize: '8px' }} />
                                                     ) : (

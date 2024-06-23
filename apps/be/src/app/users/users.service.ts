@@ -4,15 +4,16 @@ import {
     Injectable,
     UnprocessableEntityException,
 } from '@nestjs/common';
+import { FilterQuery, Types } from 'mongoose';
+import * as bcrypt from 'bcryptjs';
+
+import type { NullableType } from '~be/common/utils/types';
+import { convertToObjectId, getGravatarUrl } from '~be/common/utils';
+
+import { CreateUserDto, GetUsersDto, GetUsersResponseDto, UserDto } from './dtos';
 import { UsersRepository } from './users.repository';
 import { UserRoleEnum } from './users.enum';
 import { User } from './schemas';
-import * as bcrypt from 'bcryptjs';
-import type { NullableType } from '~be/common/utils/types';
-import { convertToObjectId } from '~be/common/utils';
-import { CreateUserDto } from './dtos';
-import { Types } from 'mongoose';
-// import { CreateUserDto, FilterUserDto, SortUserDto, UpdateUserMntDto } from './dtos';
 
 @Injectable()
 export class UsersService {
@@ -47,47 +48,14 @@ export class UsersService {
             }
         }
 
-        // const roleOfUse = valuesOfEnum(UserRoleEnum).includes(clonedPayload.role);
-        // if (!roleOfUse) {
-        //     throw new HttpException(
-        //         {
-        //             status: HttpStatus.UNPROCESSABLE_ENTITY,
-        //             errors: {
-        //                 role: 'roleNotExists',
-        //             },
-        //         },
-        //         HttpStatus.UNPROCESSABLE_ENTITY,
-        //     );
-        // }
-
-        // if (clonedPayload.role === UserRoleEnum.Admin) {
-        //     throw new HttpException(
-        //         {
-        //             status: HttpStatus.UNPROCESSABLE_ENTITY,
-        //             errors: {
-        //                 role: 'canNotBeManager',
-        //             },
-        //         },
-        //         HttpStatus.UNPROCESSABLE_ENTITY,
-        //     );
-        // }
-        // if (clonedPayload.role === UserRoleEnum.Customer && !isSocialAuth) {
-        //     throw new HttpException(
-        //         {
-        //             status: HttpStatus.UNPROCESSABLE_ENTITY,
-        //             errors: {
-        //                 role: 'canNotBeCustomer',
-        //             },
-        //         },
-        //         HttpStatus.UNPROCESSABLE_ENTITY,
-        //     );
-        // }
-
         const userCreated = await this.usersRepository.create({
             document: {
                 ...clonedPayload,
                 role: UserRoleEnum.Customer,
                 password: clonedPayload?.password ?? null,
+                avatar: {
+                    url: clonedPayload?.avatar?.url ?? getGravatarUrl(clonedPayload.email),
+                },
             },
         });
         return userCreated;
@@ -146,219 +114,33 @@ export class UsersService {
         return user;
     }
 
-    // async findBySocial(socialId: string, provider: AuthProviderEnum): Promise<NullableType<User>> {
-    //     const user = await this.usersRepository.findOne({
-    //         filterQuery: {
-    //             socialId,
-    //             provider,
-    //         },
-    //     });
-    //     return user ? new User(user) : null;
-    // }
+    async getUsers({ query }: { query: GetUsersDto }): Promise<GetUsersResponseDto> {
+        const filter: FilterQuery<UserDto> = {};
 
-    // async findManyWithPagination({
-    //     filterOptions,
-    //     sortOptions,
-    //     paginationOptions,
-    // }: {
-    //     filterOptions?: FilterUserDto | null;
-    //     sortOptions?: SortUserDto[] | null;
-    //     paginationOptions: TPaginationOptions;
-    // }): Promise<User[]> {
-    //     return this.usersRepository.findManyWithPagination({
-    //         filterOptions,
-    //         sortOptions,
-    //         paginationOptions,
-    //     });
-    // }
+        if (query?.emailVerified) {
+            filter.emailVerified = query.emailVerified == true || query.emailVerified == 'true'; // cast to boolean
+        }
 
-    // async updateUserMnt(
-    //     targetUserId: string | Types.ObjectId,
-    //     actorId: string | Types.ObjectId,
-    //     payload: UpdateUserMntDto,
-    // ) {
-    //     // eslint-disable-next-line prefer-const
-    //     let [targetUser, actor] = await Promise.all([
-    //         this.usersRepository.findOneOrThrow({
-    //             filterQuery: {
-    //                 _id: convertToObjectId(targetUserId),
-    //             },
-    //         }),
-    //         this.usersRepository.findOneOrThrow({
-    //             filterQuery: {
-    //                 _id: convertToObjectId(actorId),
-    //             },
-    //         }),
-    //     ]);
+        if (query?.roles?.length > 0) {
+            filter.role = { $in: query.roles };
+        }
 
-    //     if (payload?.role) {
-    //         targetUser = this.changeRole({
-    //             targetUser,
-    //             actor,
-    //             role: payload.role,
-    //         });
-    //     }
+        const [users, total] = await Promise.all([
+            this.usersRepository.find({ filterQuery: filter, query }),
+            this.usersRepository.count(filter),
+        ]);
 
-    //     if (payload?.block) {
-    //         switch (payload.block.action) {
-    //             case UserBlockActionEnum.Block:
-    //                 targetUser = this.updateUserBlockStatus({
-    //                     targetUser,
-    //                     actor,
-    //                     block: payload.block,
-    //                     isBlocked: true,
-    //                     action: UserBlockActionEnum.Block,
-    //                     selfBlockError: 'cannotBlockYourself',
-    //                     permissionError: 'notAllowedToBlock',
-    //                     alreadyBlockedError: 'userAlreadyBlocked',
-    //                 });
-    //                 break;
-    //             case UserBlockActionEnum.Unblock:
-    //                 targetUser = this.updateUserBlockStatus({
-    //                     targetUser,
-    //                     actor,
-    //                     block: payload.block,
-    //                     isBlocked: false,
-    //                     action: UserBlockActionEnum.Unblock,
-    //                     selfBlockError: 'cannotUnblockYourself',
-    //                     permissionError: 'notAllowedToUnblock',
-    //                     alreadyBlockedError: 'userAlreadyNotBlocked',
-    //                 });
-    //                 break;
-    //             default:
-    //                 break;
-    //         }
-    //     }
-    //     await this.usersRepository.findOneAndUpdateOrThrow({
-    //         filterQuery: {
-    //             _id: convertToObjectId(targetUserId),
-    //         },
-    //         updateQuery: targetUser,
-    //     });
-    // }
+        return {
+            total,
+            data: users,
+        };
+    }
 
-    // public async isImageInUse(publicId: string): Promise<boolean> {
-    //     return (await this.usersRepository.count({ 'avatar.publicId': publicId })) > 0;
-    // }
-
-    // private changeRole({
-    //     targetUser,
-    //     actor,
-    //     role,
-    // }: {
-    //     targetUser: User;
-    //     actor: User;
-    //     role: UserRoleEnum;
-    // }): User {
-    //     if (targetUser._id === actor._id) {
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.UNPROCESSABLE_ENTITY,
-    //                 errors: {
-    //                     role: 'cannotChangeRoleOfYourself',
-    //                 },
-    //             },
-    //             HttpStatus.UNPROCESSABLE_ENTITY,
-    //         );
-    //     }
-
-    //     if (actor.role !== UserRoleEnum.Manager || targetUser.role === UserRoleEnum.Manager) {
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.UNPROCESSABLE_ENTITY,
-    //                 errors: {
-    //                     role: 'notAllowedToChangeRole',
-    //                 },
-    //             },
-    //             HttpStatus.UNPROCESSABLE_ENTITY,
-    //         );
-    //     }
-
-    //     if (targetUser?.role === role) {
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.UNPROCESSABLE_ENTITY,
-    //                 errors: {
-    //                     role: 'userAlreadyHasRole',
-    //                 },
-    //             },
-    //             HttpStatus.UNPROCESSABLE_ENTITY,
-    //         );
-    //     }
-
-    //     targetUser.role = role;
-    //     return targetUser;
-    // }
-
-    // private updateUserBlockStatus({
-    //     targetUser,
-    //     actor,
-    //     block: blockObject,
-    //     isBlocked,
-    //     action,
-    //     selfBlockError,
-    //     permissionError,
-    //     alreadyBlockedError,
-    // }: {
-    //     targetUser: User;
-    //     actor: User;
-    //     block: UpdateUserMntDto['block'];
-    //     isBlocked: boolean;
-    //     action: UserBlockActionEnum;
-    //     selfBlockError: string;
-    //     permissionError: string;
-    //     alreadyBlockedError: string;
-    // }): User {
-    //     if (targetUser._id === actor._id) {
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.UNPROCESSABLE_ENTITY,
-    //                 errors: {
-    //                     block: selfBlockError,
-    //                 },
-    //             },
-    //             HttpStatus.UNPROCESSABLE_ENTITY,
-    //         );
-    //     }
-
-    //     if (actor.role !== UserRoleEnum.Manager || targetUser.role === UserRoleEnum.Manager) {
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.UNPROCESSABLE_ENTITY,
-    //                 errors: {
-    //                     block: permissionError,
-    //                 },
-    //             },
-    //             HttpStatus.UNPROCESSABLE_ENTITY,
-    //         );
-    //     }
-
-    //     if (targetUser?.block?.isBlocked === isBlocked) {
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.UNPROCESSABLE_ENTITY,
-    //                 errors: {
-    //                     block: alreadyBlockedError,
-    //                 },
-    //             },
-    //             HttpStatus.UNPROCESSABLE_ENTITY,
-    //         );
-    //     }
-
-    //     const actLogs = targetUser?.block?.activityLogs || [];
-    //     actLogs.push({
-    //         action,
-    //         actionAt: new Date(),
-    //         actionBy: actor._id,
-    //         reason: blockObject?.activityLogs.reason ?? '',
-    //         note: blockObject?.activityLogs.note ?? '',
-    //     });
-
-    //     return Object.assign(targetUser, {
-    //         block: {
-    //             isBlocked,
-    //             activityLogs: actLogs,
-    //         },
-    //     });
-    // }
+    async getUserById(id: string | Types.ObjectId): Promise<UserDto> {
+        return this.usersRepository.findOne({
+            filterQuery: {
+                _id: convertToObjectId(id),
+            },
+        });
+    }
 }

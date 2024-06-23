@@ -7,10 +7,13 @@ import { DataProvider, Refine } from '@refinedev/core';
 import { RefineKbar, RefineKbarProvider } from '@refinedev/kbar';
 import { SessionProvider } from 'next-auth/react';
 import { useNotificationProvider } from '@refinedev/antd';
-import { DeleteOutlined, ScheduleOutlined, DashboardOutlined } from '@ant-design/icons';
 import routerProvider from '@refinedev/nextjs-router';
-
 import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { MdOutlineAdminPanelSettings } from 'react-icons/md';
+import { FaUsers } from 'react-icons/fa';
+import { RiDashboardHorizontalLine } from 'react-icons/ri';
+import { GrSchedulePlay } from 'react-icons/gr';
+import { RiDeleteBin3Line } from 'react-icons/ri';
 
 import { ColorModeContextProvider } from '~/contexts/color-mode';
 import { DevtoolsProvider } from '~/providers/devtools';
@@ -60,7 +63,7 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                                         list: '/dashboard',
                                         meta: {
                                             canDelete: false,
-                                            icon: <DashboardOutlined />,
+                                            icon: <RiDashboardHorizontalLine />,
                                         },
                                     },
                                     {
@@ -72,7 +75,7 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                                         clone: '/tasks/logs/:id',
                                         meta: {
                                             canDelete: true,
-                                            icon: <ScheduleOutlined />,
+                                            icon: <GrSchedulePlay />,
                                         },
                                     },
                                     {
@@ -80,7 +83,23 @@ const App = (props: React.PropsWithChildren<AppProps>) => {
                                         list: '/recycle-bin',
                                         meta: {
                                             canDelete: true,
-                                            icon: <DeleteOutlined />,
+                                            icon: <RiDeleteBin3Line />,
+                                        },
+                                    },
+                                    {
+                                        name: 'admin',
+                                        meta: {
+                                            icon: <MdOutlineAdminPanelSettings />,
+                                        },
+                                    },
+                                    {
+                                        name: 'users',
+                                        list: '/users',
+                                        edit: '/users/edit/:id',
+                                        show: '/users/show/:id',
+                                        meta: {
+                                            parent: 'admin',
+                                            icon: <FaUsers />,
                                         },
                                     },
                                 ]}
