@@ -1,11 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { format } from 'date-fns/format';
+import { type NextRequest, NextResponse } from 'next/server';
+import { toZonedTime, format } from 'date-fns-tz';
 
-export async function GET(request: NextRequest) {
-    return new NextResponse(`pong ${format(new Date(), 'HH:mm:ss:SSS dd/MM/yyyy')}`, {
-        headers: {
-            'Cache-Control': 'no-store, max-age=0, must-revalidate',
-            'Content-Type': 'text/plain',
-        },
+export const dynamic = 'force-dynamic';
+
+export async function GET(_req: NextRequest) {
+    const zonedDate = toZonedTime(new Date(), process.env.TZ || 'Asia/Ho_Chi_Minh');
+    return NextResponse.json({
+        message: 'pong',
+        time: format(zonedDate, 'HH:mm:ss:SSS dd/MM/yyyy'),
     });
 }

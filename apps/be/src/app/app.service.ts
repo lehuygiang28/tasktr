@@ -1,13 +1,15 @@
 import { Response } from 'express';
 import { Injectable } from '@nestjs/common';
-import { format } from 'date-fns/format';
+import { toZonedTime, format } from 'date-fns-tz';
 
 @Injectable()
 export class AppService {
     getPing(res: Response) {
-        res.header('Cache-Control', 'no-store, max-age=0, must-revalidate')
-            .header('Content-Type', 'text/plain')
-            .send(`pong ${format(new Date(), 'HH:mm:ss:SSS dd/MM/yyyy')}`);
+        const zonedDate = toZonedTime(new Date(), process.env.TZ || 'Asia/Ho_Chi_Minh');
+        res.json({
+            message: 'pong',
+            time: format(zonedDate, 'HH:mm:ss:SSS dd/MM/yyyy'),
+        });
         return;
     }
 }
