@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { HttpError, useParsed, useInvalidate } from '@refinedev/core';
 import { List, ShowButton, useTable, RefreshButton } from '@refinedev/antd';
 import { Breadcrumb, Space, Table, Modal, Typography, Descriptions, Collapse } from 'antd';
-import { format } from 'date-fns';
+import { format } from 'date-fns/format';
 import { useState } from 'react';
 import {
     Chart as ChartJS,
