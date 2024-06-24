@@ -10,6 +10,29 @@
             "name": "Tasktr-fe",
             "url": "http://giaang.local:3000",
             "webRoot": "${workspaceFolder}"
+        },
+        {
+            "name": "Tasktr-be",
+            "type": "node",
+            "request": "launch",
+            "args": ["apps/be/src/main.ts"],
+            "runtimeArgs": [
+                "--require",
+                "ts-node/register",
+                "--require",
+                "tsconfig-paths/register"
+            ],
+            "cwd": "${workspaceRoot}",
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {
+                "TS_NODE_PROJECT": "apps/be/tsconfig.app.json",
+                "DEPLOY_ENV": "serverless"
+            },
+            "envFile": "${workspaceFolder}/apps/be/.env",
+            "sourceMaps": true,
+            "console": "internalConsole",
+            "outputCapture": "std",
+            "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]
         }
     ]
 }
