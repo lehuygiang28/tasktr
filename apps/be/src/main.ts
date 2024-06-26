@@ -1,6 +1,5 @@
-import { Logger } from 'nestjs-pino';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
-import helmet from 'helmet';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import {
     DocumentBuilder,
@@ -8,6 +7,8 @@ import {
     SwaggerDocumentOptions,
     SwaggerModule,
 } from '@nestjs/swagger';
+import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 import * as swaggerStats from 'swagger-stats';
 
@@ -18,7 +19,6 @@ import {
     ResolvePromisesInterceptor,
     validationOptions,
 } from '~be/common/utils';
-import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
     const port = process.env.PORT || 8000;
@@ -51,12 +51,9 @@ async function bootstrap() {
         .setContact('lehuygiang28', 'https://giaang.id.vn', 'lehuygiang28@gmail.com')
         .setDescription('The documentations of the Tasktr RESTful API')
         .setVersion('0.0.1')
-        .setLicense(
-            'MIT LICENSE',
-            'https://github.com/TechCell-Project/the-next-server?tab=MIT-1-ov-file',
-        )
+        .setLicense('MIT LICENSE', 'https://github.com/lehuygiang28/tasktr?tab=MIT-1-ov-file')
         .setExternalDoc('Tasktr Github', 'https://github.com/lehuygiang28/tasktr')
-        .addServer('http://localhost:8000')
+        .addServer('http://localhost:8000', 'https://tasktr.vercel.app')
         .addBearerAuth()
         .build();
 
@@ -69,7 +66,7 @@ async function bootstrap() {
     const swaggerCustomOptions: SwaggerCustomOptions = {
         customSiteTitle: 'Tasktr RESTful API documentations',
         customCss: new SwaggerTheme().getBuffer(SwaggerThemeNameEnum.NORD_DARK),
-        customfavIcon: `${configService.get('FE_DOMAIN')}/favicon.ico`,
+        customfavIcon: '/favicon.ico',
     };
     SwaggerModule.setup('docs', app, document, swaggerCustomOptions);
 

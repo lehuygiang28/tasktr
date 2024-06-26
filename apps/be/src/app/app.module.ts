@@ -1,6 +1,8 @@
+import { join } from 'node:path';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 import { MongodbModule } from '~be/common/mongodb';
 import { LoggerModule } from '~be/common/pino-logger';
@@ -18,6 +20,10 @@ import { StatsModule } from './stats/stats.module';
 const imports = [
     ConfigModule.forRoot({
         isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+        rootPath: join(__dirname, '..', 'assets', 'public'),
+        serveRoot: '/',
     }),
     RedisModule,
     BullModule.forRootAsync({
