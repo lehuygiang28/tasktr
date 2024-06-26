@@ -34,7 +34,7 @@ async function bootstrap() {
     app.enableShutdownHooks();
 
     app.useGlobalPipes(new ValidationPipe(validationOptions));
-    app.useGlobalFilters(new ProblemDetailsFilter());
+    app.useGlobalFilters(new ProblemDetailsFilter(app.get(Logger)));
 
     app.useGlobalInterceptors(
         // ResolvePromisesInterceptor is used to resolve promises in responses because class-transformer can't do it
