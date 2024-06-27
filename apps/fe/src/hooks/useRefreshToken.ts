@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
-import { axiosInstance } from '~/libs/axios';
 import { LoginResponseDto } from '~be/app/auth/dtos';
+import { useAxios } from './useAxios';
 
 export function useRefreshToken() {
+    const { instance: axiosInstance } = useAxios();
     const { data: session } = useSession();
     const [isRefreshing, setIsRefreshing] = useState(false);
 

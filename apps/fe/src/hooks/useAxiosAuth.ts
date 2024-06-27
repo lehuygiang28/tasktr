@@ -1,7 +1,7 @@
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
+import { useAxios } from './useAxios';
 import { useRefreshToken } from './useRefreshToken';
-import { axiosInstance } from '~/libs/axios';
 
 export type UseAxiosAuthPayload =
     | {
@@ -10,6 +10,7 @@ export type UseAxiosAuthPayload =
     | undefined;
 
 export function useAxiosAuth(payload?: UseAxiosAuthPayload) {
+    const { instance: axiosInstance } = useAxios();
     const { data: session, status } = useSession();
     const refreshToken = useRefreshToken();
 
@@ -54,7 +55,7 @@ export function useAxiosAuth(payload?: UseAxiosAuthPayload) {
             axiosInstance.interceptors.request.eject(requestIntercept);
             axiosInstance.interceptors.response.eject(responseIntercept);
         };
-    }, [session, refreshToken, status, payload]);
+    }, [axiosInstance, session, refreshToken, status, payload]);
 
     return axiosInstance;
 }
