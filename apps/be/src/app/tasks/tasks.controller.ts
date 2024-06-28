@@ -10,14 +10,22 @@ import {
     Post,
     Query,
 } from '@nestjs/common';
-import { TasksService } from './tasks.service';
-import { CreateTaskDto, GetTasksResponseDto, TaskDto } from './dtos';
 import { ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
-import { UpdateTaskDto } from './dtos/update-task.dto';
-import { AuthRoles } from '../auth/guards/auth.guard';
+
 import { CurrentUser, IdParamDto } from '~be/common/utils';
+
+import { TasksService } from './tasks.service';
+import {
+    CreateTaskDto,
+    GetTasksResponseDto,
+    TaskDto,
+    TryRequestResponseDto,
+    UpdateTaskDto,
+    GetTasksDto,
+    TryRequestDto,
+} from './dtos';
+import { AuthRoles } from '../auth/guards/auth.guard';
 import { JwtPayloadType } from '../auth/strategies';
-import { GetTasksDto } from './dtos/get-tasks.dto';
 import { GetLogsByTaskIdDto, GetLogsByTaskIdResponseDto } from '../task-logs/dtos';
 
 @AuthRoles()
@@ -30,6 +38,13 @@ export class TasksController {
     @Post('/')
     createTask(@Body() data: CreateTaskDto, @CurrentUser() user: JwtPayloadType) {
         return this.tasksService.createTask({ data, user });
+    }
+
+    @ApiOkResponse({ type: TryRequestResponseDto })
+    @HttpCode(HttpStatus.OK)
+    @Post('/try')
+    tryRequest(@Body() data: TryRequestDto) {
+        return this.tasksService.tryRequestTask({ taskData: data });
     }
 
     @ApiOkResponse({ type: TaskDto })

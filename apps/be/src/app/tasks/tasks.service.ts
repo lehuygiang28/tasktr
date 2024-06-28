@@ -1,22 +1,33 @@
 import { Injectable, OnModuleInit, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bullmq';
+import { HttpService } from '@nestjs/axios';
 import { Queue, JobsOptions } from 'bullmq';
 import { FilterQuery, QueryOptions, Types, UpdateQuery } from 'mongoose';
 import { PinoLogger } from 'nestjs-pino';
+import { Timings } from '@szmarczak/http-timer';
 
 import { BULLMQ_CLEAR_TASK_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
-import { convertToObjectId, validateCronFrequency } from '~be/common/utils';
+import { convertToObjectId, normalizeHeaders, validateCronFrequency } from '~be/common/utils';
 import { JwtPayloadType } from '~be/app/auth/strategies';
 
 import { TasksRepository } from './tasks.repository';
 import { Task } from './schemas/task.schema';
-import { CreateTaskDto, GetTasksResponseDto, TaskDto, UpdateTaskDto } from './dtos';
+import {
+    CreateTaskDto,
+    GetTasksResponseDto,
+    TaskDto,
+    TryRequestDto,
+    TryRequestResponseDto,
+    UpdateTaskDto,
+} from './dtos';
 import { GetTasksDto } from './dtos/get-tasks.dto';
 import { GetLogsByTaskIdDto, GetLogsByTaskIdResponseDto, TaskLogDto } from '../task-logs/dtos';
 import { TaskLogsService } from '../task-logs';
 import { ClearTasksJobName } from './processors';
 import { AllConfig } from '../config';
+import { defaultHeaders } from '~be/common/axios';
+import { AxiosRequestConfig } from 'axios';
 
 @Injectable()
 export class TasksService implements OnModuleInit {
@@ -31,6 +42,7 @@ export class TasksService implements OnModuleInit {
         private readonly configService: ConfigService<AllConfig>,
         private readonly taskRepo: TasksRepository,
         private readonly taskLogsService: TaskLogsService,
+        private readonly httpService: HttpService,
     ) {}
 
     async onModuleInit() {
@@ -466,5 +478,67 @@ export class TasksService implements OnModuleInit {
             userId: convertToObjectId(user.userId),
             ...query,
         });
+    }
+
+    async tryRequestTask({ taskData }: { taskData: TryRequestDto }) {
+        const { endpoint, method, body = undefined, headers } = taskData;
+        const normalizedHeaders = headers ? normalizeHeaders(JSON.parse(headers)) : {};
+        const headersValidated = Object.assign(normalizeHeaders(defaultHeaders), normalizedHeaders);
+
+        const config: AxiosRequestConfig = {
+            url: endpoint,
+            method,
+            headers: headersValidated,
+            data: body,
+        };
+
+        let returnRes: TryRequestResponseDto;
+
+        try {
+            const response = await this.httpService.axiosRef.request(config);
+
+            const stringBody = String(response.data);
+            const timings: Timings = response.request['timings'] || null;
+
+            returnRes = new TryRequestResponseDto({
+                endpoint: endpoint,
+                method: method,
+                statusCode: response?.status ?? 0,
+                responseSizeBytes: stringBody?.length ?? 0,
+                timings: timings?.phases || {},
+                request: {
+                    headers: response.request?.headers || response.config?.headers,
+                    body: body,
+                },
+
+                response: {
+                    headers: response?.headers,
+                    body:
+                        stringBody?.length > Number(process.env['MAX_BODY_LOG_SIZE'] || 1024 * 50) // Default 50KB
+                            ? `Body too large (${stringBody?.length} bytes), will not be logged.`
+                            : stringBody,
+                },
+            });
+        } catch (error) {
+            this.logger.error(error);
+            returnRes = new TryRequestResponseDto({
+                endpoint: endpoint,
+                method: method,
+                statusCode: error?.response?.status ?? 0,
+                responseSizeBytes: error?.response?.data?.length ?? 0,
+                timings: error?.response?.request?.['timings'] || null,
+                request: {
+                    headers: error?.response?.request?.headers || error?.response?.config?.headers,
+                    body: body,
+                },
+                response: {
+                    headers: error?.response?.headers,
+                    body: error?.response?.data,
+                },
+                errorMessage: error?.message ?? error?.response?.data,
+            });
+        }
+
+        return returnRes;
     }
 }
