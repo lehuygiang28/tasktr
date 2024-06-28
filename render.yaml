@@ -1,0 +1,77 @@
+services:
+    - name: tasktr_be
+      type: web
+      runtime: node
+      plan: free
+      repo: https://github.com/lehuygiang28/tasktr
+      branch: main
+      rootDir: .
+      buildCommand: yarn --immutable; yarn nx build be --skip-nx-cache
+      startCommand: node ./dist/apps/be/main.js
+      maxShutdownDelaySeconds: 300
+      autoDeploy: true
+      region: singapore
+      healthCheckPath: /api/ping
+      envVars:
+        - key: NODE_ENV
+          value: production
+        - key: PORT
+          value: 8000
+        - key: WORKER_NAME
+          sync: true
+        - key: MONGODB_URI
+          sync: true
+        - key: TASK_CONCURRENCY
+          sync: true
+        - key: MAIL_CONCURRENCY
+          sync: true
+        - key: SAVE_LOG_CONCURRENCY
+          sync: true
+        - key: CLEAR_LOG_CONCURRENCY
+          sync: true
+        - key: MAX_LOGS_PER_TASK
+          sync: true
+        - key: REDIS_HOST
+          sync: true
+        - key: REDIS_PORT
+          sync: true
+        - key: REDIS_PASSWORD
+          sync: true
+        - key: MAIL_SENDER
+          sync: true
+        - key: SENDGRID_PASSWORD
+          sync: true
+        - key: GMAIL_USER
+          sync: true
+        - key: GMAIL_PASSWORD
+          sync: true
+        - key: RESEND_API_KEY
+          sync: true
+        - key: FALLBACK_LANGUAGE
+          sync: true
+        - key: API_STATS_PATH
+          sync: true
+        - key: API_STATS_USERNAME
+          sync: true
+        - key: API_STATS_PASSWORD
+          sync: true
+        - key: AUTH_JWT_TOKEN_EXPIRES_IN
+          sync: true
+        - key: AUTH_JWT_SECRET
+          sync: true
+        - key: AUTH_REFRESH_TOKEN_EXPIRES_IN
+          sync: true
+        - key: AUTH_REFRESH_SECRET
+          sync: true
+        - key: AUTH_PASSWORDLESS_EXPIRES_IN
+          sync: true
+        - key: AUTH_PASSWORDLESS_SECRET
+          sync: true
+        - key: AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN
+          sync: true
+        - key: AUTH_CONFIRM_EMAIL_SECRET
+          sync: true
+        - key: AUTH_GOOGLE_ID
+          sync: true
+        - key: AUTH_GOOGLE_SECRET
+          sync: true
