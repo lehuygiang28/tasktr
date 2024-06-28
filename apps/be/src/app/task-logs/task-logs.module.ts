@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Provider } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@nestjs/bullmq';
 
@@ -9,6 +9,12 @@ import { TaskLogsRepository } from './task-logs.repository';
 import { TaskLogsService } from './task-logs.service';
 import { TaskLogProcessor } from './task-log.processor';
 
+const providers: Provider[] = [TaskLogsRepository, TaskLogsService];
+
+if (!(process.env['SAVE_LOG_CONCURRENCY'] && Number(process.env['SAVE_LOG_CONCURRENCY']) <= 0)) {
+    providers.push(TaskLogProcessor);
+}
+
 @Module({
     imports: [
         MongooseModule.forFeature([{ name: TaskLog.name, schema: TaskLogSchema }]),
@@ -16,7 +22,7 @@ import { TaskLogProcessor } from './task-log.processor';
             name: BULLMQ_TASK_LOG_QUEUE,
         }),
     ],
-    providers: [TaskLogsRepository, TaskLogsService, TaskLogProcessor],
-    exports: [TaskLogsService, TaskLogProcessor],
+    providers: providers,
+    exports: [TaskLogsService],
 })
 export class TaskLogsModule {}

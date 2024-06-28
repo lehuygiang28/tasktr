@@ -1,10 +1,12 @@
 import { Injectable, OnModuleInit, UnprocessableEntityException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue, JobsOptions } from 'bullmq';
 import { FilterQuery, QueryOptions, Types, UpdateQuery } from 'mongoose';
+import { PinoLogger } from 'nestjs-pino';
 
 import { BULLMQ_CLEAR_TASK_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
-import { convertToObjectId, MaybeType, validateCronFrequency } from '~be/common/utils';
+import { convertToObjectId, validateCronFrequency } from '~be/common/utils';
 import { JwtPayloadType } from '~be/app/auth/strategies';
 
 import { TasksRepository } from './tasks.repository';
@@ -13,9 +15,8 @@ import { CreateTaskDto, GetTasksResponseDto, TaskDto, UpdateTaskDto } from './dt
 import { GetTasksDto } from './dtos/get-tasks.dto';
 import { GetLogsByTaskIdDto, GetLogsByTaskIdResponseDto, TaskLogDto } from '../task-logs/dtos';
 import { TaskLogsService } from '../task-logs';
-import { ConfigService } from '@nestjs/config';
 import { ClearTasksJobName } from './processors';
-import { PinoLogger } from 'nestjs-pino';
+import { AllConfig } from '../config';
 
 @Injectable()
 export class TasksService implements OnModuleInit {
@@ -27,7 +28,7 @@ export class TasksService implements OnModuleInit {
         @InjectQueue(BULLMQ_CLEAR_TASK_QUEUE)
         readonly clearTaskQueue: Queue<unknown, unknown, ClearTasksJobName>,
         private readonly logger: PinoLogger,
-        private readonly configService: ConfigService,
+        private readonly configService: ConfigService<AllConfig>,
         private readonly taskRepo: TasksRepository,
         private readonly taskLogsService: TaskLogsService,
     ) {}
@@ -434,8 +435,10 @@ export class TasksService implements OnModuleInit {
      * Use in cronjob - background job to scan and delete tasks that have been soft deleted
      */
     async scanToHardDeleteTasks(): Promise<void> {
-        const deletionThreshold =
-            Number(this.configService.get<MaybeType<number>>('SOFT_DELETE_THRESHOLD_DAYS')) || 30;
+        const deletionThreshold = this.configService.getOrThrow('tasks.softDeleteThresholdDays', {
+            infer: true,
+        });
+
         const thresholdDate = new Date();
         thresholdDate.setDate(thresholdDate.getDate() - deletionThreshold);
 

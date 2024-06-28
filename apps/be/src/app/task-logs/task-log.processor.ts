@@ -11,7 +11,7 @@ export type TaskLogsJobName = 'saveTaskLog';
 
 @Injectable()
 @Processor(BULLMQ_TASK_LOG_QUEUE, {
-    concurrency: Number(process.env['BULL_SAVE_LOG_CONCURRENCY']) || 10,
+    concurrency: Number(process.env['SAVE_LOG_CONCURRENCY']) || 10,
 })
 export class TaskLogProcessor extends WorkerHost implements OnModuleInit {
     constructor(

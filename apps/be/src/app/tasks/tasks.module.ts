@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
+import { Module, Provider } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@nestjs/bullmq';
 import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
 
 import {
     BULLMQ_TASK_QUEUE,
@@ -15,10 +16,22 @@ import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { TasksRepository } from './tasks.repository';
 import { TaskLogsModule } from '../task-logs';
-import { ClearTasksProcessor, TaskProcessor } from './processors';
+import { TaskProcessor, ClearTasksProcessor } from './processors';
+import tasksConfig from './config/tasks-config';
+
+const providers: Provider[] = [TasksRepository, TasksService];
+
+if (!(process.env['TASKS_CONCURRENCY'] && Number(process.env['TASKS_CONCURRENCY']) <= 0)) {
+    providers.push(TaskProcessor);
+}
+
+if (!(process.env['CLEAR_LOG_CONCURRENCY'] && Number(process.env['CLEAR_LOG_CONCURRENCY']) <= 0)) {
+    providers.push(ClearTasksProcessor);
+}
 
 @Module({
     imports: [
+        ConfigModule.forFeature(tasksConfig),
         HttpModule.register(axiosConfig),
         MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
         TaskLogsModule,
@@ -33,7 +46,7 @@ import { ClearTasksProcessor, TaskProcessor } from './processors';
         }),
     ],
     controllers: [TasksController],
-    providers: [TasksRepository, TasksService, TaskProcessor, ClearTasksProcessor],
+    providers: providers,
     exports: [TasksService],
 })
 export class TasksModule {}
