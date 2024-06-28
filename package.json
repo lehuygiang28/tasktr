@@ -7,9 +7,9 @@
     "scripts": {
         "fe": "yarn nx dev:rf fe",
         "be": "yarn nx serve be --configuration=development",
-        "fe:build": "yarn nx build fe",
-        "fe:prod": "yarn nx start fe --configuration=production",
-        "be:prod": "yarn nx serve be --configuration=production"
+        "fe:build": "yarn nx build fe --skip-nx-cache",
+        "fe:prod": "yarn nx start fe --configuration=production --skip-nx-cache",
+        "be:prod": "yarn nx serve be --configuration=production --skip-nx-cache"
     },
     "dependencies": {
         "@ant-design/icons": "^5.3.7",
