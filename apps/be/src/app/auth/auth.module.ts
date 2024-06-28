@@ -11,9 +11,14 @@ import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
 import { AuthService } from './auth.service';
 import { AnonymousStrategy, JwtRefreshStrategy, JwtStrategy } from './strategies';
 import { AuthController } from './auth.controller';
+import { ConfigModule } from '@nestjs/config';
+import authConfig from './config/auth-config';
 
 @Module({
     imports: [
+        ConfigModule.forRoot({
+            load: [authConfig],
+        }),
         JwtModule.register({}),
         BullModule.registerQueue({
             name: BULLMQ_BG_JOB_QUEUE,

@@ -10,7 +10,7 @@ export type ClearTasksJobName = 'clearTasks';
 
 @Injectable()
 @Processor(BULLMQ_CLEAR_TASK_QUEUE, {
-    concurrency: Number(process.env['BULL_CLEAR_LOG_CONCURRENCY']) || 1,
+    concurrency: Number(process.env['CLEAR_LOG_CONCURRENCY']) || 1,
 })
 export class ClearTasksProcessor extends WorkerHost implements OnModuleInit {
     constructor(

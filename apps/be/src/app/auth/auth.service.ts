@@ -29,6 +29,7 @@ import {
 import { JwtPayloadType } from './strategies/types';
 import { User } from '../users/schemas';
 import { Octokit } from '@octokit/rest';
+import { type AllConfig } from '../config';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -37,7 +38,7 @@ export class AuthService implements OnModuleInit {
 
     constructor(
         private readonly logger: PinoLogger,
-        private readonly configService: ConfigService,
+        private readonly configService: ConfigService<AllConfig>,
         private readonly jwtService: JwtService,
         private readonly usersService: UsersService,
         private readonly redisService: RedisService,
@@ -46,14 +47,14 @@ export class AuthService implements OnModuleInit {
     ) {
         this.logger.setContext(AuthService.name);
         this.googleClient = new OAuth2Client(
-            configService.getOrThrow('AUTH_GOOGLE_ID'),
-            configService.getOrThrow('AUTH_GOOGLE_SECRET'),
+            this.configService.getOrThrow('auth.googleId', { infer: true }),
+            this.configService.getOrThrow('auth.googleSecret', { infer: true }),
         );
         this.octokit = new Octokit({});
     }
 
     async onModuleInit() {
-        const adminEmail = this.configService.get<string>('ADMIN_EMAIL');
+        const adminEmail = this.configService.getOrThrow('auth.adminEmail', { infer: true });
         if (!adminEmail) {
             return;
         }
@@ -115,10 +116,12 @@ export class AuthService implements OnModuleInit {
                 email: userCreated.email,
             },
             {
-                secret: this.configService.getOrThrow('AUTH_CONFIRM_EMAIL_SECRET'),
-                expiresIn: this.configService.getOrThrow<string>(
-                    'AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN',
-                ),
+                secret: this.configService.getOrThrow('auth.confirmEmailSecret', {
+                    infer: true,
+                }),
+                expiresIn: this.configService.getOrThrow('auth.confirmEmailTokenExpiresIn', {
+                    infer: true,
+                }),
             },
         );
 
@@ -129,7 +132,13 @@ export class AuthService implements OnModuleInit {
             this.redisService.set(
                 key,
                 { hash },
-                ms(this.configService.getOrThrow<string>('AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN')),
+                ms(
+                    this.configService
+                        .getOrThrow('auth.confirmEmailTokenExpiresIn', {
+                            infer: true,
+                        })
+                        .toString(),
+                ),
             ),
             this.bgQueue.add(
                 'sendEmailRegister',
@@ -156,7 +165,7 @@ export class AuthService implements OnModuleInit {
                 confirmEmailUserId: UserDto['_id'];
                 email: UserDto['email'];
             }>(hash, {
-                secret: this.configService.getOrThrow('AUTH_CONFIRM_EMAIL_SECRET'),
+                secret: this.configService.getOrThrow('auth.confirmEmailSecret', { infer: true }),
             });
 
             userId = jwtData.confirmEmailUserId;
@@ -233,8 +242,10 @@ export class AuthService implements OnModuleInit {
                 email: user.email,
             },
             {
-                secret: this.configService.getOrThrow('AUTH_PASSWORDLESS_SECRET'),
-                expiresIn: this.configService.getOrThrow<string>('AUTH_PASSWORDLESS_EXPIRES_IN'),
+                secret: this.configService.getOrThrow('auth.passwordlessSecret', { infer: true }),
+                expiresIn: this.configService.getOrThrow('auth.passwordlessExpiresIn', {
+                    infer: true,
+                }),
             },
         );
 
@@ -245,7 +256,13 @@ export class AuthService implements OnModuleInit {
             this.redisService.set(
                 key,
                 { hash, userId: user._id.toString() },
-                ms(this.configService.getOrThrow<string>('AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN')),
+                ms(
+                    this.configService
+                        .getOrThrow('auth.confirmEmailTokenExpiresIn', {
+                            infer: true,
+                        })
+                        .toString(),
+                ),
             ),
             this.bgQueue.add(
                 'sendEmailLogin',
@@ -268,7 +285,7 @@ export class AuthService implements OnModuleInit {
         // Validate jwt, then get userId, jwtData
         try {
             jwtData = await this.jwtService.verifyAsync<{ hash: string; userId: string }>(hash, {
-                secret: this.configService.getOrThrow('AUTH_PASSWORDLESS_SECRET'),
+                secret: this.configService.getOrThrow('auth.passwordlessSecret', { infer: true }),
             });
             userId = convertToObjectId(jwtData.userId);
         } catch (error) {
@@ -329,7 +346,7 @@ export class AuthService implements OnModuleInit {
     async validateLoginGoogle({ idToken }: AuthLoginGoogleDto) {
         const ticket = await this.googleClient.verifyIdToken({
             idToken: idToken,
-            audience: [this.configService.getOrThrow<string>('AUTH_GOOGLE_ID')],
+            audience: [this.configService.getOrThrow('auth.googleId', { infer: true })],
         });
         const data = ticket.getPayload();
 
@@ -397,8 +414,10 @@ export class AuthService implements OnModuleInit {
                     email: user.email,
                 } as Omit<JwtPayloadType, 'iat' | 'exp'>,
                 {
-                    secret: this.configService.getOrThrow('AUTH_JWT_SECRET'),
-                    expiresIn: this.configService.getOrThrow<string>('AUTH_JWT_TOKEN_EXPIRES_IN'),
+                    secret: this.configService.getOrThrow('auth.jwtSecret', { infer: true }),
+                    expiresIn: this.configService.getOrThrow('auth.jwtTokenExpiresIn', {
+                        infer: true,
+                    }),
                 },
             ),
             await this.jwtService.signAsync(
@@ -408,10 +427,10 @@ export class AuthService implements OnModuleInit {
                     email: user.email,
                 } as Omit<JwtPayloadType, 'iat' | 'exp'>,
                 {
-                    secret: this.configService.getOrThrow('AUTH_REFRESH_SECRET'),
-                    expiresIn: this.configService.getOrThrow<string>(
-                        'AUTH_REFRESH_TOKEN_EXPIRES_IN',
-                    ),
+                    secret: this.configService.getOrThrow('auth.refreshSecret', { infer: true }),
+                    expiresIn: this.configService.getOrThrow('auth.refreshTokenExpiresIn', {
+                        infer: true,
+                    }),
                 },
             ),
         ]);

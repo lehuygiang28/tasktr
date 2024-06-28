@@ -1,23 +1,22 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { HttpService } from '@nestjs/axios';
-import { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
+import { type Timings } from '@szmarczak/http-timer';
+
 import { BULLMQ_TASK_LOG_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
 import { Task } from '~be/app/tasks/schemas/task.schema';
 import { CreateTaskLogDto, TaskLogsJobName } from '~be/app/task-logs';
-import { type Timings } from '@szmarczak/http-timer';
 import { defaultHeaders } from '~be/common/axios';
 import { normalizeHeaders } from '~be/common/utils';
 
 @Injectable()
 @Processor(BULLMQ_TASK_QUEUE, {
-    concurrency: Number(process.env['BULL_TASK_CONCURRENCY']) || 10,
+    concurrency: Number(process.env['TASKS_CONCURRENCY']) || 10,
 })
 export class TaskProcessor extends WorkerHost implements OnModuleInit {
-    private readonly axios: AxiosInstance;
-
     constructor(
         private readonly logger: PinoLogger,
         private readonly httpService: HttpService,
@@ -26,7 +25,6 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     ) {
         super();
         this.logger.setContext(TaskProcessor.name);
-        this.axios = this.httpService.axiosRef;
     }
 
     onModuleInit() {

@@ -1,41 +1,44 @@
-import { join } from 'path';
+import { join } from 'node:path';
 import { MailerOptionsFactory } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { TTransport } from './types/mailer.type';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
+import { AllConfig } from '~be/app/config';
+import { TTransport } from './types/mailer.type';
+
 @Injectable()
 export class MailerConfig implements MailerOptionsFactory {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(private readonly configService: ConfigService<AllConfig>) {}
 
-    private readonly DEFAULT_SENDER =
-        this.configService.get<string>('MAIL_SENDER') ?? '<teams@techcell.cloud>';
+    private readonly DEFAULT_SENDER = this.configService.get('mail.sender', {
+        infer: true,
+    });
 
     public readonly SendGridTransport: TTransport = {
-        host: this.configService.get<string>('SENDGRID_HOST') ?? 'smtp.sendgrid.net',
+        host: this.configService.getOrThrow('mail.sendgridHost', { infer: true }),
         secure: true,
         auth: {
-            user: this.configService.get<string>('SENDGRID_USER') ?? 'apikey',
-            pass: this.configService.get<string>('SENDGRID_PASSWORD') ?? '',
+            user: this.configService.getOrThrow('mail.sendgridUser', { infer: true }),
+            pass: this.configService.getOrThrow('mail.sendgridPassword', { infer: true }),
         },
     };
 
     public readonly ResendTransport: TTransport = {
-        host: this.configService.get<string>('RESEND_HOST') ?? 'smtp.resend.com',
+        host: this.configService.getOrThrow('mail.resendHost', { infer: true }),
         secure: true,
         auth: {
-            user: this.configService.get<string>('RESEND_USER') ?? 'resend',
-            pass: this.configService.get<string>('RESEND_API_KEY') ?? '',
+            user: this.configService.getOrThrow('mail.resendUser', { infer: true }),
+            pass: this.configService.getOrThrow('mail.resendApiKey', { infer: true }),
         },
     };
 
     public readonly GmailTransport: TTransport = {
-        host: this.configService.get<string>('GMAIL_HOST') ?? 'smtp.gmail.com',
+        host: this.configService.getOrThrow('mail.gmailHost', { infer: true }) ?? 'smtp.gmail.com',
         secure: true,
         auth: {
-            user: this.configService.get<string>('GMAIL_USER') ?? '',
-            pass: this.configService.get<string>('GMAIL_PASSWORD') ?? '',
+            user: this.configService.getOrThrow('mail.gmailUser', { infer: true }),
+            pass: this.configService.getOrThrow('mail.gmailPassword', { infer: true }),
         },
     };
 
@@ -46,7 +49,12 @@ export class MailerConfig implements MailerOptionsFactory {
                 from: this.DEFAULT_SENDER,
             },
             template: {
-                dir: join(__dirname, `assets/mail/templates`),
+                dir: join(
+                    __dirname,
+                    this.configService.getOrThrow('app.deployEnv', { infer: true }) === 'serverless'
+                        ? `templates`
+                        : `assets/mail/templates`,
+                ),
                 adapter: new HandlebarsAdapter(),
                 options: {
                     strict: true,

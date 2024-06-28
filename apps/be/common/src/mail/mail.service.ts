@@ -1,27 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { GMAIL_TRANSPORT, RESEND_TRANSPORT, SENDGRID_TRANSPORT } from './mail.constant';
-import { MailerConfig } from './mail.config';
 import { I18nService } from 'nestjs-i18n';
-import { MailData } from './mail-data.interface';
 import { PinoLogger } from 'nestjs-pino';
 import { Attachment } from 'nodemailer/lib/mailer';
+
 import { I18nTranslations } from '../i18n';
 import type { MaybeType } from '../utils/types';
-import { ConfigService } from '@nestjs/config';
+import { MailerConfig } from './mail.config';
+import { MailData } from './mail-data.interface';
+import { GMAIL_TRANSPORT, RESEND_TRANSPORT, SENDGRID_TRANSPORT } from './mail.constant';
 
 @Injectable()
 export class MailService {
     constructor(
         private readonly mailerService: MailerService,
         private readonly logger: PinoLogger,
-        private readonly configService: ConfigService,
         private readonly i18n: I18nService<I18nTranslations>,
+        private readonly mailConfig: MailerConfig,
     ) {
-        const mailConfig = new MailerConfig(this.configService);
-        this.mailerService.addTransporter(SENDGRID_TRANSPORT, mailConfig.SendGridTransport);
-        this.mailerService.addTransporter(RESEND_TRANSPORT, mailConfig.ResendTransport);
-        this.mailerService.addTransporter(GMAIL_TRANSPORT, mailConfig.GmailTransport);
+        this.mailerService.addTransporter(SENDGRID_TRANSPORT, this.mailConfig.SendGridTransport);
+        this.mailerService.addTransporter(RESEND_TRANSPORT, this.mailConfig.ResendTransport);
+        this.mailerService.addTransporter(GMAIL_TRANSPORT, this.mailConfig.GmailTransport);
 
         this.logger.setContext(MailService.name);
         this.BASE_ATTACHMENT = [

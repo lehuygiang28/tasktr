@@ -10,8 +10,8 @@ import { ModuleRef } from '@nestjs/core';
 export type MailJobName = 'sendEmailRegister' | 'sendEmailLogin';
 
 @Processor(BULLMQ_BG_JOB_QUEUE, {
-    concurrency: Number(process.env['BULL_BACKGROUND_CONCURRENCY']) || 5,
     useWorkerThreads: true,
+    concurrency: Number(process.env['MAIL_CONCURRENCY']) || 5,
 })
 @Injectable()
 export class MailProcessor extends WorkerHost implements OnModuleInit {

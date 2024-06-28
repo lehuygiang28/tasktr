@@ -7,6 +7,7 @@ export * from './filters';
 export * from './transformers';
 export * from './types';
 
+export * from './validate-config';
 export * from './validation-options';
 export * from './serializer.interceptor';
 export * from './import-helper';
