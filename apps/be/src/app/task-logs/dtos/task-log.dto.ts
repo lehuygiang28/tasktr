@@ -117,6 +117,9 @@ export class TaskLogDto implements TaskLog {
     @ApiProperty({ type: ResponseObject, required: false })
     response?: ResponseObject;
 
+    @ApiProperty({ type: String, required: false, default: null })
+    errorMessage?: string;
+
     @ApiProperty({ type: Date, required: false })
     @IsDate()
     @IsOptional()

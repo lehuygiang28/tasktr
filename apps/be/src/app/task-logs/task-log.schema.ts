@@ -87,6 +87,9 @@ export class TaskLog extends AbstractDocument {
     @Prop({ required: false, type: ResponseObject })
     response?: ResponseObject;
 
+    @Prop({ required: false, type: String, default: null })
+    errorMessage?: string;
+
     @Prop({ required: false, default: new Date() })
     createdAt?: Date;
 

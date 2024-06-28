@@ -46,7 +46,6 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         const { name, endpoint, method, body, headers } = job.data;
 
         const normalizedHeaders = headers ? normalizeHeaders(JSON.parse(headers)) : {};
-
         const headersValidated = Object.assign(normalizeHeaders(defaultHeaders), normalizedHeaders);
 
         const config: AxiosRequestConfig = {
@@ -58,6 +57,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
 
         let response: AxiosResponse | null;
         let timings: Timings | null;
+        let errorMessage: string | null = null;
         try {
             response = await this.httpService.axiosRef.request(config);
             timings = response.request['timings'] || null;
@@ -65,14 +65,16 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             this.logger.info(
                 `FETCH ${name} - ${response?.status} - ${timings?.phases?.total} ms - ${String(response?.data ?? '')?.length ?? 0} bytes`,
             );
-        } catch (error: AxiosError | unknown) {
+        } catch (error: AxiosError | Error | unknown) {
             if (error instanceof AxiosError) {
                 this.logger.error(error.response?.data);
+                errorMessage = error?.message;
             } else {
                 this.logger.error(error);
             }
             response = null;
             timings = null;
+            errorMessage = error['message'] ?? 'Unknown error';
         }
 
         const stringBody = String(response?.data ?? '');
@@ -91,7 +93,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             timings: timings?.phases || {},
 
             request: {
-                headers: headersValidated,
+                headers: response.config?.headers,
                 body: String(config?.data || ''),
             },
 
@@ -102,6 +104,8 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
                         ? `Body too large (${stringBody?.length} bytes), will not be logged.`
                         : stringBody,
             },
+
+            errorMessage,
         };
 
         await this.taskLogQueue.add(`saveTaskLog`, taskLog, {
