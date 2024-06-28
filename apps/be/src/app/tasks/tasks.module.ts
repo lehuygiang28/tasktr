@@ -21,7 +21,7 @@ import tasksConfig from './config/tasks-config';
 
 const providers: Provider[] = [TasksRepository, TasksService];
 
-if (!(process.env['TASKS_CONCURRENCY'] && Number(process.env['TASKS_CONCURRENCY']) <= 0)) {
+if (!(process.env['TASK_CONCURRENCY'] && Number(process.env['TASK_CONCURRENCY']) <= 0)) {
     providers.push(TaskProcessor);
 }
 

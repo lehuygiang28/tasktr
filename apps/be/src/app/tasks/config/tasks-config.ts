@@ -14,7 +14,7 @@ class EnvironmentVariablesValidator {
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
-    TASKS_CONCURRENCY: number;
+    TASK_CONCURRENCY: number;
 }
 
 export default registerAs<TasksConfig>('tasks', () => {
@@ -24,8 +24,8 @@ export default registerAs<TasksConfig>('tasks', () => {
         softDeleteThresholdDays: process.env?.SOFT_DELETE_THRESHOLD_DAYS
             ? parseInt(process.env?.SOFT_DELETE_THRESHOLD_DAYS, 10)
             : 30,
-        tasksConcurrency: process.env?.TASKS_CONCURRENCY
-            ? parseInt(process.env?.TASKS_CONCURRENCY, 10)
+        taskConcurrency: process.env?.TASK_CONCURRENCY
+            ? parseInt(process.env?.TASK_CONCURRENCY, 10)
             : 10,
     };
 });
