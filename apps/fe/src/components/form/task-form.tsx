@@ -17,22 +17,22 @@ import { TaskFormValidator } from '~/validators';
 import worldTimeAPIProvider from '~/providers/data-provider/timezone';
 import { useCronReducer } from '~/hooks/useCronReducer';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
+import { TryRequestButton } from '../button/try-request-btn';
 
 const { Item } = Form;
-const { Option } = Select;
 
-export type FormValues = {
+export type TaskFormValues = {
     headerLists?: { key?: string; value?: string }[];
 } & TaskFormValidator;
 
 interface TaskFormProps {
     mode: 'create' | 'edit';
-    defaultValues?: FormValues;
-    onSubmit: (data: FormValues) => void;
+    defaultValues?: TaskFormValues;
+    onSubmit: (data: TaskFormValues) => void;
     formProps: FormProps;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmit, formProps }) => {
+export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormProps) {
     const isCreateMode = mode === 'create';
 
     const { data: timeZones } = useList({
@@ -44,7 +44,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
         handleSubmit,
         formState: { errors },
         setValue,
-    } = useForm<FormValues, HttpError, FormValues>({
+        getValues,
+        trigger,
+    } = useForm<TaskFormValues, HttpError, TaskFormValues>({
         resolver: classValidatorResolver(TaskFormValidator),
         defaultValues,
     });
@@ -65,7 +67,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
             const taskForm = new TaskFormValidator();
             Object.entries(defaultValues).forEach(([key, value]) => {
                 // Handle some special cases
-                const keyName: keyof FormValues = key as keyof FormValues;
+                const keyName: keyof TaskFormValues = key as keyof TaskFormValues;
                 switch (keyName) {
                     case 'headerLists':
                         break;
@@ -99,7 +101,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
         }
     }, [defaultValues, setValue, dispatchCronValues]);
 
-    const transformSubmit = (data: FormValues) => {
+    const transformSubmit = (data: TaskFormValues) => {
         const { headerLists, ...rest } = data;
         const transformedHeaders = headerLists
             ? headerLists?.reduce((acc: object, { key, value }: { key: string; value: string }) => {
@@ -113,28 +115,46 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
               }, {})
             : undefined;
 
-        onSubmit({
+        return {
             ...rest,
             cron: cronValues.inputValue,
             headers: JSON.stringify(transformedHeaders),
-        });
+        };
+    };
+
+    const submit = (data: TaskFormValues) => {
+        return onSubmit(transformSubmit(data));
     };
 
     const WrapCreateOrEdit = isCreateMode ? Create : Edit;
 
     return (
-        <Form
-            {...formProps}
-            autoComplete="off"
-            layout="vertical"
-            onFinish={handleSubmit(transformSubmit)}
-        >
-            <WrapCreateOrEdit saveButtonProps={{ htmlType: 'submit' }}>
-                <Controller<FormValues>
+        <Form {...formProps} autoComplete="off" layout="vertical" onFinish={handleSubmit(submit)}>
+            <WrapCreateOrEdit
+                saveButtonProps={{ htmlType: 'submit' }}
+                footerButtons={({ defaultButtons }) => (
+                    <Space>
+                        <TryRequestButton
+                            getValues={async function () {
+                                // Trigger the form validation first
+                                const isValid = await trigger();
+                                if (!isValid) {
+                                    return null;
+                                }
+
+                                // Transform the form values to the expected format
+                                return transformSubmit(getValues());
+                            }}
+                        />
+                        {defaultButtons}
+                    </Space>
+                )}
+            >
+                <Controller<TaskFormValues>
                     name={'name'}
                     control={control}
                     render={({ field: { ref, ...field } }) => (
-                        <Item<FormValues>
+                        <Item<TaskFormValues>
                             {...field}
                             label={'Name'}
                             name={'name'}
@@ -150,11 +170,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
                     )}
                 />
 
-                <Controller<FormValues>
+                <Controller<TaskFormValues>
                     name={'endpoint'}
                     control={control}
                     render={({ field: { ref, ...field } }) => (
-                        <Item<FormValues>
+                        <Item<TaskFormValues>
                             {...field}
                             label={'Endpoint'}
                             name={'endpoint'}
@@ -164,12 +184,6 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
                             <Input
                                 name={'endpoint'}
                                 placeholder="Url, can have parameters and query string"
-                                addonBefore={
-                                    <Select defaultValue="https://">
-                                        <Option value="https://">https://</Option>
-                                        <Option value="http://">http://</Option>
-                                    </Select>
-                                }
                             />
                         </Item>
                     )}
@@ -177,11 +191,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
 
                 <Row gutter={16}>
                     <Col sm={4} md={2}>
-                        <Controller<FormValues>
+                        <Controller<TaskFormValues>
                             name={'isEnable'}
                             control={control}
                             render={({ field: { onChange, value } }) => (
-                                <Item<FormValues>
+                                <Item<TaskFormValues>
                                     name={'isEnable'}
                                     label={'Enable'}
                                     validateStatus={errors?.isEnable ? 'error' : 'validating'}
@@ -198,11 +212,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
                         />
                     </Col>
                     <Col sm={20} md={7}>
-                        <Controller<FormValues>
+                        <Controller<TaskFormValues>
                             name={'method'}
                             control={control}
                             render={({ field }) => (
-                                <Item<FormValues>
+                                <Item<TaskFormValues>
                                     name={'method'}
                                     label={'Method'}
                                     validateStatus={errors?.method ? 'error' : 'validating'}
@@ -221,11 +235,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
                         />
                     </Col>
                     <Col xs={24} md={15}>
-                        <Controller<FormValues>
+                        <Controller<TaskFormValues>
                             name={'timezone'}
                             control={control}
                             render={({ field }) => (
-                                <Item<FormValues>
+                                <Item<TaskFormValues>
                                     label={'Timezone'}
                                     name={'timezone'}
                                     validateStatus={errors?.timezone ? 'error' : 'validating'}
@@ -256,11 +270,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
                     </Col>
                 </Row>
 
-                <Controller<FormValues>
+                <Controller<TaskFormValues>
                     name={'cron'}
                     control={control}
                     render={({ field: { ref, ...field } }) => (
-                        <Item<FormValues>
+                        <Item<TaskFormValues>
                             {...field}
                             name={'cron'}
                             label={'Cron'}
@@ -301,11 +315,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
                     )}
                 />
 
-                <Controller<FormValues>
+                <Controller<TaskFormValues>
                     name={'note'}
                     control={control}
                     render={({ field: { ref, ...field } }) => (
-                        <Item<FormValues>
+                        <Item<TaskFormValues>
                             {...field}
                             label={'Note'}
                             name={'note'}
@@ -363,11 +377,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
                     </Button>
                 </Form.Item>
 
-                <Controller<FormValues>
+                <Controller<TaskFormValues>
                     name={'body'}
                     control={control}
                     render={({ field: { ref, ...field } }) => (
-                        <Item<FormValues>
+                        <Item<TaskFormValues>
                             {...field}
                             label={'Body'}
                             name={'body'}
@@ -385,4 +399,4 @@ export const TaskForm: React.FC<TaskFormProps> = ({ mode, defaultValues, onSubmi
             </WrapCreateOrEdit>
         </Form>
     );
-};
+}
