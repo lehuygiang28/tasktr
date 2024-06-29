@@ -15,6 +15,7 @@ jobs:
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
         runs-on: ubuntu-latest
         outputs:
+            commit_message: ${{ steps.get_commit_message.outputs.commit_message }}
             skip_docker: ${{ steps.check_skip_docker.outputs.skip_docker }}
         steps:
             - name: Checkout code
@@ -81,10 +82,12 @@ jobs:
                   docker compose -f docker-compose.yml push
 
             - name: Set COMPOSE_TAG as latest
+              if: contains(needs.check-skip.outputs.commit_message, '[docker-latest]')
               run: dotenvx set --plain COMPOSE_TAG latest
 
             - name: Build and push images with latest tag
               id: build_and_push_latest
+              if: contains(needs.check-skip.outputs.commit_message, '[docker-latest]')
               run: |
                   docker compose -f docker-compose.yml build
                   docker compose -f docker-compose.yml push
