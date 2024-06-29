@@ -25,7 +25,7 @@ WORKDIR /usr/src/app
 
 COPY --from=build-stage --chown=node /usr/src/app/dist/apps/fe/.next/standalone ./dist/apps/fe/.next/standalone
 
-RUN echo "# .env generated" > /usr/src/app/apps/fe/.env
+RUN mkdir -p /usr/src/app/apps/fe && echo "# .env generated" > /usr/src/app/apps/fe/.env
 
 ENV PORT 3000
 ENV HOST 0.0.0.0
