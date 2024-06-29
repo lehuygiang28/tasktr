@@ -2,8 +2,8 @@ name: Build and push Docker image
 
 on:
     workflow_run:
-        workflows: [CI]
-        types: [completed]
+        workflows: NX-CI
+        types: completed
         branches: '*'
 
 env:
@@ -42,7 +42,7 @@ jobs:
 
     build:
         needs: [check-skip]
-        if: ${{ needs.check-skip.outputs.skip_docker == 'false' }}
+        if: ${{ needs.check-skip.outputs.skip_docker != 'true' }}
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
