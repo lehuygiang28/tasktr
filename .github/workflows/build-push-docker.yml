@@ -2,9 +2,9 @@ name: Build and push Docker image
 
 on:
     workflow_run:
-        workflows: ['CI']
-        types:
-            - completed
+        workflows: [CI]
+        types: [completed]
+        branches: '*'
 
 env:
     DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
