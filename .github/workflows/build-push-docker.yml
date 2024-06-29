@@ -4,7 +4,6 @@ on:
     workflow_run:
         workflows: NX-CI
         types: completed
-        branches: '*'
 
 env:
     DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
