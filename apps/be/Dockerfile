@@ -33,7 +33,8 @@ COPY --from=build-stage --chown=node /usr/src/app/dist ./dist
 # Just make sure the .env file is existed
 RUN mkdir -p /usr/src/app/apps/be && \
     # Add new line to the end of the file
-    echo "" >> /usr/src/app/apps/be/.env
+    echo "" >> /usr/src/app/apps/be/.env && \
+    echo "# .env created" >> /usr/src/app/apps/be/.env
 
 ENV NODE_ENV production
 
