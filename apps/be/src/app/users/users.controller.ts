@@ -10,13 +10,15 @@ import {
     Param,
 } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
+
+import { IdParamDto, type NullableType } from '~be/common/utils';
+import { AuthRoles } from '~be/app/auth/guards/auth.guard';
+
 import { UsersService } from './users.service';
 import { CreateUserDto, GetUsersDto, GetUsersResponseDto, UserDto } from './dtos';
 import { UserRoleEnum } from './users.enum';
-import type { IdParamDto, NullableType } from '~be/common/utils';
-import { AuthRoles } from '../auth';
 
-// @AuthRoles(UserRoleEnum.Admin)
+@AuthRoles(UserRoleEnum.Admin)
 @ApiTags('users')
 @Controller({
     path: '/users',
