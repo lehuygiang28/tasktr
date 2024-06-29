@@ -28,12 +28,12 @@
         },
         "build": {
             "executor": "@nx/next:build",
-            "outputs": ["{options.outputPath}"],
-            "defaultConfiguration": "production",
-            "cache": true,
             "options": {
                 "outputPath": "dist/apps/fe"
             },
+            "outputs": ["{options.outputPath}"],
+            "defaultConfiguration": "production",
+            "cache": true,
             "configurations": {
                 "development": {
                     "outputPath": "."
