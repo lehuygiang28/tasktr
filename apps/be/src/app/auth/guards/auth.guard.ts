@@ -1,9 +1,10 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
-import { Roles } from '~be/common/utils/decorators';
-import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from './roles.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+
 import { UserRoleEnum } from '~be/app/users/users.enum';
+import { Roles } from '~be/common/utils/decorators';
+import { RolesGuard } from './roles.guard';
 
 export function AuthRoles(...roles: UserRoleEnum[]) {
     if (!roles?.length) {
