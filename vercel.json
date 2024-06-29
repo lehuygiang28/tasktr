@@ -3,7 +3,7 @@
     "framework": "nextjs",
     "regions": ["sin1"],
     "installCommand": "yarn install --immutable",
-    "buildCommand": "yarn nx build fe --skip-nx-cache",
+    "buildCommand": "yarn nx build fe",
     "outputDirectory": "dist/apps/fe/.next",
     "cleanUrls": true
 }
