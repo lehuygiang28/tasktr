@@ -57,6 +57,9 @@ jobs:
             - name: Free disk space up
               run: rm -rf /opt/hostedtoolcache
 
+            - name: Install dotenvx
+              run: curl -sfS https://dotenvx.sh/install.sh | sh
+
             - name: Set short SHA
               id: set_short_sha
               run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c 1-7)" >> $GITHUB_OUTPUT
@@ -64,8 +67,11 @@ jobs:
             - name: 'Create .env file'
               run: |
                   touch .env
-                  echo COMPOSE_TAG="${{ steps.set_short_sha.outputs.SHORT_SHA }}" >> .env
+                  echo "# .env created" >> .env
                   cat .env
+
+            - name: Set COMPOSE_TAG as short commit SHA
+              run: dotenvx set --plain COMPOSE_TAG ${{ steps.set_short_sha.outputs.SHORT_SHA }}
 
             - name: Build and push images with short commit SHA tag
               id: build_and_push
@@ -73,10 +79,8 @@ jobs:
                   docker compose -f docker-compose.yaml build
                   docker compose -f docker-compose.yaml push
 
-            - name: Overwrite .env file for latest tag
-              run: |
-                  echo COMPOSE_TAG="latest" >> .env
-                  cat .env
+            - name: Set COMPOSE_TAG as latest
+              run: dotenvx set --plain COMPOSE_TAG latest
 
             - name: Build and push images with latest tag
               id: build_and_push_latest
