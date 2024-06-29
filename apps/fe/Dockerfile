@@ -23,6 +23,7 @@ USER node
 
 WORKDIR /usr/src/app
 
+COPY --from=build-stage --chown=node /usr/src/app/apps/fe/.env.example ./apps/fe/.env
 COPY --from=build-stage --chown=node /usr/src/app/dist/apps/fe/.next/standalone ./dist/apps/fe/.next/standalone
 
 ENV PORT 3000
