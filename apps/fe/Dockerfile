@@ -25,7 +25,11 @@ WORKDIR /usr/src/app
 
 COPY --from=build-stage --chown=node /usr/src/app/dist/apps/fe/.next/standalone ./dist/apps/fe/.next/standalone
 
-RUN mkdir -p /usr/src/app/apps/fe && echo "# .env generated" > /usr/src/app/apps/fe/.env
+# Just make sure the .env file is existed
+RUN mkdir -p /usr/src/app/apps/fe && \
+    # Add new line to the end of the file
+    echo "" >> /usr/src/app/apps/fe/.env && \
+    echo "# .env created" >> /usr/src/app/apps/fe/.env
 
 ENV PORT 3000
 ENV HOST 0.0.0.0
