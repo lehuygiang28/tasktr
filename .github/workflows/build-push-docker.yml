@@ -76,8 +76,8 @@ jobs:
             - name: Build and push images with short commit SHA tag
               id: build_and_push
               run: |
-                  docker compose -f docker-compose.yaml build
-                  docker compose -f docker-compose.yaml push
+                  docker compose -f docker-compose.yml build
+                  docker compose -f docker-compose.yml push
 
             - name: Set COMPOSE_TAG as latest
               run: dotenvx set --plain COMPOSE_TAG latest
@@ -85,8 +85,8 @@ jobs:
             - name: Build and push images with latest tag
               id: build_and_push_latest
               run: |
-                  docker compose -f docker-compose.yaml build
-                  docker compose -f docker-compose.yaml push
+                  docker compose -f docker-compose.yml build
+                  docker compose -f docker-compose.yml push
 
             - name: Remove .env file
               run: |
