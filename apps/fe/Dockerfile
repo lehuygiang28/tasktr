@@ -23,14 +23,14 @@ USER node
 
 WORKDIR /usr/src/app
 
-COPY --from=build-stage --chown=node /usr/src/app/apps/fe/.env.example ./apps/fe/.env
 COPY --from=build-stage --chown=node /usr/src/app/dist/apps/fe/.next/standalone ./dist/apps/fe/.next/standalone
+
+RUN echo "# .env generated" > .env
 
 ENV PORT 3000
 ENV HOST 0.0.0.0
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
-
 
 EXPOSE 3000
 
