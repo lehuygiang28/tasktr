@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
     tasktr_be:
         container_name: tasktr_be
