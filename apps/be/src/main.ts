@@ -12,19 +12,20 @@ import { Logger } from 'nestjs-pino';
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes';
 import * as swaggerStats from 'swagger-stats';
 
-import { AppModule } from './app/app.module';
 import {
     ProblemDetails,
     ProblemDetailsFilter,
     ResolvePromisesInterceptor,
     validationOptions,
 } from '~be/common/utils';
+import { AppModule } from './app/app.module';
+import { AllConfig } from './app/config/all-config.type';
 
 async function bootstrap() {
     const port = process.env.PORT || 8000;
 
     const app = await NestFactory.create(AppModule, { bufferLogs: true });
-    const configService = app.get(ConfigService);
+    const configService: ConfigService<AllConfig> = app.get(ConfigService);
     const logger = app.get(Logger);
 
     app.enableCors();
@@ -43,8 +44,7 @@ async function bootstrap() {
         new ClassSerializerInterceptor(app.get(Reflector)),
     );
 
-    const globalPrefix = 'api';
-    app.setGlobalPrefix(globalPrefix);
+    app.setGlobalPrefix(configService.getOrThrow('app.globalPrefix', { infer: true }));
 
     const swaggerDocumentConfig = new DocumentBuilder()
         .setTitle('Tasktr RESTful API Documentations')
@@ -70,18 +70,18 @@ async function bootstrap() {
     };
     SwaggerModule.setup('docs', app, document, swaggerCustomOptions);
 
-    if (configService.get('API_STATS_PATH')) {
+    if (configService.get('app.apiStatsPath', { infer: true })) {
         app.use(
             swaggerStats.getMiddleware({
-                uriPath: configService.getOrThrow<string>('API_STATS_PATH'),
+                uriPath: configService.getOrThrow('app.apiStatsPath', { infer: true }),
                 swaggerSpec: document,
                 name: 'Tasktr API statistics',
                 timelineBucketDuration: 180000,
                 authentication: true,
                 async onAuthenticate(req, username, password) {
                     if (
-                        username === configService.getOrThrow<string>('API_STATS_USERNAME') &&
-                        password === configService.getOrThrow<string>('API_STATS_PASSWORD')
+                        username === configService.get('app.apiStatsUsername', { infer: true }) &&
+                        password === configService.get('app.apiStatsPassword', { infer: true })
                     ) {
                         return true;
                     }
@@ -93,7 +93,9 @@ async function bootstrap() {
     }
 
     await app.listen(port);
-    logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
+    logger.log(
+        `🚀 Application is running on: http://localhost:${port}/${configService.get('app.globalPrefix', { infer: true })}`,
+    );
 }
 
 bootstrap();

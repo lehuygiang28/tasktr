@@ -21,6 +21,10 @@ class EnvironmentVariablesValidator {
     WORKER_NAME: string;
 
     @IsOptional()
+    @IsString()
+    GLOBAL_PREFIX: string;
+
+    @IsOptional()
     @IsNumber()
     @Type(() => Number)
     BULLMQ_EVENTS_MAXLEN: number;
@@ -53,6 +57,9 @@ export default registerAs<AppConfig>('app', () => {
     return {
         deployEnv: process.env?.DEPLOY_ENV || 'none',
         workerMode: process.env?.WORKER_MODE === 'true',
+        globalPrefix: process.env?.GLOBAL_PREFIX
+            ? process.env.GLOBAL_PREFIX.replace(/^\/|\\|\/$|\\$/g, '') // remove leading and trailing slashes (/ or \)
+            : 'api',
         workerName: process.env?.WORKER_NAME || 'default',
         eventsMaxLen: process.env?.BULLMQ_EVENTS_MAXLEN
             ? parseInt(process.env?.BULLMQ_EVENTS_MAXLEN, 10)

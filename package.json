@@ -14,6 +14,8 @@
     "dependencies": {
         "@ant-design/icons": "^5.3.7",
         "@ant-design/nextjs-registry": "^1.0.0",
+        "@bull-board/api": "^5.20.5",
+        "@bull-board/express": "^5.20.5",
         "@faker-js/faker": "^8.4.1",
         "@hookform/resolvers": "^3.4.2",
         "@kovalenko/is-cron": "^1.0.10",

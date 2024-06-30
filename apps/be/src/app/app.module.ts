@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService, ConditionalModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -18,6 +18,8 @@ import { UsersModule } from './users/users.module';
 import { TasksModule } from './tasks/tasks.module';
 import { StatsModule } from './stats/stats.module';
 import { AppConfigService } from './config/app-config.service';
+import { jobQueueUIMiddleware } from './middlewares';
+import { AllConfig } from './config';
 
 @Module({
     imports: [
@@ -58,4 +60,19 @@ import { AppConfigService } from './config/app-config.service';
     providers: [AppService, AppConfigService],
     exports: [AppConfigService],
 })
-export class AppModule {}
+export class AppModule {
+    constructor(
+        private readonly configService: ConfigService<AllConfig>,
+        private readonly redisService: RedisService,
+    ) {}
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(
+                jobQueueUIMiddleware(
+                    this.redisService.getClient,
+                    this.configService.get('app.globalPrefix', { infer: true }) ?? '',
+                ),
+            )
+            .forRoutes('/admin/queues');
+    }
+}

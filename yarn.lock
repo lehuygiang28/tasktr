@@ -1856,6 +1856,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@bull-board/api@npm:5.20.5, @bull-board/api@npm:^5.20.5":
+  version: 5.20.5
+  resolution: "@bull-board/api@npm:5.20.5"
+  dependencies:
+    redis-info: "npm:^3.0.8"
+  peerDependencies:
+    "@bull-board/ui": 5.20.5
+  checksum: 10c0/0d4650c07e381d829bd2007be1dcfff21ec909b82da5a6db2f572c944f20aab8cf5522b70c29843dde8ffcdb4d7d0cd200631ea08df63ad74ec4b67865f142df
+  languageName: node
+  linkType: hard
+
+"@bull-board/express@npm:^5.20.5":
+  version: 5.20.5
+  resolution: "@bull-board/express@npm:5.20.5"
+  dependencies:
+    "@bull-board/api": "npm:5.20.5"
+    "@bull-board/ui": "npm:5.20.5"
+    ejs: "npm:^3.1.10"
+    express: "npm:^4.19.2"
+  checksum: 10c0/baafa5ce860b7e6515990654359197869c495f36eb2741032a1c0ff0880422b0f65ef4c8285eafcbbf1f2b2868cc15e53d574b718e143ca78ce78f1e1a92bfeb
+  languageName: node
+  linkType: hard
+
+"@bull-board/ui@npm:5.20.5":
+  version: 5.20.5
+  resolution: "@bull-board/ui@npm:5.20.5"
+  dependencies:
+    "@bull-board/api": "npm:5.20.5"
+  checksum: 10c0/5008ef0e925580a7576f2c143fcd4fc580af1b4a45b2b596fbcfd1321bcb947d3ab1f550c6fb5a25ceeb7aa43a2e312efe1b44959224a328711f70ffeb77d4cc
+  languageName: node
+  linkType: hard
+
 "@colors/colors@npm:1.5.0":
   version: 1.5.0
   resolution: "@colors/colors@npm:1.5.0"
@@ -5032,6 +5064,8 @@ __metadata:
     "@ant-design/icons": "npm:^5.3.7"
     "@ant-design/nextjs-registry": "npm:^1.0.0"
     "@babel/core": "npm:^7.24.6"
+    "@bull-board/api": "npm:^5.20.5"
+    "@bull-board/express": "npm:^5.20.5"
     "@compodoc/compodoc": "npm:^1.1.25"
     "@faker-js/faker": "npm:^8.4.1"
     "@hookform/resolvers": "npm:^3.4.2"
@@ -10688,7 +10722,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:4.19.2, express@npm:^4.17.3, express@npm:^4.18.2":
+"express@npm:4.19.2, express@npm:^4.17.3, express@npm:^4.18.2, express@npm:^4.19.2":
   version: 4.19.2
   resolution: "express@npm:4.19.2"
   dependencies:
@@ -14455,7 +14489,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.21, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21":
+"lodash@npm:4.17.21, lodash@npm:^4.17.11, lodash@npm:^4.17.14, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 10c0/d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
@@ -19346,6 +19380,15 @@ __metadata:
   version: 1.2.0
   resolution: "redis-errors@npm:1.2.0"
   checksum: 10c0/5b316736e9f532d91a35bff631335137a4f974927bb2fb42bf8c2f18879173a211787db8ac4c3fde8f75ed6233eb0888e55d52510b5620e30d69d7d719c8b8a7
+  languageName: node
+  linkType: hard
+
+"redis-info@npm:^3.0.8":
+  version: 3.1.0
+  resolution: "redis-info@npm:3.1.0"
+  dependencies:
+    lodash: "npm:^4.17.11"
+  checksum: 10c0/ec0f31d97893c5828cec7166486d74198c92160c60073b6f2fe805cdf575a10ddcccc7641737d44b8f451355f0ab5b6c7b0d79e8fc24742b75dd625f91ffee38
   languageName: node
   linkType: hard
 
