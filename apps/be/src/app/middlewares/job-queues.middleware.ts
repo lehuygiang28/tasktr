@@ -10,9 +10,10 @@ import {
     BULLMQ_BG_JOB_QUEUE,
 } from '~be/common/bullmq/bullmq.constant';
 
-export function jobQueueUIMiddleware(connection: Redis, globalPrefix?: string) {
+export function jobQueueUIMiddleware(connection: Redis, globalPrefix = '') {
     const serverAdapter = new ExpressAdapter();
-    serverAdapter.setBasePath(`${globalPrefix ?? globalPrefix + '/'}/admin/queues`);
+    const basePath = `${globalPrefix ? '/' + globalPrefix : ''}/admin/queues`;
+    serverAdapter.setBasePath(basePath);
 
     const queues = [
         BULLMQ_TASK_QUEUE,
@@ -27,7 +28,6 @@ export function jobQueueUIMiddleware(connection: Redis, globalPrefix?: string) {
                 }),
                 {
                     readOnlyMode: true,
-                    description: 'Task Queue',
                 },
             ),
     );

@@ -70,9 +70,9 @@ export class AppModule {
             .apply(
                 jobQueueUIMiddleware(
                     this.redisService.getClient,
-                    this.configService.get('app.globalPrefix', { infer: true }) ?? '',
+                    this.configService.getOrThrow('app.globalPrefix', { infer: true }),
                 ),
             )
-            .forRoutes('/admin/queues');
+            .forRoutes('admin/queues');
     }
 }
