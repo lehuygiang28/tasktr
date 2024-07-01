@@ -7,7 +7,7 @@ import { BULLMQ_TASK_LOG_QUEUE } from '~be/common/bullmq';
 import { TaskLogsService } from './task-logs.service';
 import { CreateTaskLogDto } from './dtos';
 
-export type TaskLogsJobName = 'saveTaskLog';
+export type TaskLogJobName = 'saveTaskLog';
 
 @Injectable()
 @Processor(BULLMQ_TASK_LOG_QUEUE, {
@@ -28,7 +28,7 @@ export class TaskLogProcessor extends WorkerHost implements OnModuleInit {
         );
     }
 
-    async process(job: Job<unknown, unknown, TaskLogsJobName>): Promise<unknown> {
+    async process(job: Job<unknown, unknown, TaskLogJobName>): Promise<unknown> {
         switch (job.name) {
             case 'saveTaskLog':
                 return this.saveTaskLog(job);
@@ -37,7 +37,7 @@ export class TaskLogProcessor extends WorkerHost implements OnModuleInit {
         }
     }
 
-    async saveTaskLog(job: Job<unknown, unknown, TaskLogsJobName>): Promise<boolean> {
+    async saveTaskLog(job: Job<unknown, unknown, TaskLogJobName>): Promise<boolean> {
         try {
             const data = job.data as CreateTaskLogDto;
             const res = await this.taskLogsService.create(data);

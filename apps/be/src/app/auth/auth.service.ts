@@ -6,14 +6,13 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { InjectQueue } from '@nestjs/bullmq';
 import { PinoLogger } from 'nestjs-pino';
 import ms from 'ms';
 import { Queue } from 'bullmq';
 import { faker } from '@faker-js/faker';
 import { OAuth2Client } from 'google-auth-library';
 
-import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
+import { InjectBgJobQueue } from '~be/common/bullmq';
 import { RedisService } from '~be/common/redis';
 import { convertToObjectId, getGravatarUrl, NullableType } from '~be/common/utils';
 import { MailJobName } from '~be/common/mail';
@@ -42,8 +41,7 @@ export class AuthService implements OnModuleInit {
         private readonly jwtService: JwtService,
         private readonly usersService: UsersService,
         private readonly redisService: RedisService,
-        @InjectQueue(BULLMQ_BG_JOB_QUEUE)
-        readonly bgQueue: Queue<unknown, unknown, MailJobName>,
+        @InjectBgJobQueue() private readonly bgQueue: Queue<unknown, unknown, MailJobName>,
     ) {
         this.logger.setContext(AuthService.name);
         this.googleClient = new OAuth2Client(

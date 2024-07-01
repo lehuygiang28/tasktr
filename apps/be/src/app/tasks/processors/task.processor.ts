@@ -2,13 +2,13 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { type Timings } from '@szmarczak/http-timer';
 
-import { BULLMQ_TASK_LOG_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
+import { BULLMQ_TASK_QUEUE, InjectTaskLogQueue } from '~be/common/bullmq';
 import { Task } from '~be/app/tasks/schemas/task.schema';
-import { CreateTaskLogDto, TaskLogsJobName } from '~be/app/task-logs';
+import { CreateTaskLogDto, TaskLogJobName } from '~be/app/task-logs';
 import { defaultHeaders } from '~be/common/axios';
 import { normalizeHeaders } from '~be/common/utils';
 
@@ -20,8 +20,8 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     constructor(
         private readonly logger: PinoLogger,
         private readonly httpService: HttpService,
-        @InjectQueue(BULLMQ_TASK_LOG_QUEUE)
-        readonly taskLogQueue: Queue<unknown, unknown, TaskLogsJobName>,
+        @InjectTaskLogQueue()
+        private readonly taskLogQueue: Queue<unknown, unknown, TaskLogJobName>,
     ) {
         super();
         this.logger.setContext(TaskProcessor.name);

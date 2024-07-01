@@ -1,13 +1,12 @@
 import { Injectable, OnModuleInit, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bullmq';
 import { HttpService } from '@nestjs/axios';
 import { Queue, JobsOptions } from 'bullmq';
 import { FilterQuery, QueryOptions, Types, UpdateQuery } from 'mongoose';
 import { PinoLogger } from 'nestjs-pino';
 import { Timings } from '@szmarczak/http-timer';
 
-import { BULLMQ_CLEAR_TASK_QUEUE, BULLMQ_TASK_QUEUE } from '~be/common/bullmq';
+import { InjectClearTaskQueue, InjectTaskQueue } from '~be/common/bullmq';
 import { convertToObjectId, normalizeHeaders, validateCronFrequency } from '~be/common/utils';
 import { JwtPayloadType } from '~be/app/auth/strategies';
 
@@ -35,9 +34,9 @@ export class TasksService implements OnModuleInit {
     private readonly SCAN_DELETED_TASK_CRON_HISTORIC: string[] = [];
 
     constructor(
-        @InjectQueue(BULLMQ_TASK_QUEUE) readonly taskQueue: Queue,
-        @InjectQueue(BULLMQ_CLEAR_TASK_QUEUE)
-        readonly clearTaskQueue: Queue<unknown, unknown, ClearTasksJobName>,
+        @InjectTaskQueue() private readonly taskQueue: Queue,
+        @InjectClearTaskQueue()
+        private readonly clearTaskQueue: Queue<unknown, unknown, ClearTasksJobName>,
         private readonly logger: PinoLogger,
         private readonly configService: ConfigService<AllConfig>,
         private readonly taskRepo: TasksRepository,
