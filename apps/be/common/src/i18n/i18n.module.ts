@@ -1,5 +1,5 @@
+import { join } from 'node:path';
 import { Module } from '@nestjs/common';
-import { join } from 'path';
 import {
     I18nModule as I18nModuleCore,
     AcceptLanguageResolver,
@@ -8,22 +8,27 @@ import {
 } from 'nestjs-i18n';
 import { ConfigService } from '@nestjs/config';
 
+import { AllConfig } from '~be/app/config';
+
 @Module({
     imports: [
         I18nModuleCore.forRootAsync({
-            useFactory: (configService: ConfigService) => ({
-                fallbackLanguage: configService.get('FALLBACK_LANGUAGE') || 'en',
+            useFactory: (configService: ConfigService<AllConfig>) => ({
+                fallbackLanguage: configService.getOrThrow('app.fallbackLanguage', { infer: true }),
                 loaderOptions: {
                     path: join(
                         __dirname,
-                        configService.get('DEPLOY_ENV')?.toLowerCase() === 'serverless'
+                        configService
+                            .getOrThrow('app.deployEnv', { infer: true })
+                            ?.toLowerCase() === 'serverless'
                             ? './lang/'
                             : './assets/i18n/lang/',
                     ),
                     watch: true,
                 },
                 typesOutputPath:
-                    configService.get('DEPLOY_ENV')?.toLowerCase() === 'serverless'
+                    configService.getOrThrow('app.deployEnv', { infer: true })?.toLowerCase() ===
+                    'serverless'
                         ? undefined
                         : join(process.cwd(), `./apps/be/common/src/i18n/i18n.generated.ts`),
             }),

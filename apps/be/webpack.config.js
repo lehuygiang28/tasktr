@@ -1,5 +1,5 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
-const { join, relative } = require('path');
+const { join, relative } = require('node:path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {

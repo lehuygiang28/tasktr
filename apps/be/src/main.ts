@@ -22,10 +22,10 @@ import { AppModule } from './app/app.module';
 import { AllConfig } from './app/config/all-config.type';
 
 async function bootstrap() {
-    const port = process.env.PORT || 8000;
+    const port = process.env?.PORT || 8000;
 
     const app = await NestFactory.create(AppModule, { bufferLogs: true });
-    const configService: ConfigService<AllConfig> = app.get(ConfigService);
+    const configService = app.get(ConfigService<AllConfig>);
     const logger = app.get(Logger);
 
     app.enableCors();
@@ -35,7 +35,7 @@ async function bootstrap() {
     app.enableShutdownHooks();
 
     app.useGlobalPipes(new ValidationPipe(validationOptions));
-    app.useGlobalFilters(new ProblemDetailsFilter(app.get(Logger)));
+    app.useGlobalFilters(new ProblemDetailsFilter(logger));
 
     app.useGlobalInterceptors(
         // ResolvePromisesInterceptor is used to resolve promises in responses because class-transformer can't do it
