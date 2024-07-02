@@ -9,4 +9,5 @@ export type AppConfig = {
     apiStatsPath: string;
     apiStatsUsername: string;
     apiStatsPassword: string;
+    bullBoardPath: string;
 };

@@ -66,13 +66,17 @@ export class AppModule {
         private readonly redisService: RedisService,
     ) {}
     configure(consumer: MiddlewareConsumer) {
-        consumer
-            .apply(
-                jobQueueUIMiddleware(
-                    this.redisService.getClient,
-                    this.configService.getOrThrow('app.globalPrefix', { infer: true }),
-                ),
-            )
-            .forRoutes('admin/queues');
+        const bullBoardPath = this.configService.getOrThrow('app.bullBoardPath', { infer: true });
+
+        if (bullBoardPath) {
+            const prefix = this.configService.getOrThrow('app.globalPrefix', { infer: true })
+                ? '/' + this.configService.getOrThrow('app.globalPrefix', { infer: true })
+                : '';
+            consumer
+                .apply(
+                    jobQueueUIMiddleware(this.redisService.getClient, `${prefix}/${bullBoardPath}`),
+                )
+                .forRoutes(bullBoardPath);
+        }
     }
 }

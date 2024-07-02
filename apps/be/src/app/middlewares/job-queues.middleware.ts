@@ -10,9 +10,8 @@ import {
     BULLMQ_BG_JOB_QUEUE,
 } from '~be/common/bullmq/bullmq.constant';
 
-export function jobQueueUIMiddleware(connection: Redis, globalPrefix = '') {
+export function jobQueueUIMiddleware(connection: Redis, basePath = '') {
     const serverAdapter = new ExpressAdapter();
-    const basePath = `${globalPrefix ? '/' + globalPrefix : ''}/admin/queues`;
     serverAdapter.setBasePath(basePath);
 
     const queues = [
@@ -35,6 +34,10 @@ export function jobQueueUIMiddleware(connection: Redis, globalPrefix = '') {
     createBullBoard({
         queues,
         serverAdapter,
+        options: {
+            uiBasePath: require.resolve(`@bull-board/ui/package.json`).replace('package.json', ''),
+            uiConfig: {},
+        },
     });
 
     return serverAdapter.getRouter();

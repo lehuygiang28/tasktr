@@ -49,6 +49,10 @@ class EnvironmentVariablesValidator {
     @ValidateIf((o: EnvironmentVariablesValidator) => !!o?.API_STATS_PATH)
     @IsString()
     API_STATS_PASSWORD: string;
+
+    @IsOptional()
+    @IsString()
+    BULL_BOARD_PATH: string;
 }
 
 export default registerAs<AppConfig>('app', () => {
@@ -66,8 +70,13 @@ export default registerAs<AppConfig>('app', () => {
             : 100,
         port: process.env?.PORT ? parseInt(process.env?.PORT, 10) : 8000,
         fallbackLanguage: process.env?.FALLBACK_LANGUAGE || 'en',
-        apiStatsPath: process.env?.API_STATS_PATH,
+        apiStatsPath: process.env?.API_STATS_PATH
+            ? process.env.API_STATS_PATH.replace(/^\/|\\|\/$|\\$/g, '')
+            : '',
         apiStatsUsername: process.env?.API_STATS_USERNAME,
         apiStatsPassword: process.env?.API_STATS_PASSWORD,
+        bullBoardPath: process.env?.BULL_BOARD_PATH
+            ? process.env.BULL_BOARD_PATH.replace(/^\/|\\|\/$|\\$/g, '')
+            : '',
     };
 });
