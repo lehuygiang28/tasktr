@@ -4,6 +4,8 @@ import { Type } from 'class-transformer';
 
 import validateConfig from '~be/common/utils/validate-config';
 import { ToBoolean } from '~be/common/utils/decorators/to-boolean.decorator';
+import { removeLeadingAndTrailingSlashes } from '~be/common/utils/common';
+
 import { AppConfig } from './app-config.type';
 
 class EnvironmentVariablesValidator {
@@ -62,7 +64,7 @@ export default registerAs<AppConfig>('app', () => {
         deployEnv: process.env?.DEPLOY_ENV || 'none',
         workerMode: process.env?.WORKER_MODE === 'true',
         globalPrefix: process.env?.GLOBAL_PREFIX
-            ? process.env.GLOBAL_PREFIX.replace(/^\/|\\|\/$|\\$/g, '') // remove leading and trailing slashes (/ or \)
+            ? removeLeadingAndTrailingSlashes(process.env.GLOBAL_PREFIX)
             : 'api',
         workerName: process.env?.WORKER_NAME || 'default',
         eventsMaxLen: process.env?.BULLMQ_EVENTS_MAXLEN
@@ -71,12 +73,12 @@ export default registerAs<AppConfig>('app', () => {
         port: process.env?.PORT ? parseInt(process.env?.PORT, 10) : 8000,
         fallbackLanguage: process.env?.FALLBACK_LANGUAGE || 'en',
         apiStatsPath: process.env?.API_STATS_PATH
-            ? process.env.API_STATS_PATH.replace(/^\/|\\|\/$|\\$/g, '')
+            ? removeLeadingAndTrailingSlashes(process.env.API_STATS_PATH)
             : '',
         apiStatsUsername: process.env?.API_STATS_USERNAME,
         apiStatsPassword: process.env?.API_STATS_PASSWORD,
         bullBoardPath: process.env?.BULL_BOARD_PATH
-            ? process.env.BULL_BOARD_PATH.replace(/^\/|\\|\/$|\\$/g, '')
+            ? removeLeadingAndTrailingSlashes(process.env.BULL_BOARD_PATH)
             : '',
     };
 });

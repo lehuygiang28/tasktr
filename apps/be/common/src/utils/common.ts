@@ -90,3 +90,30 @@ export function normalizeHeaders(headers: Record<string, unknown>) {
         return { ...acc, [key.trim().toLowerCase()]: value };
     }, {});
 }
+
+/**
+ * Removes all trailing slashes from a path
+ * @param path The path to remove trailing slashes
+ * @returns The path without any trailing slashes
+ */
+export function removeTrailingSlash(path: string) {
+    return path.replace(/\/+$/, '');
+}
+
+/**
+ * Removes all leading slashes from a path
+ * @param path The path to remove leading slashes
+ * @returns The path without any leading slashes
+ */
+export function removeLeadingSlash(path: string) {
+    return path.replace(/^\/+/, '');
+}
+
+/**
+ * Removes all trailing and leading slashes from a path
+ * @param path The path to remove trailing and leading slashes
+ * @returns The path without any trailing or leading slashes
+ */
+export function removeLeadingAndTrailingSlashes(path: string) {
+    return removeLeadingSlash(removeTrailingSlash(path));
+}
