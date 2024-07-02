@@ -1,6 +1,6 @@
 'use client';
 
-import { PropsWithChildren, useContext } from 'react';
+import { Fragment, PropsWithChildren, useContext } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Layout, Typography } from 'antd';
@@ -34,12 +34,12 @@ function CustomSider({ mode, user }: { mode: string; user: UserDto }) {
             render={({ items, logout, collapsed }) => {
                 return (
                     <>
-                        {items.map((item) => {
+                        {items.map((item, index) => {
                             if (item.key.includes('admin') && user?.role !== UserRoleEnum.Admin) {
-                                return <></>;
+                                return <Fragment key={`${item.key}_${index}`}></Fragment>;
                             }
 
-                            return item;
+                            return <Fragment key={`${item.key}_${index}`}>{item}</Fragment>;
                         })}
                         {logout}
                         {collapsed}
@@ -75,17 +75,8 @@ export function ThemedLayout({ children }: PropsWithChildren) {
     return (
         <ThemedLayoutV2
             Header={() => <Header user={user} sticky />}
-            Sider={() => (
-                <>
-                    <CustomSider mode={mode} user={user} />
-                </>
-            )}
-            dashboard
-            Footer={() => (
-                <>
-                    <CustomFooter mode={mode} />
-                </>
-            )}
+            Sider={() => <CustomSider mode={mode} user={user} />}
+            Footer={() => <CustomFooter mode={mode} />}
         >
             {children}
         </ThemedLayoutV2>
