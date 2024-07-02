@@ -7,6 +7,11 @@ const moduleAlias = require('module-alias');
 const tsConfigPaths = require('tsconfig-paths');
 const tsConfig = require('./tsconfig.json');
 
+/**
+ * Import the modules that serverless couldn't find in node_modules
+ */
+require('@bull-board/ui/package.json');
+
 const baseUrl = tsConfig?.compilerOptions?.baseUrl ?? '../';
 
 // Register tsconfig-paths, use for TS
@@ -38,5 +43,6 @@ require('../../apps/be/src/app/index');
 
 /**
  * Main file to run the server
+ * KEEP IT AS LAST REQUIRE IN THIS FILE
  */
 require('../../apps/be/src/main');
