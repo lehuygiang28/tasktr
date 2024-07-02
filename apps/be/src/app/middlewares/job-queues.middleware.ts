@@ -34,10 +34,6 @@ export function jobQueueUIMiddleware(connection: Redis, basePath = '') {
     createBullBoard({
         queues,
         serverAdapter,
-        options: {
-            uiBasePath: require.resolve(`@bull-board/ui/package.json`).replace('package.json', ''),
-            uiConfig: {},
-        },
     });
 
     return serverAdapter.getRouter();

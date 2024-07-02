@@ -8,9 +8,10 @@ const tsConfigPaths = require('tsconfig-paths');
 const tsConfig = require('./tsconfig.json');
 
 /**
- * Import the modules that serverless couldn't find in node_modules
+ * Import some modules that serverless couldn't find it
  */
-require('@bull-board/ui/package.json');
+
+/* ... */
 
 const baseUrl = tsConfig?.compilerOptions?.baseUrl ?? '../';
 
