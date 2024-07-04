@@ -1,4 +1,4 @@
-import { Account, Session, User } from 'next-auth';
+import { Account, Session, User, AuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import GithubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
@@ -6,7 +6,7 @@ import { AuthValidatePasswordlessDto, LoginResponseDto } from '~be/app/auth/dtos
 import { AxiosError } from 'axios';
 import { axiosInstance } from '~/libs/axios';
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
     providers: [
         GoogleProvider({
             clientId: process.env.AUTH_GOOGLE_ID,
@@ -40,6 +40,7 @@ export const authOptions = {
         }),
     ],
     secret: process.env.NEXTAUTH_SECRET,
+    session: { strategy: 'jwt' },
     callbacks: {
         /**
          * Controls whether a user is allowed to sign in or not.
