@@ -97,6 +97,11 @@ export class TasksService implements OnModuleInit {
             removeOnComplete: true,
             removeOnFail: true,
             priority: 1000,
+            attempts: 3,
+            backoff: {
+                type: 'exponential',
+                delay: 3000,
+            },
         };
 
         return this.taskQueue.add(`fetch`, task, jobOptions);
