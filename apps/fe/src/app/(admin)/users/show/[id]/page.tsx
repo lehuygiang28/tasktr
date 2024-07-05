@@ -19,7 +19,7 @@ export default function UserShow() {
             <div>
                 <Row style={{ width: '100%' }}>
                     <Col xs={24} md={4}>
-                        <Image src={record?.avatar.url} width={100} alt="user avatar" />
+                        <Image src={record?.avatar?.url} width={100} alt="user avatar" />
                     </Col>
                     <Col xs={24} md={18}>
                         <Descriptions>
