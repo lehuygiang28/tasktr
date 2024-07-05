@@ -7,7 +7,18 @@ import { User } from '~be/app/users/schemas';
 
 export class AlertSchema {
     @Prop({ required: false, default: 0, type: Number })
-    failure: number;
+    failures: number;
+
+    @Prop({ required: false, default: 0, type: Number })
+    maxDuration: number;
+}
+
+export class TaskOptionSchema {
+    @Prop({ required: false, type: AlertSchema })
+    alert?: AlertSchema;
+
+    @Prop({ required: false, default: 0, type: Number })
+    stopAfterFailures: number;
 }
 
 @Schema({
@@ -50,8 +61,8 @@ export class Task extends AbstractDocument {
     @Prop({ required: false, default: '', type: String })
     timezone: string;
 
-    @Prop({ required: false, type: AlertSchema })
-    alert: AlertSchema;
+    @Prop({ required: false, type: TaskOptionSchema })
+    options?: TaskOptionSchema;
 
     @Prop({ required: false, default: false, type: Boolean })
     isEnable: boolean;

@@ -11,7 +11,7 @@ import { CreateTaskDto } from '~be/app/tasks/dtos';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import { IsCron } from '@kovalenko/is-cron';
 
-export class TaskFormValidator implements Omit<CreateTaskDto, 'alert'> {
+export class TaskFormValidator implements Omit<CreateTaskDto, 'options'> {
     constructor() {
         this.body = '';
         this.headers = '';

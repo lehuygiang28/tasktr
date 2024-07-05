@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { AlertSchema, Task } from '../schemas/task.schema';
+import { AlertSchema, TaskOptionSchema, Task } from '../schemas/task.schema';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
     IsNumber,
@@ -19,7 +19,26 @@ import { HttpMethodEnum } from '../tasks.enum';
 export class AlertDto implements AlertSchema {
     @ApiProperty()
     @IsNumber()
-    failure: number;
+    @IsOptional()
+    failures: number;
+
+    @ApiProperty()
+    @IsNumber()
+    @IsOptional()
+    maxDuration: number;
+}
+
+export class TaskOptionDto implements TaskOptionSchema {
+    @ApiPropertyOptional()
+    @IsOptional()
+    @Type(() => AlertDto)
+    @ValidateNested()
+    alert?: AlertDto;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsNumber()
+    stopAfterFailures: number;
 }
 
 export class TaskDto implements Task {
@@ -74,11 +93,6 @@ export class TaskDto implements Task {
     @IsBoolean()
     isEnable: boolean;
 
-    @ApiProperty({ type: AlertDto })
-    @ValidateNested()
-    @Type(() => AlertDto)
-    alert: AlertDto;
-
     @ApiPropertyOptional({ type: [String] })
     @IsOptional()
     @IsString({ each: true })
@@ -88,6 +102,12 @@ export class TaskDto implements Task {
     @IsOptional()
     @IsString()
     note: string;
+
+    @ApiPropertyOptional({ type: TaskOptionDto })
+    @ValidateNested()
+    @Type(() => TaskOptionDto)
+    @IsOptional()
+    options?: TaskOptionDto;
 
     @ApiPropertyOptional({ type: Date, default: null })
     @IsOptional()

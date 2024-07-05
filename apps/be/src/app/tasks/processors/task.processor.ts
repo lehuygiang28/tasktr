@@ -34,10 +34,11 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     }
 
     async process(job: Job<unknown>): Promise<unknown> {
-        if (job.name.startsWith('fetch')) {
-            return this.fetch(job as unknown as Job<Task>);
-        } else {
-            throw new Error(`Process ${job.name} not implemented`);
+        switch (job.name) {
+            case 'fetch':
+                return this.fetch(job as unknown as Job<Task>);
+            default:
+                throw new Error(`Process ${job.name} not implemented`);
         }
     }
 
@@ -58,7 +59,12 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
 
         try {
             const response = await this.httpService.axiosRef.request(config);
-            const timings = response?.request['timings'] || null;
+
+            if (response.status >= 400 && response.status < 599) {
+                throw new Error(`Failed to fetch, status: ${response.status}`);
+            }
+
+            const timings: Timings = response?.request['timings'] || null;
             const stringBody = String(response?.data ?? '');
 
             await this.logSuccess(job, response, timings, stringBody);
@@ -112,7 +118,10 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             statusCode: response?.status ?? 0,
             responseSizeBytes: stringBody?.length,
             timings: timings?.phases || {},
-            request: { headers: response.config?.headers, body: String(response.config?.data || '') },
+            request: {
+                headers: response.config?.headers,
+                body: String(response.config?.data || ''),
+            },
             response: {
                 headers: response.headers,
                 body:

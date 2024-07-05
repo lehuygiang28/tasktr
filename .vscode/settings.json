@@ -32,6 +32,8 @@
         "configs",
         "be/tasks",
         "nx",
-        "ci"
+        "ci",
+        "be/processor",
+        "be/tasks"
     ]
 }
