@@ -13,13 +13,18 @@ import { axiosConfig } from '~be/common/axios';
 
 import { Task, TaskSchema } from './schemas';
 import { TasksController } from './tasks.controller';
-import { TasksService } from './tasks.service';
+import { TasksService, TaskExecutionService, TaskSchedulingService } from './services';
 import { TasksRepository } from './tasks.repository';
 import { TaskLogsModule } from '../task-logs';
 import { TaskProcessor, ClearTasksProcessor } from './processors';
 import tasksConfig from './config/tasks-config';
 
-const providers: Provider[] = [TasksRepository, TasksService];
+const providers: Provider[] = [
+    TasksRepository,
+    TasksService,
+    TaskSchedulingService,
+    TaskExecutionService,
+];
 
 if (!(process.env['TASK_CONCURRENCY'] && Number(process.env['TASK_CONCURRENCY']) <= 0)) {
     providers.push(TaskProcessor);

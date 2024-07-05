@@ -4,7 +4,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { Job } from 'bullmq';
 
 import { BULLMQ_CLEAR_TASK_QUEUE } from '~be/common/bullmq';
-import { TasksService } from '../tasks.service';
+import { TasksService } from '../services/tasks.service';
 
 export type ClearTasksJobName = 'clearTasks';
 

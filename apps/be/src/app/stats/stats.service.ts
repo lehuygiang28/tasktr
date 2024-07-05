@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TasksService } from '../tasks/tasks.service';
+import { TasksService } from '../tasks/services/tasks.service';
 import { TaskLogsService } from '../task-logs';
 import { JwtPayloadType } from '../auth';
 import { StatsResponseDto } from './dtos';

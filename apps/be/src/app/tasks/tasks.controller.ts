@@ -14,7 +14,7 @@ import { ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/sw
 
 import { CurrentUser, IdParamDto } from '~be/common/utils';
 
-import { TasksService } from './tasks.service';
+import { TasksService, TaskExecutionService } from './services';
 import {
     CreateTaskDto,
     GetTasksResponseDto,
@@ -32,7 +32,10 @@ import { GetLogsByTaskIdDto, GetLogsByTaskIdResponseDto } from '../task-logs/dto
 @ApiTags('tasks')
 @Controller('tasks')
 export class TasksController {
-    constructor(private readonly tasksService: TasksService) {}
+    constructor(
+        private readonly tasksService: TasksService,
+        private readonly taskExecutionService: TaskExecutionService,
+    ) {}
 
     @ApiCreatedResponse({ type: TaskDto })
     @Post('/')
@@ -44,7 +47,7 @@ export class TasksController {
     @HttpCode(HttpStatus.OK)
     @Post('/try')
     tryRequest(@Body() data: TryRequestDto) {
-        return this.tasksService.tryRequestTask({ taskData: data });
+        return this.taskExecutionService.tryRequestTask({ taskData: data });
     }
 
     @ApiOkResponse({ type: TaskDto })
@@ -55,7 +58,7 @@ export class TasksController {
         @Body() data: UpdateTaskDto,
         @CurrentUser() user: JwtPayloadType,
     ) {
-        return this.tasksService.updateTask({ id, data, user });
+        return this.tasksService.updateUserTask({ id, data, user });
     }
 
     @ApiOkResponse({ type: GetTasksResponseDto })
