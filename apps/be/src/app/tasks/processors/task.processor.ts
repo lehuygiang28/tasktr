@@ -42,11 +42,12 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     }
 
     async fetch(job: Job<Task>): Promise<boolean> {
-        const now = Date.now();
-        const { name, endpoint, method, body, headers } = job.data;
+        const { endpoint, method, body, headers } = job.data;
 
-        const normalizedHeaders = headers ? normalizeHeaders(JSON.parse(headers)) : {};
-        const headersValidated = Object.assign(normalizeHeaders(defaultHeaders), normalizedHeaders);
+        const headersValidated = {
+            ...normalizeHeaders(defaultHeaders),
+            ...(headers ? normalizeHeaders(JSON.parse(headers)) : {}),
+        };
 
         const config: AxiosRequestConfig = {
             url: endpoint,
@@ -55,70 +56,85 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             data: body,
         };
 
-        let response: AxiosResponse | null;
-        let timings: Timings | null;
-        let errorMessage: string | null = null;
         try {
-            response = await this.httpService.axiosRef.request(config);
-            timings = response.request['timings'] || null;
+            const response = await this.httpService.axiosRef.request(config);
+            const timings = response?.request['timings'] || null;
+            const stringBody = String(response?.data ?? '');
 
-            this.logger.info(
-                `FETCH ${name} - ${response?.status} - ${timings?.phases?.total} ms - ${String(response?.data ?? '')?.length ?? 0} bytes`,
-            );
-        } catch (error: AxiosError | Error | unknown) {
-            if (error instanceof AxiosError) {
-                this.logger.error(error.response?.data);
-                errorMessage = error?.message;
-            } else {
-                this.logger.error(error);
-            }
-            response = null;
-            timings = null;
-            errorMessage = error['message'] ?? 'Unknown error';
+            await this.logSuccess(job, response, timings, stringBody);
+        } catch (error) {
+            await this.handleError(error, job);
+            throw new Error(`Failed to fetch, error: ${this.extractErrorMessage(error)}`);
         }
 
-        const stringBody = String(response?.data ?? '');
+        return true;
+    }
 
-        const taskLog: CreateTaskLogDto = {
-            taskId: job.data._id,
+    private async logSuccess(
+        job: Job<Task>,
+        response: AxiosResponse,
+        timings: Timings | null,
+        stringBody: string,
+    ) {
+        const { name } = job.data;
+        const taskLog = this.createTaskLog(job, response, timings, stringBody);
+
+        this.logger.info(
+            `FETCH ${name} - ${response?.status} - ${timings?.phases?.total ?? 0} ms - ${stringBody?.length} bytes`,
+        );
+
+        await this.taskLogQueue.add(`saveTaskLog`, taskLog, {
+            removeOnComplete: true,
+            removeOnFail: true,
+            attempts: 10,
+            backoff: { type: 'exponential', delay: 3000 },
+        });
+    }
+
+    private createTaskLog(
+        job: Job<Task>,
+        response: AxiosResponse,
+        timings: Timings | null,
+        stringBody: string,
+    ): CreateTaskLogDto {
+        const { endpoint, method, _id: taskId } = job.data;
+        const now = Date.now();
+        const maxBodyLogSize = Number(process.env['MAX_BODY_LOG_SIZE'] || 1024 * 50); // Default 50KB
+
+        return {
+            taskId,
             endpoint,
             method,
             workerName: process.env['WORKER_NAME'] ?? 'default',
-            scheduledAt: new Date(job?.processedOn ?? now),
-            executedAt: new Date(job?.finishedOn ?? now),
-
+            scheduledAt: new Date(job.processedOn ?? now),
+            executedAt: new Date(job.finishedOn ?? now),
             duration: timings?.phases?.total ?? 0,
             statusCode: response?.status ?? 0,
-            responseSizeBytes: stringBody?.length ?? 0,
+            responseSizeBytes: stringBody?.length,
             timings: timings?.phases || {},
-
-            request: {
-                headers: response.config?.headers,
-                body: String(config?.data || ''),
-            },
-
+            request: { headers: response.config?.headers, body: String(response.config?.data || '') },
             response: {
-                headers: response?.headers,
+                headers: response.headers,
                 body:
-                    stringBody?.length > Number(process.env['MAX_BODY_LOG_SIZE'] || 1024 * 50) // Default 50KB
+                    stringBody?.length > maxBodyLogSize
                         ? `Body too large (${stringBody?.length} bytes), will not be logged.`
                         : stringBody,
             },
-
-            errorMessage,
+            errorMessage: null,
         };
+    }
 
-        await this.taskLogQueue.add(`saveTaskLog`, taskLog, {
-            removeOnComplete: 1,
-            removeOnFail: 1,
-            attempts: 10,
-            // delay: 5000,
-            backoff: {
-                type: 'exponential',
-                delay: 5000,
-            },
-        });
+    private async handleError(error: unknown, job: Job<Task>) {
+        const errorMessage = this.extractErrorMessage(error);
+        this.logger.error(`Error fetching ${job.data.name}: ${errorMessage}`);
+    }
 
-        return true;
+    private extractErrorMessage(error: unknown): string {
+        if (error instanceof AxiosError) {
+            return error.message;
+        } else if (error instanceof Error) {
+            return error.message;
+        }
+        return 'Unknown error';
     }
 }
