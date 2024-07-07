@@ -361,4 +361,33 @@ export class TasksService {
             ...query,
         });
     }
+
+    public async disableTask({ task }: { task: TaskDto }) {
+        const foundTask = await this.taskRepo.findOne({
+            filterQuery: {
+                _id: convertToObjectId(task._id),
+            },
+        });
+
+        if (!foundTask) {
+            throw new UnprocessableEntityException({
+                message: 'This task does not exist or already deleted',
+                errors: {
+                    task: 'notExistOrAlreadyDeleted',
+                },
+            });
+        }
+
+        await Promise.all([
+            this.taskRepo.findOneAndUpdate({
+                filterQuery: {
+                    _id: convertToObjectId(task._id),
+                },
+                updateQuery: {
+                    isEnable: false,
+                },
+            }),
+            this.taskSchedulingService.stopCronTask(foundTask),
+        ]);
+    }
 }

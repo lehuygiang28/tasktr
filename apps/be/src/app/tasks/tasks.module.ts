@@ -10,6 +10,7 @@ import {
     BULLMQ_CLEAR_TASK_QUEUE,
 } from '~be/common/bullmq/bullmq.constant';
 import { axiosConfig } from '~be/common/axios';
+import { RedisModule } from '~be/common/redis';
 
 import { Task, TaskSchema } from './schemas';
 import { TasksController } from './tasks.controller';
@@ -39,6 +40,7 @@ if (!(process.env['CLEAR_LOG_CONCURRENCY'] && Number(process.env['CLEAR_LOG_CONC
         ConfigModule.forFeature(tasksConfig),
         HttpModule.register(axiosConfig),
         MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
+        RedisModule,
         TaskLogsModule,
         BullModule.registerQueue({
             name: BULLMQ_TASK_QUEUE,

@@ -11,6 +11,14 @@ import { Task } from '~be/app/tasks/schemas/task.schema';
 import { CreateTaskLogDto, TaskLogJobName } from '~be/app/task-logs';
 import { defaultHeaders } from '~be/common/axios';
 import { normalizeHeaders } from '~be/common/utils';
+import { RedisService } from '~be/common/redis/services';
+
+import { TASK_FAIL_STREAK_PREFIX } from '../tasks.constant';
+import { TasksService } from '../services';
+
+type TaskFailStreak = {
+    [key: string]: number;
+};
 
 @Injectable()
 @Processor(BULLMQ_TASK_QUEUE, {
@@ -22,6 +30,8 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         private readonly httpService: HttpService,
         @InjectTaskLogQueue()
         private readonly taskLogQueue: Queue<unknown, unknown, TaskLogJobName>,
+        private readonly redisService: RedisService,
+        private readonly taskService: TasksService,
     ) {
         super();
         this.logger.setContext(TaskProcessor.name);
@@ -67,13 +77,69 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             const timings: Timings = response?.request['timings'] || null;
             const stringBody = String(response?.data ?? '');
 
-            await this.logSuccess(job, response, timings, stringBody);
+            await Promise.all([
+                this.logSuccess(job, response, timings, stringBody),
+                this.postprocessFetchTask(job, true),
+            ]);
         } catch (error) {
-            await this.handleError(error, job);
+            await Promise.all([
+                this.handleError(error, job),
+                this.postprocessFetchTask(job, false),
+            ]);
             throw new Error(`Failed to fetch, error: ${this.extractErrorMessage(error)}`);
         }
 
         return true;
+    }
+
+    private async postprocessFetchTask(job: Job<Task>, isSuccessful: boolean) {
+        const maxFailStreak = job.data?.options?.stopAfterFailures || 0;
+
+        if (maxFailStreak <= 0) {
+            return;
+        }
+
+        const key = `${TASK_FAIL_STREAK_PREFIX}_${job.data.userId.toString()}`;
+        const failedStreak = (await this.redisService.get<TaskFailStreak>(key)) || {};
+
+        if (!isSuccessful) {
+            const currentStreak = failedStreak[job.data._id.toString()] || 0;
+            const newFailedStreak = {
+                ...failedStreak,
+                [job.data._id.toString()]: currentStreak + 1,
+            };
+            await this.redisService.set(key, newFailedStreak);
+
+            if (newFailedStreak[job.data._id.toString()] >= maxFailStreak) {
+                this.logger.warn(
+                    `Task ${job.data._id.toString()} has been disabled due to too many failures: ${newFailedStreak[job.data._id.toString()]} / ${maxFailStreak}`,
+                );
+
+                const promises: unknown[] = [this.taskService.disableTask({ task: job.data })];
+
+                delete newFailedStreak[job.data._id.toString()];
+
+                // If the record is empty after deletion, remove it from Redis. Otherwise, update it.
+                if (Object.keys(newFailedStreak).length === 0) {
+                    promises.push(this.redisService.del(key));
+                } else {
+                    promises.push(this.redisService.set(key, newFailedStreak));
+                }
+
+                await Promise.all(promises);
+            }
+        } else {
+            // If the task was successful, check if it exists in the fail streak record and remove it
+            if (Object.prototype.hasOwnProperty.call(failedStreak, job.data._id.toString())) {
+                delete failedStreak[job.data._id.toString()];
+                // If after removal, the record is empty, delete the key from Redis, else update the record
+                if (Object.keys(failedStreak).length === 0) {
+                    await this.redisService.del(key);
+                } else {
+                    await this.redisService.set(key, failedStreak);
+                }
+            }
+        }
     }
 
     private async logSuccess(
