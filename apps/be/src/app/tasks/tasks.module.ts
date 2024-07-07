@@ -11,6 +11,8 @@ import {
 } from '~be/common/bullmq/bullmq.constant';
 import { axiosConfig } from '~be/common/axios';
 import { RedisModule } from '~be/common/redis';
+import { MailModule } from '~be/common/mail';
+import { UsersModule } from '~be/app/users';
 
 import { Task, TaskSchema } from './schemas';
 import { TasksController } from './tasks.controller';
@@ -41,6 +43,8 @@ if (!(process.env['CLEAR_LOG_CONCURRENCY'] && Number(process.env['CLEAR_LOG_CONC
         HttpModule.register(axiosConfig),
         MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
         RedisModule,
+        MailModule,
+        UsersModule,
         TaskLogsModule,
         BullModule.registerQueue({
             name: BULLMQ_TASK_QUEUE,

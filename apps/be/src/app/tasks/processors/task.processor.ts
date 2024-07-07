@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
@@ -12,6 +13,9 @@ import { CreateTaskLogDto, TaskLogJobName } from '~be/app/task-logs';
 import { defaultHeaders } from '~be/common/axios';
 import { normalizeHeaders } from '~be/common/utils';
 import { RedisService } from '~be/common/redis/services';
+import { MailService } from '~be/common/mail';
+import { UsersService } from '~be/app/users';
+import { AllConfig } from '~be/app/config';
 
 import { TASK_FAIL_STREAK_PREFIX } from '../tasks.constant';
 import { TasksService } from '../services';
@@ -32,6 +36,9 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         private readonly taskLogQueue: Queue<unknown, unknown, TaskLogJobName>,
         private readonly redisService: RedisService,
         private readonly taskService: TasksService,
+        private readonly configService: ConfigService<AllConfig>,
+        private readonly mailService: MailService,
+        private readonly usersService: UsersService,
     ) {
         super();
         this.logger.setContext(TaskProcessor.name);
@@ -115,7 +122,15 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
                     `Task ${job.data._id.toString()} has been disabled due to too many failures: ${newFailedStreak[job.data._id.toString()]} / ${maxFailStreak}`,
                 );
 
-                const promises: unknown[] = [this.taskService.disableTask({ task: job.data })];
+                const promises: unknown[] = [
+                    this.taskService.disableTask({ task: job.data }),
+                    this.mailService.sendStopTask({
+                        to: (await this.usersService.findById(job.data.userId.toString())).email,
+                        mailData: {
+                            url: `${this.configService.getOrThrow('app.feDomain', { infer: true })}/tasks/show/${job.data._id.toString()}`,
+                        },
+                    }),
+                ];
 
                 delete newFailedStreak[job.data._id.toString()];
 

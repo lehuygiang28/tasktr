@@ -26,5 +26,11 @@
         "text2": "Alternatively, you can copy the link below and paste it into your browser to get started:",
         "text3": "If you did not make this request, please ignore this email.",
         "btn1": "Login"
+    },
+    "STOP_TASK": {
+        "title": "Your task has been stopped",
+        "text1": "Your task has been stopped due to failures.",
+        "text2": "Your task has been stopped by the system because of failures too many times.",
+        "btn1": "See Task"
     }
 }

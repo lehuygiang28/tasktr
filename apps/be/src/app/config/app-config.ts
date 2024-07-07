@@ -27,6 +27,10 @@ class EnvironmentVariablesValidator {
     GLOBAL_PREFIX: string;
 
     @IsOptional()
+    @IsString()
+    FE_DOMAIN: string;
+
+    @IsOptional()
     @IsNumber()
     @Type(() => Number)
     BULLMQ_EVENTS_MAXLEN: number;
@@ -66,6 +70,9 @@ export default registerAs<AppConfig>('app', () => {
         globalPrefix: process.env?.GLOBAL_PREFIX
             ? removeLeadingAndTrailingSlashes(process.env.GLOBAL_PREFIX)
             : 'api',
+        feDomain: process.env?.FE_DOMAIN
+            ? removeLeadingAndTrailingSlashes(process.env.FE_DOMAIN)
+            : 'https://tasktr.vercel.app',
         workerName: process.env?.WORKER_NAME || 'default',
         eventsMaxLen: process.env?.BULLMQ_EVENTS_MAXLEN
             ? parseInt(process.env?.BULLMQ_EVENTS_MAXLEN, 10)

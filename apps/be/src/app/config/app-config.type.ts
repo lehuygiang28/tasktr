@@ -3,6 +3,7 @@ export type AppConfig = {
     workerMode: boolean;
     workerName: string;
     globalPrefix: string;
+    feDomain: string;
     eventsMaxLen: number;
     port: number;
     fallbackLanguage: string;

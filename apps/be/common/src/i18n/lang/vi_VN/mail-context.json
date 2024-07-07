@@ -26,5 +26,11 @@
         "text2": "Hoặc bạn có thể sao chép liên kết dưới đây và dán vào trình duyệt của bạn để bắt đầu:",
         "text3": "Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.",
         "btn1": "Đăng nhập"
+    },
+    "STOP_TASK": {
+        "title": "Task của bạn đã bị dừng",
+        "text1": "Task của bạn đã bị dừng do xảy ra lỗi.",
+        "text2": "Task của bạn đã bị hệ thống dừng lại do xảy ra nhiều nhiều lỗi.",
+        "btn1": "Xem Task"
     }
 }
