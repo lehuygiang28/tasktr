@@ -1,17 +1,44 @@
+import 'reflect-metadata';
 import {
     IsBoolean,
     IsEnum,
     IsNotEmpty,
+    IsNumber,
     IsOptional,
     IsString,
     IsTimeZone,
     IsUrl,
+    ValidateNested,
 } from 'class-validator';
-import { CreateTaskDto } from '~be/app/tasks/dtos';
-import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
+import { Type } from 'class-transformer';
 import { IsCron } from '@kovalenko/is-cron';
+import type { AlertDto, CreateTaskDto, TaskOptionDto } from '~be/app/tasks/dtos';
+import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 
-export class TaskFormValidator implements Omit<CreateTaskDto, 'options'> {
+class AlertValidator implements AlertDto {
+    @IsOptional()
+    @Type(() => Number)
+    failures: number;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber(undefined, { message: 'Please enter a number' })
+    maxDuration: number;0
+}
+
+class TaskOptionValidator implements TaskOptionDto {
+    @IsOptional()
+    @Type(() => AlertValidator)
+    @ValidateNested()
+    alert?: AlertValidator;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsNumber(undefined, { message: 'Please enter a number' })
+    stopAfterFailures?: number;
+}
+
+export class TaskFormValidator implements CreateTaskDto {
     constructor() {
         this.body = '';
         this.headers = '';
@@ -22,6 +49,7 @@ export class TaskFormValidator implements Omit<CreateTaskDto, 'options'> {
         this.cron = '* * * * *';
         this.name = '';
         this.endpoint = '';
+        this.options = {};
     }
 
     @IsNotEmpty({ message: 'Please enter a name of task' })
@@ -60,4 +88,9 @@ export class TaskFormValidator implements Omit<CreateTaskDto, 'options'> {
 
     @IsOptional()
     headers: string;
+
+    @IsOptional()
+    @Type(() => TaskOptionValidator)
+    @ValidateNested()
+    options?: TaskOptionValidator;
 }

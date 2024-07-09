@@ -20,12 +20,12 @@ export class AlertDto implements AlertSchema {
     @ApiProperty()
     @IsNumber()
     @IsOptional()
-    failures: number;
+    failures?: number;
 
     @ApiProperty()
     @IsNumber()
     @IsOptional()
-    maxDuration: number;
+    maxDuration?: number;
 }
 
 export class TaskOptionDto implements TaskOptionSchema {
@@ -38,7 +38,7 @@ export class TaskOptionDto implements TaskOptionSchema {
     @ApiPropertyOptional()
     @IsOptional()
     @IsNumber()
-    stopAfterFailures: number;
+    stopAfterFailures?: number;
 }
 
 export class TaskDto implements Task {
