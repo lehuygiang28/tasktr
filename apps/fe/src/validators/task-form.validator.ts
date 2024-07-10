@@ -23,7 +23,7 @@ class AlertValidator implements AlertDto {
     @IsOptional()
     @Type(() => Number)
     @IsNumber(undefined, { message: 'Please enter a number' })
-    maxDuration: number;0
+    maxDuration: number;
 }
 
 class TaskOptionValidator implements TaskOptionDto {
