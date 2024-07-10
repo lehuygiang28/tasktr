@@ -117,7 +117,12 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
             const handleNestedObjects = (object: Record<string, any>, prefix = '') => {
                 Object.entries(object).forEach(([key, value]) => {
                     const formKey = prefix ? `${prefix}.${key}` : key;
-                    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+                    if (
+                        value !== null &&
+                        value !== undefined &&
+                        typeof value === 'object' &&
+                        !Array.isArray(value)
+                    ) {
                         // Recursively handle nested objects
                         handleNestedObjects(value, formKey);
                     } else {
@@ -450,7 +455,11 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                                 <InputNumber
                                     addonBefore="Stop task after"
                                     addonAfter="consecutive failures"
-                                    defaultValue={field?.value ? Number(field?.value) : null}
+                                    defaultValue={
+                                        field?.value && !isNaN(Number(field?.value))
+                                            ? Number(field?.value)
+                                            : null
+                                    }
                                 />
                             </Item>
                         )}
