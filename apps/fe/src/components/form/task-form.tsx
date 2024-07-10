@@ -80,7 +80,7 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
         if (defaultValues && Object.keys(defaultValues).length > 0) {
             const taskForm = new TaskFormValidator();
 
-            const setFormValue = (key: keyof TaskFormValues, value: any) => {
+            const setTaskFormValue = (key: keyof TaskFormValues, value: any) => {
                 switch (key) {
                     case 'headerLists':
                         break;
@@ -120,7 +120,7 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                         handleNestedObjects(value, formKey);
                     } else {
                         // Handle base case
-                        setFormValue(formKey as keyof TaskFormValues, value);
+                        setTaskFormValue(formKey as keyof TaskFormValues, value);
                     }
                 });
             };
