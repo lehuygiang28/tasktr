@@ -80,6 +80,7 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
         if (defaultValues && Object.keys(defaultValues).length > 0) {
             const taskForm = new TaskFormValidator();
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const setTaskFormValue = (key: keyof TaskFormValues, value: any) => {
                 switch (key) {
                     case 'headerLists':
@@ -112,6 +113,7 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                 }
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const handleNestedObjects = (object: Record<string, any>, prefix = '') => {
                 Object.entries(object).forEach(([key, value]) => {
                     const formKey = prefix ? `${prefix}.${key}` : key;
@@ -448,7 +450,7 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                                 <InputNumber
                                     addonBefore="Stop task after"
                                     addonAfter="consecutive failures"
-                                    defaultValue={field?.value ? Number(field?.value) : ''}
+                                    defaultValue={field?.value ? Number(field?.value) : null}
                                 />
                             </Item>
                         )}
