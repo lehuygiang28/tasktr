@@ -5,6 +5,7 @@ import {
     IsNotEmpty,
     IsNumber,
     IsOptional,
+    IsPositive,
     IsString,
     IsTimeZone,
     IsUrl,
@@ -17,12 +18,15 @@ import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 
 class AlertValidator implements AlertDto {
     @IsOptional()
+    @IsNumber(undefined, { message: 'Please enter a number' })
+    @IsPositive({ message: 'Please enter a positive number' })
     @Type(() => Number)
     failures: number;
 
     @IsOptional()
-    @Type(() => Number)
     @IsNumber(undefined, { message: 'Please enter a number' })
+    @IsPositive({ message: 'Please enter a positive number' })
+    @Type(() => Number)
     maxDuration: number;
 }
 
@@ -33,8 +37,9 @@ class TaskOptionValidator implements TaskOptionDto {
     alert?: AlertValidator;
 
     @IsOptional()
-    @Type(() => Number)
     @IsNumber(undefined, { message: 'Please enter a number' })
+    @IsPositive({ message: 'Please enter a positive number' })
+    @Type(() => Number)
     stopAfterFailures?: number;
 }
 
