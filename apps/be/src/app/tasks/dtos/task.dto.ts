@@ -11,6 +11,7 @@ import {
     IsUrl,
     IsTimeZone,
     IsMongoId,
+    IsPositive,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsCron, IsObjectString, ToBoolean } from '~be/common/utils';
@@ -18,14 +19,16 @@ import { HttpMethodEnum } from '../tasks.enum';
 
 export class AlertDto implements AlertSchema {
     @ApiProperty()
-    @IsNumber()
     @IsOptional()
-    failures: number;
+    @IsNumber()
+    @IsPositive()
+    failures?: number;
 
     @ApiProperty()
-    @IsNumber()
     @IsOptional()
-    maxDuration: number;
+    @IsNumber()
+    @IsPositive()
+    maxDuration?: number;
 }
 
 export class TaskOptionDto implements TaskOptionSchema {
@@ -38,7 +41,8 @@ export class TaskOptionDto implements TaskOptionSchema {
     @ApiPropertyOptional()
     @IsOptional()
     @IsNumber()
-    stopAfterFailures: number;
+    @IsPositive()
+    stopAfterFailures?: number;
 }
 
 export class TaskDto implements Task {

@@ -4,7 +4,20 @@ import 'react-js-cron/dist/styles.css';
 
 import { useEffect } from 'react';
 import { Controller, useFieldArray } from 'react-hook-form';
-import { Form, Input, Select, Row, Col, Switch, Space, Button, FormProps } from 'antd';
+import {
+    Form,
+    Input,
+    Select,
+    Row,
+    Col,
+    Switch,
+    Space,
+    Button,
+    FormProps,
+    InputNumber,
+    Divider,
+    Typography,
+} from 'antd';
 import { Create, Edit } from '@refinedev/antd';
 import { HttpError, useList } from '@refinedev/core';
 import { useForm } from '@refinedev/react-hook-form';
@@ -20,6 +33,7 @@ import { HttpMethodTag } from '~/components/tag/http-method-tag';
 import { TryRequestButton } from '../button/try-request-btn';
 
 const { Item } = Form;
+const { Text } = Typography;
 
 export type TaskFormValues = {
     headerLists?: { key?: string; value?: string }[];
@@ -65,10 +79,10 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
         setValue('isEnable', false);
         if (defaultValues && Object.keys(defaultValues).length > 0) {
             const taskForm = new TaskFormValidator();
-            Object.entries(defaultValues).forEach(([key, value]) => {
-                // Handle some special cases
-                const keyName: keyof TaskFormValues = key as keyof TaskFormValues;
-                switch (keyName) {
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const setTaskFormValue = (key: keyof TaskFormValues, value: any) => {
+                switch (key) {
                     case 'headerLists':
                         break;
                     case 'headers': {
@@ -87,17 +101,38 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                         break;
                     }
                     case 'isEnable': {
-                        setValue(keyName, value === 'true' || value === true);
+                        setValue(key, value === 'true' || value === true);
                         break;
                     }
                     default: {
-                        if (keyName in taskForm) {
-                            setValue(keyName, String(value));
+                        if (key in taskForm) {
+                            setValue(key, String(value));
                         }
                         break;
                     }
                 }
-            });
+            };
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const handleNestedObjects = (object: Record<string, any>, prefix = '') => {
+                Object.entries(object).forEach(([key, value]) => {
+                    const formKey = prefix ? `${prefix}.${key}` : key;
+                    if (
+                        value !== null &&
+                        value !== undefined &&
+                        typeof value === 'object' &&
+                        !Array.isArray(value)
+                    ) {
+                        // Recursively handle nested objects
+                        handleNestedObjects(value, formKey);
+                    } else {
+                        // Handle base case
+                        setTaskFormValue(formKey as keyof TaskFormValues, value);
+                    }
+                });
+            };
+
+            handleNestedObjects(defaultValues);
         }
     }, [defaultValues, setValue, dispatchCronValues]);
 
@@ -396,6 +431,40 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                         </Item>
                     )}
                 />
+
+                <Space direction="vertical" style={{ width: '100%' }}>
+                    <div>
+                        <Divider orientation="left">Options</Divider>
+                        <Text type="secondary">
+                            You can leave these options empty if you don&apos;t want to use them
+                        </Text>
+                    </div>
+
+                    <Controller<TaskFormValues>
+                        name={'options.stopAfterFailures'}
+                        control={control}
+                        render={({ field: { ref, ...field } }) => (
+                            <Item
+                                {...field}
+                                validateStatus={
+                                    errors?.options?.stopAfterFailures ? 'error' : 'validating'
+                                }
+                                help={<>{errors?.options?.stopAfterFailures?.message}</>}
+                                style={{ marginTop: '20px' }}
+                            >
+                                <InputNumber
+                                    addonBefore="Stop task after"
+                                    addonAfter="consecutive failures"
+                                    defaultValue={
+                                        field?.value && !isNaN(Number(field?.value))
+                                            ? Number(field?.value)
+                                            : null
+                                    }
+                                />
+                            </Item>
+                        )}
+                    />
+                </Space>
             </WrapCreateOrEdit>
         </Form>
     );

@@ -7,10 +7,10 @@ import { User } from '~be/app/users/schemas';
 
 export class AlertSchema {
     @Prop({ required: false, default: 0, type: Number })
-    failures: number;
+    failures?: number;
 
     @Prop({ required: false, default: 0, type: Number })
-    maxDuration: number;
+    maxDuration?: number;
 }
 
 export class TaskOptionSchema {
@@ -18,7 +18,7 @@ export class TaskOptionSchema {
     alert?: AlertSchema;
 
     @Prop({ required: false, default: 0, type: Number })
-    stopAfterFailures: number;
+    stopAfterFailures?: number;
 }
 
 @Schema({
