@@ -24,3 +24,5 @@ dist/
 out
 
 compodoc/
+
+*.generated.ts
