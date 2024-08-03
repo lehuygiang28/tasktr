@@ -46,4 +46,4 @@ require('../../apps/be/src/app/index');
  * Main file to run the server
  * KEEP IT AS LAST REQUIRE IN THIS FILE
  */
-require('../../apps/be/src/main');
+module.exports.default = require('../../apps/be/src/main');
