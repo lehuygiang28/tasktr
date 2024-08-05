@@ -13,6 +13,7 @@ import { RedisService } from './services';
                     name: config.get<string>('REDIS_NAME') || 'tasktr_redis_default',
                     host: config.getOrThrow<string>('REDIS_HOST'),
                     port: config.getOrThrow<number>('REDIS_PORT'),
+                    username: config.get<string>('REDIS_USER') || undefined,
                     password: config.getOrThrow<string>('REDIS_PASSWORD'),
                     connectTimeout: Number(config.get<number>('REDIS_CONNECT_TIMEOUT')) || 20000,
                     keepAlive: Number(config.get<number>('REDIS_KEEP_ALIVE')) || 10000, // Send a PING every 10 seconds
