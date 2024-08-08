@@ -72,6 +72,7 @@ jobs:
                   echo "# .env created" >> .env
                   echo "# .env created" >> ./apps/fe/.env
                   echo "# .env created" >> ./apps/be/.env
+                  echo "# .env created" >> ./containers/be-with-redis/.env
                   cat .env
 
             - name: Set COMPOSE_TAG as short commit SHA
