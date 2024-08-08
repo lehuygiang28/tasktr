@@ -1,0 +1,18 @@
+services:
+    tasktr_be_redis:
+        container_name: tasktr_be_redis
+        hostname: tasktr_be_redis
+        build:
+            context: ./
+            dockerfile: ./containers/be-with-redis/Dockerfile
+        image: lehuygiang28/tasktr_be_redis:${COMPOSE_TAG:-latest}
+        env_file:
+            - ./containers/be-with-redis/.env
+        ports:
+            - 8000:${API_PORT:-8000}
+        networks:
+            - tasktr_net
+        restart: unless-stopped
+
+networks:
+    tasktr_net:
