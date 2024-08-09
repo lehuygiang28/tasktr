@@ -17,37 +17,8 @@ export class TaskSchedulingService implements OnModuleInit {
     ) {}
 
     async onModuleInit() {
-        /**
-         * Add cron background job to scan and delete tasks that have been soft deleted
-         */
-        if (this.SCAN_DELETED_TASK_CRON_HISTORIC) {
-            await Promise.allSettled(
-                this.SCAN_DELETED_TASK_CRON_HISTORIC.map((cron) => {
-                    this.clearTaskQueue.removeRepeatable(
-                        'clearTasks',
-                        {
-                            pattern: cron,
-                        },
-                        'clearTasks_id',
-                    );
-                }),
-            );
-        }
-
-        await this.clearTaskQueue.add(
-            'clearTasks',
-            {},
-            {
-                jobId: 'clearTasks_id',
-                removeOnComplete: true,
-                removeOnFail: true,
-                priority: 900,
-                attempts: 9,
-                repeat: {
-                    pattern: this.SCAN_DELETED_TASK_CRON,
-                },
-            },
-        );
+        await this.addCronToCleanDeletedTasks();
+        await this.scanDeletedTasks();
     }
 
     public async startCronTask(task: Task) {
@@ -125,5 +96,44 @@ export class TaskSchedulingService implements OnModuleInit {
         }
 
         return newTask;
+    }
+
+    /**
+     * Add a task to clean deleted tasks
+     */
+    private async addCronToCleanDeletedTasks() {
+        await this.clearTaskQueue.add(
+            'clearTasks',
+            {},
+            {
+                jobId: 'clearTasks_id',
+                removeOnComplete: true,
+                removeOnFail: true,
+                priority: 900,
+                attempts: 9,
+                repeat: {
+                    pattern: this.SCAN_DELETED_TASK_CRON,
+                },
+            },
+        );
+    }
+
+    private async scanDeletedTasks() {
+        /**
+         * Add cron background job to scan and delete tasks that have been soft deleted
+         */
+        if (this.SCAN_DELETED_TASK_CRON_HISTORIC) {
+            await Promise.allSettled(
+                this.SCAN_DELETED_TASK_CRON_HISTORIC.map((cron) => {
+                    this.clearTaskQueue.removeRepeatable(
+                        'clearTasks',
+                        {
+                            pattern: cron,
+                        },
+                        'clearTasks_id',
+                    );
+                }),
+            );
+        }
     }
 }
