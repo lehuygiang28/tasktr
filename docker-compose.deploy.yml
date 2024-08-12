@@ -26,7 +26,7 @@ services:
             - ./containers/swag/www:/config/www
             - ./containers/swag/nginx/proxy-confs:/config/nginx/proxy-confs
             - ./containers/swag/nginx/nginx.conf:/config/nginx/nginx.conf
-            - ./ssl/letsencrypt:/config/etc/letsencrypt # mount ssl key from container to work dir
+            - ./.ssl/letsencrypt:/config/etc/letsencrypt # mount ssl key from container to work dir
         ports:
             - 80:80
             - 443:443
