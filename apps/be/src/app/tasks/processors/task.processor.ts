@@ -59,7 +59,8 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     }
 
     async fetch(job: Job<Task>): Promise<boolean> {
-        const { endpoint, method, body, headers } = job.data;
+        const { attemptsStarted, data } = job;
+        const { endpoint, method, body, headers } = data;
 
         const headersValidated = {
             ...normalizeHeaders(defaultHeaders),
@@ -73,35 +74,51 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             data: body,
         };
 
-        try {
-            const response = await this.httpService.axiosRef.request(config);
+        const response = await this.httpService.axiosRef.request(config);
 
-            if (response.status >= 400 && response.status < 599) {
+        const timings: Timings = response?.request['timings'] || null;
+        const stringBody = String(response?.data ?? '');
+
+        try {
+            if (response.status >= 400) {
                 throw new Error(`Failed to fetch, status: ${response.status}`);
             }
 
-            const timings: Timings = response?.request['timings'] || null;
-            const stringBody = String(response?.data ?? '');
-
             await Promise.all([
-                this.logSuccess(job, response, timings, stringBody),
-                this.postprocessFetchTask(job, true),
+                this.saveTaskLog(job, response, timings, stringBody),
+                this.postprocessFetchTask({ job, isSuccessful: true, attemptsStarted }),
             ]);
         } catch (error) {
-            await Promise.all([
+            const isLastAttempt = attemptsStarted >= (job?.opts?.attempts || 1);
+            const promises = [
                 this.handleError(error, job),
-                this.postprocessFetchTask(job, false),
-            ]);
+                this.postprocessFetchTask({ job, isSuccessful: false, attemptsStarted }),
+            ];
+
+            if (isLastAttempt) {
+                promises.push(this.saveTaskLog(job, response, timings, stringBody));
+            }
+
+            await Promise.all(promises);
             throw new Error(`Failed to fetch, error: ${this.extractErrorMessage(error)}`);
         }
 
         return true;
     }
 
-    private async postprocessFetchTask(job: Job<Task>, isSuccessful: boolean) {
+    private async postprocessFetchTask(data: {
+        job: Job<Task>;
+        isSuccessful: boolean;
+        attemptsStarted: number;
+    }) {
+        const { job, isSuccessful, attemptsStarted } = data;
         const maxFailStreak = job.data?.options?.stopAfterFailures || 0;
 
         if (maxFailStreak <= 0) {
+            return;
+        }
+
+        if (attemptsStarted < job?.opts?.attempts) {
             return;
         }
 
@@ -156,7 +173,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         }
     }
 
-    private async logSuccess(
+    private async saveTaskLog(
         job: Job<Task>,
         response: AxiosResponse,
         timings: Timings | null,
