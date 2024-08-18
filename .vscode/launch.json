@@ -20,7 +20,10 @@
                 "--require",
                 "ts-node/register",
                 "--require",
-                "tsconfig-paths/register"
+                "tsconfig-paths/register",
+                "--require",
+                "ts-node/register/transpile-only",
+                "--nolazy"
             ],
             "cwd": "${workspaceRoot}",
             "internalConsoleOptions": "openOnSessionStart",

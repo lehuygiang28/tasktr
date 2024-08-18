@@ -42,6 +42,15 @@ export function isTrueSet(stringValue: string | boolean) {
 }
 
 /**
+ *
+ * @param value The value to check if it is null or undefined
+ * @returns true if the value is null or undefined, otherwise false
+ */
+export function isNullOrUndefined(value: unknown): value is null | undefined {
+    return value === null || value === undefined;
+}
+
+/**
  * Returns an array of keys from the given enum object.
  *
  * @param {T} enumObj - The enum object from which to extract the keys.

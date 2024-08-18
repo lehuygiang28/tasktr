@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { OnModuleInit } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
@@ -24,7 +24,6 @@ type TaskFailStreak = {
     [key: string]: number;
 };
 
-@Injectable()
 @Processor(BULLMQ_TASK_QUEUE, {
     concurrency: Number(process.env['TASKS_CONCURRENCY']) || 10,
 })
