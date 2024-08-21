@@ -20,15 +20,15 @@ import { HttpMethodEnum } from '../tasks.enum';
 export class AlertDto implements AlertSchema {
     @ApiProperty()
     @IsOptional()
-    @IsNumber()
-    @IsPositive()
-    failures?: number;
+    @ToBoolean()
+    @IsBoolean()
+    disableByTooManyFailures?: boolean;
 
     @ApiProperty()
     @IsOptional()
-    @IsNumber()
-    @IsPositive()
-    maxDuration?: number;
+    @ToBoolean()
+    @IsBoolean()
+    jobExecutionFailed?: boolean;
 }
 
 export class TaskOptionDto implements TaskOptionSchema {

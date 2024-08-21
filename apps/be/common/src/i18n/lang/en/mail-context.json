@@ -32,5 +32,11 @@
         "text1": "Your task has been stopped due to failures.",
         "text2": "Your task has been stopped by the system because of failures too many times.",
         "btn1": "See Task"
+    },
+    "FAILED_TASK": {
+        "title": "Your task has failed",
+        "text1": "Your task execution has failed due to failures.",
+        "text2": "Take a look at the task details to see what went wrong.",
+        "btn1": "See Task"
     }
 }

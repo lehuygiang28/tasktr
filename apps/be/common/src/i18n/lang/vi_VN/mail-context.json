@@ -32,5 +32,11 @@
         "text1": "Task của bạn đã bị dừng do xảy ra lỗi.",
         "text2": "Task của bạn đã bị hệ thống dừng lại do xảy ra nhiều nhiều lỗi.",
         "btn1": "Xem Task"
+    },
+    "FAILED_TASK": {
+        "title": "Task của bạn đã thất bại",
+        "text1": "Việc thực hiện task của bạn đã thất bại do gặp sự cố.",
+        "text2": "Hãy xem chi tiết task để biết điều gì đã xảy ra.",
+        "btn1": "Xem task"
     }
 }

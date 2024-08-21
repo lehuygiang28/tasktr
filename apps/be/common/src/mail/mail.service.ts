@@ -9,6 +9,8 @@ import { I18nTranslations } from '../i18n';
 import { MailerConfig } from './mail.config';
 import { GMAIL_TRANSPORT, RESEND_TRANSPORT, SENDGRID_TRANSPORT } from './mail.constant';
 
+import { ErrorNotificationEnum } from '~be/app/tasks/enums';
+
 @Injectable()
 export class MailService {
     private readonly TRANSPORTERS = [SENDGRID_TRANSPORT, RESEND_TRANSPORT, GMAIL_TRANSPORT];
@@ -153,16 +155,40 @@ export class MailService {
         });
     }
 
-    async sendStopTask(data: { to: string; mailData: { url: string } }) {
+    async notifyStopTask(
+        data: { to: string; mailData: { url: string } },
+        typeErr: ErrorNotificationEnum,
+    ) {
         const { to, mailData } = data;
         const template = 'stop-task-notify';
 
-        const [stopTaskTitle, text1, text2, btn1]: MaybeType<string>[] = await Promise.all([
+        let [stopTaskTitle, text1, text2, btn1]: MaybeType<string>[] = await Promise.all([
             this.i18n.t('mail-context.STOP_TASK.title'),
             this.i18n.t('mail-context.STOP_TASK.text1'),
             this.i18n.t('mail-context.STOP_TASK.text2'),
             this.i18n.t('mail-context.STOP_TASK.btn1'),
         ]);
+
+        switch (typeErr) {
+            case ErrorNotificationEnum.disableByTooManyFailures: {
+                [stopTaskTitle, text1, text2, btn1] = await Promise.all([
+                    this.i18n.t('mail-context.STOP_TASK.title'),
+                    this.i18n.t('mail-context.STOP_TASK.text1'),
+                    this.i18n.t('mail-context.STOP_TASK.text2'),
+                    this.i18n.t('mail-context.STOP_TASK.btn1'),
+                ]);
+                break;
+            }
+            case ErrorNotificationEnum.jobExecutionFailed: {
+                [stopTaskTitle, text1, text2, btn1] = await Promise.all([
+                    this.i18n.t('mail-context.FAILED_TASK.title'),
+                    this.i18n.t('mail-context.FAILED_TASK.text1'),
+                    this.i18n.t('mail-context.FAILED_TASK.text2'),
+                    this.i18n.t('mail-context.FAILED_TASK.btn1'),
+                ]);
+                break;
+            }
+        }
 
         await this.sendMailWithRetry({
             to,

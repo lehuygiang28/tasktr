@@ -6,11 +6,11 @@ import { HttpMethodEnum } from '../tasks.enum';
 import { User } from '~be/app/users/schemas';
 
 export class AlertSchema {
-    @Prop({ required: false, default: 0, type: Number })
-    failures?: number;
+    @Prop({ required: false, type: Boolean, default: false })
+    disableByTooManyFailures?: boolean;
 
-    @Prop({ required: false, default: 0, type: Number })
-    maxDuration?: number;
+    @Prop({ required: false, type: Boolean, default: false })
+    jobExecutionFailed?: boolean;
 }
 
 export class TaskOptionSchema {
@@ -19,6 +19,9 @@ export class TaskOptionSchema {
 
     @Prop({ required: false, default: 0, type: Number })
     stopAfterFailures?: number;
+
+    @Prop({ required: false, default: false, type: Boolean })
+    saveResponse?: boolean;
 }
 
 @Schema({

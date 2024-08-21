@@ -11,7 +11,7 @@ import { BULLMQ_TASK_QUEUE, InjectTaskLogQueue } from '~be/common/bullmq';
 import { Task } from '~be/app/tasks/schemas/task.schema';
 import { CreateTaskLogDto, TaskLogJobName } from '~be/app/task-logs';
 import { defaultHeaders } from '~be/common/axios';
-import { normalizeHeaders } from '~be/common/utils';
+import { isTrueSet, normalizeHeaders } from '~be/common/utils';
 import { RedisService } from '~be/common/redis/services';
 import { MailService } from '~be/common/mail';
 import { UsersService } from '~be/app/users';
@@ -19,6 +19,7 @@ import { AllConfig } from '~be/app/config';
 
 import { TASK_FAIL_STREAK_PREFIX } from '../tasks.constant';
 import { TasksService } from '../services';
+import { ErrorNotificationEnum } from '../enums';
 
 type TaskFailStreak = {
     [key: string]: number;
@@ -90,13 +91,21 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             ]);
         } catch (error) {
             const isLastAttempt = attemptsStarted >= (job?.opts?.attempts || 1);
-            const promises = [
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            let promises: Promise<any>[] = [
                 this.handleError(error, job),
                 this.postprocessFetchTask({ job, isSuccessful: false, attemptsStarted }),
             ];
 
             if (isLastAttempt) {
-                promises.push(this.saveTaskLog(job, response, timings, stringBody));
+                if (isTrueSet(job?.data?.options?.alert?.jobExecutionFailed)) {
+                    promises = [
+                        ...promises,
+                        this.notifyUser(job, ErrorNotificationEnum.jobExecutionFailed),
+                    ];
+                }
+                promises = [...promises, this.saveTaskLog(job, response, timings, stringBody)];
             }
 
             await Promise.all(promises);
@@ -112,7 +121,9 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         attemptsStarted: number;
     }) {
         const { job, isSuccessful, attemptsStarted } = data;
-        const maxFailStreak = job.data?.options?.stopAfterFailures || 0;
+        const options = job.data?.options || {};
+
+        const maxFailStreak = options?.stopAfterFailures || 0;
 
         if (maxFailStreak <= 0) {
             return;
@@ -140,12 +151,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
 
                 const promises: unknown[] = [
                     this.taskService.disableTask({ task: job.data }),
-                    this.mailService.sendStopTask({
-                        to: (await this.usersService.findById(job.data.userId.toString())).email,
-                        mailData: {
-                            url: `${this.configService.getOrThrow('app.feDomain', { infer: true })}/tasks/show/${job.data._id.toString()}`,
-                        },
-                    }),
+                    this.notifyUser(job, ErrorNotificationEnum.disableByTooManyFailures),
                 ];
 
                 delete newFailedStreak[job.data._id.toString()];
@@ -200,11 +206,11 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         timings: Timings | null,
         stringBody: string,
     ): CreateTaskLogDto {
-        const { endpoint, method, _id: taskId } = job.data;
+        const { endpoint, method, _id: taskId, options } = job.data;
         const now = Date.now();
         const maxBodyLogSize = Number(process.env['MAX_BODY_LOG_SIZE'] || 1024 * 50); // Default 50KB
 
-        return {
+        let log: CreateTaskLogDto = {
             taskId,
             endpoint,
             method,
@@ -219,15 +225,23 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
                 headers: response.config?.headers,
                 body: String(response.config?.data || ''),
             },
-            response: {
-                headers: response.headers,
-                body:
-                    stringBody?.length > maxBodyLogSize
-                        ? `Body too large (${stringBody?.length} bytes), will not be logged.`
-                        : stringBody,
-            },
             errorMessage: null,
         };
+
+        if (isTrueSet(options?.saveResponse)) {
+            log = {
+                ...log,
+                response: {
+                    headers: response.headers,
+                    body:
+                        stringBody?.length > maxBodyLogSize
+                            ? `Body too large (${stringBody?.length} bytes), will not be logged.`
+                            : stringBody,
+                },
+            };
+        }
+
+        return log;
     }
 
     private async handleError(error: unknown, job: Job<Task>) {
@@ -242,5 +256,52 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             return error.message;
         }
         return 'Unknown error';
+    }
+
+    private async notifyUser(job: Job<Task>, notifyType: ErrorNotificationEnum) {
+        const { options } = job.data;
+
+        switch (notifyType) {
+            case ErrorNotificationEnum.disableByTooManyFailures: {
+                if (isTrueSet(options?.alert?.disableByTooManyFailures)) {
+                    return this.notifyTooManyFailures(job);
+                }
+                break;
+            }
+            case ErrorNotificationEnum.jobExecutionFailed: {
+                if (isTrueSet(options?.alert?.jobExecutionFailed)) {
+                    return this.notifyJobExecutionFailed(job);
+                }
+                break;
+            }
+            default:
+                break;
+        }
+
+        return 'DONE';
+    }
+
+    private async notifyTooManyFailures(job: Job<Task>) {
+        return this.mailService.notifyStopTask(
+            {
+                to: (await this.usersService.findById(job.data.userId.toString())).email,
+                mailData: {
+                    url: `${this.configService.getOrThrow('app.feDomain', { infer: true })}/tasks/logs/${job.data._id.toString()}`,
+                },
+            },
+            ErrorNotificationEnum.disableByTooManyFailures,
+        );
+    }
+
+    private async notifyJobExecutionFailed(job: Job<Task>) {
+        return this.mailService.notifyStopTask(
+            {
+                to: (await this.usersService.findById(job.data.userId.toString())).email,
+                mailData: {
+                    url: `${this.configService.getOrThrow('app.feDomain', { infer: true })}/tasks/logs/${job.data._id.toString()}`,
+                },
+            },
+            ErrorNotificationEnum.jobExecutionFailed,
+        );
     }
 }
