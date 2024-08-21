@@ -5,6 +5,7 @@ import 'react-js-cron/dist/styles.css';
 import { useEffect } from 'react';
 import { Controller, useFieldArray } from 'react-hook-form';
 import {
+    Checkbox,
     Form,
     Input,
     Select,
@@ -461,6 +462,31 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                                             : null
                                     }
                                 />
+                            </Item>
+                        )}
+                    />
+                </Space>
+                <Divider orientation="left">Notify me when</Divider>
+                <Space direction="vertical">
+                    <Controller<TaskFormValues>
+                        name={'options.alert.jobExecutionFailed'}
+                        control={control}
+                        render={({ field }) => (
+                            <Item {...field} noStyle>
+                                <Checkbox {...field} checked={field?.value == true}>
+                                    Job execution failed
+                                </Checkbox>
+                            </Item>
+                        )}
+                    />
+                    <Controller<TaskFormValues>
+                        name={'options.alert.disableByTooManyFailures'}
+                        control={control}
+                        render={({ field }) => (
+                            <Item {...field} noStyle>
+                                <Checkbox {...field} checked={field?.value == true}>
+                                    Job is disabled by too many failures
+                                </Checkbox>
                             </Item>
                         )}
                     />

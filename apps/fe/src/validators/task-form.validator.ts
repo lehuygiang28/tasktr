@@ -18,16 +18,10 @@ import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 
 class AlertValidator implements AlertDto {
     @IsOptional()
-    @IsNumber(undefined, { message: 'Please enter a number' })
-    @IsPositive({ message: 'Please enter a positive number' })
-    @Type(() => Number)
-    failures: number;
+    disableByTooManyFailures?: boolean;
 
     @IsOptional()
-    @IsNumber(undefined, { message: 'Please enter a number' })
-    @IsPositive({ message: 'Please enter a positive number' })
-    @Type(() => Number)
-    maxDuration: number;
+    jobExecutionFailed?: boolean;
 }
 
 class TaskOptionValidator implements TaskOptionDto {
