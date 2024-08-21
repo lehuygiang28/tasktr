@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { HttpError, useParsed, useInvalidate } from '@refinedev/core';
 import { List, ShowButton, useTable, RefreshButton } from '@refinedev/antd';
-import { Breadcrumb, Space, Table } from 'antd';
+import { Breadcrumb, Grid, Space, Table } from 'antd';
 import { format } from 'date-fns/format';
 import { useState } from 'react';
 import {
@@ -26,8 +26,10 @@ import { HttpStatusTag } from '~/components/tag/http-status-tag';
 import { TaskLogsModal } from '~/components/modal';
 
 ChartJS.register(LineElement, PointElement, Title, Tooltip, Legend);
+const { useBreakpoint } = Grid;
 
 export default function LogList() {
+    const screens = useBreakpoint();
     const { pathname } = useParsed();
     const id = pathname?.replace(/\/$/, '')?.split('/')?.pop();
     const {
@@ -179,53 +181,55 @@ export default function LogList() {
                 )}
             >
                 <Space direction="vertical" style={{ width: '100%' }}>
-                    <Line
-                        style={{ width: '100%', maxHeight: '500px' }}
-                        data={chartData}
-                        options={{
-                            responsive: true,
-                            plugins: {
-                                title: {
-                                    text: 'Task execution timings and size response',
-                                    display: true,
+                    {screens.md && (
+                        <Line
+                            style={{ width: '100%', maxHeight: '500px' }}
+                            data={chartData}
+                            options={{
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        text: 'Task execution timings and size response',
+                                        display: true,
+                                    },
+                                    legend: {
+                                        position: 'top' as const,
+                                    },
+                                    tooltip: {
+                                        mode: 'index',
+                                    },
                                 },
-                                legend: {
-                                    position: 'top' as const,
+                                scales: {
+                                    y: {
+                                        type: 'linear',
+                                        display: true,
+                                        position: 'left' as const,
+                                        title: {
+                                            display: true,
+                                            text: 'Timings (ms)',
+                                        },
+                                    },
+                                    y1: {
+                                        type: 'linear',
+                                        display: true,
+                                        position: 'right' as const,
+                                        title: {
+                                            display: true,
+                                            text: 'Response Size (KB)',
+                                        },
+                                    },
                                 },
-                                tooltip: {
+                                interaction: {
                                     mode: 'index',
+                                    intersect: false,
                                 },
-                            },
-                            scales: {
-                                y: {
-                                    type: 'linear',
-                                    display: true,
-                                    position: 'left' as const,
-                                    title: {
-                                        display: true,
-                                        text: 'Timings (ms)',
-                                    },
+                                animation: {
+                                    duration: 1000,
+                                    easing: 'easeOutQuart',
                                 },
-                                y1: {
-                                    type: 'linear',
-                                    display: true,
-                                    position: 'right' as const,
-                                    title: {
-                                        display: true,
-                                        text: 'Response Size (KB)',
-                                    },
-                                },
-                            },
-                            interaction: {
-                                mode: 'index',
-                                intersect: false,
-                            },
-                            animation: {
-                                duration: 1000,
-                                easing: 'easeOutQuart',
-                            },
-                        }}
-                    />
+                            }}
+                        />
+                    )}
 
                     <Table<TaskLogDto>
                         {...tableProps}
