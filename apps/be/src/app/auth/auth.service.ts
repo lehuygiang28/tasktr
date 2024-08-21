@@ -52,24 +52,36 @@ export class AuthService implements OnModuleInit {
     }
 
     async onModuleInit() {
-        const adminEmail = this.configService.getOrThrow('auth.adminEmail', { infer: true });
+        const adminEmail = this.configService.get('auth.adminEmail', { infer: true });
         if (!adminEmail) {
             return;
         }
 
         const adminFound = await this.usersService.findByEmail(adminEmail);
-        if (adminFound) {
-            if (adminFound.role !== UserRoleEnum.Admin) {
-                this.logger.error(
-                    `User with email: "${adminEmail}" already exists but not admin, please check again or change ADMIN_EMAIL in environment variables`,
-                );
-            } else if (adminFound.role === UserRoleEnum.Admin) {
-                this.logger.info(`Admin user with email: "${adminEmail}" already exists`);
-            }
-
+        if (!adminFound) {
+            await this.createAdminUser(adminEmail);
             return;
         }
 
+        if (adminFound.role === UserRoleEnum.Admin) {
+            this.logger.info(`Admin user with email: "${adminEmail}" already exists`);
+            return;
+        }
+
+        if (this.configService.get('auth.forceAdminEmail', { infer: true })) {
+            adminFound.role = UserRoleEnum.Admin;
+            await this.usersService.update(adminFound._id, { role: UserRoleEnum.Admin });
+            this.logger.info(`Updated admin user with email: ${adminEmail}`);
+            return;
+        }
+
+        this.logger.error(
+            `User with email: "${adminEmail}" already exists but not admin, please check again or change ADMIN_EMAIL in environment variables`,
+        );
+        return;
+    }
+
+    private async createAdminUser(adminEmail: string) {
         const adminCreate = await this.usersService.usersRepository.create({
             document: {
                 email: adminEmail,
@@ -82,6 +94,7 @@ export class AuthService implements OnModuleInit {
                 role: UserRoleEnum.Admin,
             },
         });
+
         if (adminCreate) {
             this.logger.info(`Created admin user with email: ${adminEmail}`);
         }

@@ -10,6 +10,9 @@ class EnvironmentVariablesValidator {
     ADMIN_EMAIL?: string;
 
     @IsString()
+    FORCE_ADMIN_EMAIL?: string;
+
+    @IsString()
     AUTH_JWT_TOKEN_EXPIRES_IN: string;
 
     @IsString()
@@ -45,6 +48,7 @@ export default registerAs<AuthConfig>('auth', () => {
 
     return {
         adminEmail: process.env?.ADMIN_EMAIL ?? '',
+        forceAdminEmail: process.env.FORCE_ADMIN_EMAIL === 'true',
         jwtTokenExpiresIn: process.env.AUTH_JWT_TOKEN_EXPIRES_IN,
         jwtSecret: process.env.AUTH_JWT_SECRET,
         refreshTokenExpiresIn: process.env.AUTH_REFRESH_TOKEN_EXPIRES_IN,

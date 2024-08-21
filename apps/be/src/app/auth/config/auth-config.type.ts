@@ -5,6 +5,8 @@
 export type AuthConfig = {
     /** Admin email. */
     adminEmail?: string;
+    /** Will force to change role of `adminEmail` to admin. */
+    forceAdminEmail?: boolean;
     /** Duration before the JWT token expires. */
     jwtTokenExpiresIn: string;
     /** Secret key used to sign the JWT token. */
