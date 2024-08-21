@@ -9,6 +9,7 @@ import { StatsResponseDto } from '~be/app/stats/dtos';
 import { useRouter } from 'next/navigation';
 import { formatDateToHumanReadable } from '~/libs/utils/common';
 import { HttpStatusTag } from '~/components/tag/http-status-tag';
+import { HttpMethodTag } from '~/components/tag/http-method-tag';
 
 const { Title, Text } = Typography;
 
@@ -73,7 +74,7 @@ export default function DashboardPage() {
                             <List.Item.Meta
                                 title={
                                     <Text strong>
-                                        {item.method} {item.endpoint}
+                                        <HttpMethodTag method={item.method} /> {item.endpoint}
                                     </Text>
                                 }
                                 description={
