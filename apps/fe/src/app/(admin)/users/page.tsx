@@ -95,11 +95,11 @@ export default function UserList() {
                     dataIndex="actions"
                     render={(_, record: UserDto) => (
                         <Space>
-                            <EditButton
+                            {/* <EditButton
                                 hideText
                                 size="small"
                                 recordItemId={record._id.toString()}
-                            />
+                            /> */}
                             <ShowButton
                                 hideText
                                 size="small"
