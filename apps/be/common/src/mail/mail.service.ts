@@ -7,14 +7,14 @@ import { Attachment } from 'nodemailer/lib/mailer';
 import { MaybeType } from '../utils/types';
 import { I18nTranslations } from '../i18n';
 import { MailerConfig } from './mail.config';
-import { GMAIL_TRANSPORT, RESEND_TRANSPORT, SENDGRID_TRANSPORT } from './mail.constant';
+import { SENDGRID_TRANSPORT } from './mail.constant';
 
 import { ErrorNotificationEnum } from '~be/app/tasks/enums';
 
 @Injectable()
 export class MailService {
-    private readonly TRANSPORTERS = [SENDGRID_TRANSPORT, RESEND_TRANSPORT, GMAIL_TRANSPORT];
-    private readonly MAX_RETRIES = this.TRANSPORTERS.length;
+    private readonly TRANSPORTERS: string[] = [];
+    private readonly MAX_RETRIES: number = 0;
     private readonly BASE_ATTACHMENT: Attachment[] = [];
 
     constructor(
@@ -23,9 +23,11 @@ export class MailService {
         private readonly i18n: I18nService<I18nTranslations>,
         private readonly mailConfig: MailerConfig,
     ) {
-        this.mailerService.addTransporter(SENDGRID_TRANSPORT, this.mailConfig.SendGridTransport);
-        this.mailerService.addTransporter(RESEND_TRANSPORT, this.mailConfig.ResendTransport);
-        this.mailerService.addTransporter(GMAIL_TRANSPORT, this.mailConfig.GmailTransport);
+        for (const transporter of this.mailConfig.MailTransport) {
+            this.TRANSPORTERS.push(transporter.name);
+            this.mailerService.addTransporter(transporter.name, transporter.config);
+        }
+        this.MAX_RETRIES = this.mailConfig.MailTransport.length;
 
         this.logger.setContext(MailService.name);
     }

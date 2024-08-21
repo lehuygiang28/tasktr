@@ -3,44 +3,78 @@ import { MailerOptionsFactory } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AllConfig } from '~be/app/config';
 import { TTransport } from './types/mailer.type';
+import { GMAIL_TRANSPORT, RESEND_TRANSPORT, SENDGRID_TRANSPORT } from './mail.constant';
 
 @Injectable()
 export class MailerConfig implements MailerOptionsFactory {
-    constructor(private readonly configService: ConfigService<AllConfig>) {}
-
     private readonly DEFAULT_SENDER = this.configService.get('mail.sender', {
         infer: true,
     });
 
-    public readonly SendGridTransport: TTransport = {
-        host: this.configService.getOrThrow('mail.sendgridHost', { infer: true }),
-        secure: true,
-        auth: {
-            user: this.configService.getOrThrow('mail.sendgridUser', { infer: true }),
-            pass: this.configService.getOrThrow('mail.sendgridPassword', { infer: true }),
-        },
-    };
+    constructor(
+        private readonly configService: ConfigService<AllConfig>,
+        private readonly logger: PinoLogger,
+    ) {}
 
-    public readonly ResendTransport: TTransport = {
-        host: this.configService.getOrThrow('mail.resendHost', { infer: true }),
-        secure: true,
-        auth: {
-            user: this.configService.getOrThrow('mail.resendUser', { infer: true }),
-            pass: this.configService.getOrThrow('mail.resendApiKey', { infer: true }),
-        },
-    };
+    public get MailTransport(): { name: string; config: TTransport }[] {
+        const transporters: { name: string; config: TTransport }[] = [];
+        if (this.configService.get('mail.sendgridPassword', { infer: true })) {
+            transporters.push({
+                name: SENDGRID_TRANSPORT,
+                config: {
+                    host:
+                        this.configService.get('mail.sendgridHost', { infer: true }) ??
+                        'smtp.sendgrid.net',
+                    auth: {
+                        user:
+                            this.configService.get('mail.sendgridUser', { infer: true }) ??
+                            'apikey',
+                        pass: this.configService.getOrThrow('mail.sendgridPassword', {
+                            infer: true,
+                        }),
+                    },
+                    port: 2525,
+                },
+            });
+        }
 
-    public readonly GmailTransport: TTransport = {
-        host: this.configService.getOrThrow('mail.gmailHost', { infer: true }) ?? 'smtp.gmail.com',
-        secure: true,
-        auth: {
-            user: this.configService.getOrThrow('mail.gmailUser', { infer: true }),
-            pass: this.configService.getOrThrow('mail.gmailPassword', { infer: true }),
-        },
-    };
+        if (this.configService.get('mail.resendApiKey', { infer: true })) {
+            transporters.push({
+                name: RESEND_TRANSPORT,
+                config: {
+                    host:
+                        this.configService.get('mail.resendHost', { infer: true }) ??
+                        'smtp.resend.com',
+                    auth: {
+                        user:
+                            this.configService.get('mail.resendUser', { infer: true }) ?? 'resend',
+                        pass: this.configService.getOrThrow('mail.resendApiKey', { infer: true }),
+                    },
+                },
+            });
+        }
+
+        if (this.configService.get('mail.gmailPassword', { infer: true })) {
+            transporters.push({
+                name: GMAIL_TRANSPORT,
+                config: {
+                    host:
+                        this.configService.get('mail.gmailHost', { infer: true }) ??
+                        'smtp.gmail.com',
+                    auth: {
+                        user: this.configService.getOrThrow('mail.gmailUser', { infer: true }),
+                        pass: this.configService.getOrThrow('mail.gmailPassword', { infer: true }),
+                    },
+                },
+            });
+        }
+
+        return transporters;
+    }
 
     public buildMailerOptions(transport: TTransport) {
         return {
@@ -64,6 +98,11 @@ export class MailerConfig implements MailerOptionsFactory {
     }
 
     createMailerOptions() {
-        return this.buildMailerOptions(this.GmailTransport);
+        if (this.MailTransport?.length === 0) {
+            this.logger.warn(`No mailer transport configured. Mail will not be sent.`);
+            return {};
+        }
+
+        return this.buildMailerOptions(this.MailTransport[0].config);
     }
 }
