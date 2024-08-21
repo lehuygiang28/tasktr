@@ -101,10 +101,6 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                         dispatchCronValues({ type: 'set_values', value: String(value) });
                         break;
                     }
-                    case 'isEnable': {
-                        setValue(key, value === 'true' || value === true);
-                        break;
-                    }
                     default: {
                         if (key in taskForm) {
                             setValue(key, String(value));
@@ -230,18 +226,13 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                         <Controller<TaskFormValues>
                             name={'isEnable'}
                             control={control}
-                            render={({ field: { onChange, value } }) => (
-                                <Item<TaskFormValues>
-                                    name={'isEnable'}
-                                    label={'Enable'}
-                                    validateStatus={errors?.isEnable ? 'error' : 'validating'}
-                                    help={<>{errors?.isEnable?.message}</>}
-                                >
+                            render={({ field }) => (
+                                <Item<TaskFormValues> name={'isEnable'} label={'Enable'}>
                                     <Switch
-                                        checked={value == 'true' || value == true}
-                                        onChange={onChange}
-                                        checkedChildren={true}
-                                        unCheckedChildren={false}
+                                        {...field}
+                                        value={field?.value === 'true' || field?.value === true}
+                                        checked={field?.value == 'true' || field?.value == true}
+                                        onChange={field.onChange}
                                     />
                                 </Item>
                             )}
@@ -462,6 +453,23 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                                             : null
                                     }
                                 />
+                            </Item>
+                        )}
+                    />
+                    <Controller<TaskFormValues>
+                        name={'options.saveResponse'}
+                        control={control}
+                        render={({ field }) => (
+                            <Item noStyle>
+                                <Space>
+                                    <Switch
+                                        {...field}
+                                        value={field?.value === 'true' || field?.value === true}
+                                        checked={field?.value === 'true' || field?.value === true}
+                                        onChange={field.onChange}
+                                    />
+                                    Save response in log history
+                                </Space>
                             </Item>
                         )}
                     />
