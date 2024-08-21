@@ -43,7 +43,7 @@ export function TaskLogsModal({ type, selectedLog, setSelectedLog }: TaskLogsMod
                     <div>
                         <Space direction="vertical">
                             <Descriptions
-                                layout="horizontal"
+                                layout="vertical"
                                 title={
                                     <TextTitle level={3}>
                                         {isLogs ? 'Task Log Details' : 'Try Request Response'}
@@ -203,12 +203,13 @@ export function TaskLogsModal({ type, selectedLog, setSelectedLog }: TaskLogsMod
                                         }}
                                     >
                                         <Typography.Title level={5}>
-                                            Detailed Timings
+                                            Durations{' '}
+                                            <Typography.Text type="secondary">(ms)</Typography.Text>
                                         </Typography.Title>
                                         <div style={{ height: '70%', width: '100%' }}>
                                             <Bar
                                                 data={{
-                                                    labels: ['Duration (ms)'],
+                                                    labels: [''],
                                                     datasets: [
                                                         {
                                                             label: 'Wait Time',
@@ -261,7 +262,7 @@ export function TaskLogsModal({ type, selectedLog, setSelectedLog }: TaskLogsMod
                                                 }}
                                                 options={{
                                                     indexAxis: 'y',
-                                                    responsive: true,
+                                                    maintainAspectRatio: false,
                                                     scales: {
                                                         x: {
                                                             stacked: true,
@@ -277,7 +278,6 @@ export function TaskLogsModal({ type, selectedLog, setSelectedLog }: TaskLogsMod
                                                             intersect: false,
                                                         },
                                                     },
-                                                    maintainAspectRatio: false,
                                                     hover: {
                                                         mode: 'index',
                                                         intersect: false,
