@@ -35,6 +35,9 @@ class TaskOptionValidator implements TaskOptionDto {
     @IsPositive({ message: 'Please enter a positive number' })
     @Type(() => Number)
     stopAfterFailures?: number;
+
+    @IsOptional()
+    saveResponse?: boolean;
 }
 
 export class TaskFormValidator implements CreateTaskDto {

@@ -43,6 +43,12 @@ export class TaskOptionDto implements TaskOptionSchema {
     @IsNumber()
     @IsPositive()
     stopAfterFailures?: number;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @ToBoolean()
+    @IsBoolean()
+    saveResponse?: boolean;
 }
 
 export class TaskDto implements Task {
