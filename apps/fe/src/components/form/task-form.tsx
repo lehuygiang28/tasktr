@@ -304,11 +304,21 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                         <Item<TaskFormValues>
                             {...field}
                             name={'cron'}
-                            label={'Cron'}
+                            label={'Scheduler (Cron)'}
                             validateStatus={errors?.cron ? 'error' : 'validating'}
                             help={<>{errors?.cron?.message}</>}
                         >
                             <Space direction="vertical" style={{ width: '100%' }}>
+                                <Cron
+                                    value={cronValues.cronValue}
+                                    setValue={(newValue: string) => {
+                                        dispatchCronValues({
+                                            type: 'set_values',
+                                            value: newValue,
+                                        });
+                                    }}
+                                    leadingZero={false}
+                                />
                                 <Input
                                     ref={ref}
                                     name={'cron'}
@@ -326,16 +336,6 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                                             value: cronValues.inputValue,
                                         });
                                     }}
-                                />
-                                <Cron
-                                    value={cronValues.cronValue}
-                                    setValue={(newValue: string) => {
-                                        dispatchCronValues({
-                                            type: 'set_values',
-                                            value: newValue,
-                                        });
-                                    }}
-                                    leadingZero={false}
                                 />
                             </Space>
                         </Item>
