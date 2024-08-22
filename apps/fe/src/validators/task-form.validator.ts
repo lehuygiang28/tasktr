@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import {
-    IsBoolean,
     IsEnum,
     IsNotEmpty,
     IsNumber,
@@ -13,10 +12,39 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsCron } from '@kovalenko/is-cron';
-import type { AlertDto, CreateTaskDto, TaskOptionDto } from '~be/app/tasks/dtos';
+import type {
+    AlertDto,
+    AlertOnDiscordDto,
+    AlertOnDto,
+    CreateTaskDto,
+    TaskOptionDto,
+} from '~be/app/tasks/dtos';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 
+class AlertOnDiscordValidator implements AlertOnDiscordDto {
+    @IsOptional()
+    @IsString()
+    channelId?: string;
+
+    @IsOptional()
+    @IsString()
+    dmUserId?: string;
+}
+
+class AlertOnValidator implements AlertOnDto {
+    @IsOptional()
+    @Type(() => AlertOnDiscordValidator)
+    discord?: AlertOnDiscordValidator;
+
+    @IsOptional()
+    email?: boolean;
+}
+
 class AlertValidator implements AlertDto {
+    @IsOptional()
+    @Type(() => AlertOnValidator)
+    alertOn?: AlertOnValidator;
+
     @IsOptional()
     disableByTooManyFailures?: boolean;
 
@@ -73,7 +101,7 @@ export class TaskFormValidator implements CreateTaskDto {
     @IsCron({ message: 'Cron expression is not valid' })
     cron: string;
 
-    @IsBoolean({ message: 'Please select an option' })
+    @IsOptional()
     isEnable: boolean;
 
     @IsOptional()

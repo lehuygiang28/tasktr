@@ -227,7 +227,7 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                             name={'isEnable'}
                             control={control}
                             render={({ field }) => (
-                                <Item<TaskFormValues> name={'isEnable'} label={'Enable'}>
+                                <Item<TaskFormValues> label={'Enable'}>
                                     <Switch
                                         {...field}
                                         value={field?.value === 'true' || field?.value === true}
@@ -498,6 +498,76 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                             </Item>
                         )}
                     />
+                </Space>
+                <Divider orientation="left">Notify me on: </Divider>
+                <Space direction="vertical">
+                    <Controller<TaskFormValues>
+                        name={'options.alert.alertOn.email'}
+                        control={control}
+                        render={({ field }) => (
+                            <Item {...field} noStyle>
+                                <Checkbox {...field} checked={field?.value == true}>
+                                    Email
+                                </Checkbox>
+                            </Item>
+                        )}
+                    />
+                    <Input.Group>
+                        <Controller<TaskFormValues>
+                            name={'options.alert.alertOn.discord.dmUserId'}
+                            control={control}
+                            render={({ field: { ref, ...field } }) => (
+                                <Item
+                                    {...field}
+                                    validateStatus={
+                                        errors?.options?.alert?.alertOn?.discord?.dmUserId
+                                            ? 'error'
+                                            : 'validating'
+                                    }
+                                    help={
+                                        <>
+                                            {
+                                                errors?.options?.alert?.alertOn?.discord?.dmUserId
+                                                    ?.message
+                                            }
+                                        </>
+                                    }
+                                >
+                                    <Input
+                                        addonBefore="Send a Direct Message on Discord to user ID:"
+                                        defaultValue={field?.value?.toString() ?? ''}
+                                    />
+                                </Item>
+                            )}
+                        />
+                        <Controller<TaskFormValues>
+                            name={'options.alert.alertOn.discord.channelId'}
+                            control={control}
+                            render={({ field: { ref, ...field } }) => (
+                                <Item
+                                    {...field}
+                                    validateStatus={
+                                        errors?.options?.alert?.alertOn?.discord?.channelId
+                                            ? 'error'
+                                            : 'validating'
+                                    }
+                                    help={
+                                        <>
+                                            {
+                                                errors?.options?.alert?.alertOn?.discord?.channelId
+                                                    ?.message
+                                            }
+                                        </>
+                                    }
+                                >
+                                    <Input
+                                        addonBefore="Send message on Discord to channel ID:"
+                                        defaultValue={field?.value?.toString() ?? ''}
+                                    />
+                                </Item>
+                            )}
+                        />
+                    </Input.Group>
                 </Space>
             </WrapCreateOrEdit>
         </Form>
