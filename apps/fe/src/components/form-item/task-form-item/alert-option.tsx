@@ -6,15 +6,13 @@ import { TaskFormValues } from '~/components/form/task-form';
 
 const { Item } = Form;
 
-export function AlertOptions({
-    control,
-    errors,
-    setValue,
-}: {
+export type AlertOptionsProps = Readonly<{
     control: Control<TaskFormValues, NonNullable<unknown>>;
     errors: FieldErrors<TaskFormValues>;
     setValue: UseFormSetValue<TaskFormValues>;
-}) {
+}>;
+
+export function AlertOptions({ control, errors, setValue }: AlertOptionsProps) {
     const [showDiscordOptions, setShowDiscordOptions] = useState(false);
 
     useEffect(() => {
