@@ -155,7 +155,7 @@ export class TaskDto implements Task {
 
     @ApiPropertyOptional({ type: Date, default: null })
     @IsOptional()
-    deletedAt?: Date;
+    deletedAt?: Date | null;
 
     @ApiProperty()
     @IsOptional()
