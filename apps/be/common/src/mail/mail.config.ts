@@ -54,6 +54,7 @@ export class MailerConfig implements MailerOptionsFactory {
                             this.configService.get('mail.resendUser', { infer: true }) ?? 'resend',
                         pass: this.configService.getOrThrow('mail.resendApiKey', { infer: true }),
                     },
+                    port: 2587,
                 },
             });
         }
