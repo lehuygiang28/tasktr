@@ -9,6 +9,7 @@ class EnvironmentVariablesValidator {
     @IsEmail()
     ADMIN_EMAIL?: string;
 
+    @IsOptional()
     @IsString()
     FORCE_ADMIN_EMAIL?: string;
 
