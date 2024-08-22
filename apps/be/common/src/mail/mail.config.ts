@@ -8,6 +8,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { AllConfig } from '~be/app/config';
 import { TTransport } from './types/mailer.type';
 import { GMAIL_TRANSPORT, RESEND_TRANSPORT, SENDGRID_TRANSPORT } from './mail.constant';
+import { isNullOrUndefined } from '../utils';
 
 @Injectable()
 export class MailerConfig implements MailerOptionsFactory {
@@ -22,7 +23,7 @@ export class MailerConfig implements MailerOptionsFactory {
 
     public get MailTransport(): { name: string; config: TTransport }[] {
         const transporters: { name: string; config: TTransport }[] = [];
-        if (this.configService.get('mail.sendgridPassword', { infer: true })) {
+        if (!isNullOrUndefined(this.configService.get('mail.sendgridPassword', { infer: true }))) {
             transporters.push({
                 name: SENDGRID_TRANSPORT,
                 config: {
@@ -42,7 +43,7 @@ export class MailerConfig implements MailerOptionsFactory {
             });
         }
 
-        if (this.configService.get('mail.resendApiKey', { infer: true })) {
+        if (!isNullOrUndefined(this.configService.get('mail.resendApiKey', { infer: true }))) {
             transporters.push({
                 name: RESEND_TRANSPORT,
                 config: {
@@ -59,7 +60,7 @@ export class MailerConfig implements MailerOptionsFactory {
             });
         }
 
-        if (this.configService.get('mail.gmailPassword', { infer: true })) {
+        if (!isNullOrUndefined(this.configService.get('mail.gmailPassword', { infer: true }))) {
             transporters.push({
                 name: GMAIL_TRANSPORT,
                 config: {
