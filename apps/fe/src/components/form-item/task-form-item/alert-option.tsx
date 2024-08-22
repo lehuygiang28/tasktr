@@ -13,19 +13,21 @@ export type AlertOptionsProps = Readonly<{
 }>;
 
 export function AlertOptions({ control, errors, setValue }: AlertOptionsProps) {
-    const [showDiscordOptions, setShowDiscordOptions] = useState(false);
+    const [showDiscordOptions, setShowDiscordOptions] = useState<boolean | null>(null);
 
     useEffect(() => {
         const dmUserId = control._formValues.options?.alert?.alertOn?.discord?.dmUserId;
         const channelId = control._formValues.options?.alert?.alertOn?.discord?.channelId;
+
         if (dmUserId || channelId) {
+            setValue('options.alert.alertOn.discord.dmUserId', dmUserId);
+            setValue('options.alert.alertOn.discord.channelId', channelId);
             setShowDiscordOptions(true);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [control._formValues.options?.alert?.alertOn?.discord, setValue]);
 
     useEffect(() => {
-        if (!showDiscordOptions) {
+        if (showDiscordOptions === false) {
             setValue('options.alert.alertOn.discord.dmUserId', '');
             setValue('options.alert.alertOn.discord.channelId', '');
         }
@@ -123,6 +125,8 @@ export function AlertOptions({ control, errors, setValue }: AlertOptionsProps) {
                                         noStyle
                                     >
                                         <Input
+                                            {...field}
+                                            value={field?.value?.toString() ?? ''}
                                             addonBefore="Send a Direct Message on Discord to user ID:"
                                             defaultValue={field?.value?.toString() ?? ''}
                                         />
@@ -151,6 +155,8 @@ export function AlertOptions({ control, errors, setValue }: AlertOptionsProps) {
                                         noStyle
                                     >
                                         <Input
+                                            {...field}
+                                            value={field?.value?.toString() ?? ''}
                                             addonBefore="Send message on Discord to channel ID:"
                                             defaultValue={field?.value?.toString() ?? ''}
                                         />
