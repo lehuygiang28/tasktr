@@ -1,7 +1,7 @@
 'use client';
 
 import { HttpError, useInvalidate } from '@refinedev/core';
-import { List, useTable, RefreshButton, EditButton, ShowButton } from '@refinedev/antd';
+import { List, useTable, RefreshButton, ShowButton } from '@refinedev/antd';
 import { Space, Table, Tag } from 'antd';
 
 import { type UserDto } from '~be/app/users';
@@ -95,11 +95,6 @@ export default function UserList() {
                     dataIndex="actions"
                     render={(_, record: UserDto) => (
                         <Space>
-                            {/* <EditButton
-                                hideText
-                                size="small"
-                                recordItemId={record._id.toString()}
-                            /> */}
                             <ShowButton
                                 hideText
                                 size="small"
