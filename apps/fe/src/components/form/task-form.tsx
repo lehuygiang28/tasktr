@@ -5,7 +5,6 @@ import 'react-js-cron/dist/styles.css';
 import { useEffect } from 'react';
 import { Controller, useFieldArray } from 'react-hook-form';
 import {
-    Checkbox,
     Form,
     Input,
     Select,
@@ -32,6 +31,7 @@ import worldTimeAPIProvider from '~/providers/data-provider/timezone';
 import { useCronReducer } from '~/hooks/useCronReducer';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
 import { TryRequestButton } from '../button/try-request-btn';
+import { AlertOptions } from '../form-item';
 
 const { Item } = Form;
 const { Text } = Typography;
@@ -474,101 +474,8 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                         )}
                     />
                 </Space>
-                <Divider orientation="left">Notify me when</Divider>
-                <Space direction="vertical">
-                    <Controller<TaskFormValues>
-                        name={'options.alert.jobExecutionFailed'}
-                        control={control}
-                        render={({ field }) => (
-                            <Item {...field} noStyle>
-                                <Checkbox {...field} checked={field?.value == true}>
-                                    Job execution failed
-                                </Checkbox>
-                            </Item>
-                        )}
-                    />
-                    <Controller<TaskFormValues>
-                        name={'options.alert.disableByTooManyFailures'}
-                        control={control}
-                        render={({ field }) => (
-                            <Item {...field} noStyle>
-                                <Checkbox {...field} checked={field?.value == true}>
-                                    Job is disabled by too many failures
-                                </Checkbox>
-                            </Item>
-                        )}
-                    />
-                </Space>
-                <Divider orientation="left">Notify me on: </Divider>
-                <Space direction="vertical">
-                    <Controller<TaskFormValues>
-                        name={'options.alert.alertOn.email'}
-                        control={control}
-                        render={({ field }) => (
-                            <Item {...field} noStyle>
-                                <Checkbox {...field} checked={field?.value == true}>
-                                    Email
-                                </Checkbox>
-                            </Item>
-                        )}
-                    />
-                    <Input.Group>
-                        <Controller<TaskFormValues>
-                            name={'options.alert.alertOn.discord.dmUserId'}
-                            control={control}
-                            render={({ field: { ref, ...field } }) => (
-                                <Item
-                                    {...field}
-                                    validateStatus={
-                                        errors?.options?.alert?.alertOn?.discord?.dmUserId
-                                            ? 'error'
-                                            : 'validating'
-                                    }
-                                    help={
-                                        <>
-                                            {
-                                                errors?.options?.alert?.alertOn?.discord?.dmUserId
-                                                    ?.message
-                                            }
-                                        </>
-                                    }
-                                >
-                                    <Input
-                                        addonBefore="Send a Direct Message on Discord to user ID:"
-                                        defaultValue={field?.value?.toString() ?? ''}
-                                    />
-                                </Item>
-                            )}
-                        />
-                        <Controller<TaskFormValues>
-                            name={'options.alert.alertOn.discord.channelId'}
-                            control={control}
-                            render={({ field: { ref, ...field } }) => (
-                                <Item
-                                    {...field}
-                                    validateStatus={
-                                        errors?.options?.alert?.alertOn?.discord?.channelId
-                                            ? 'error'
-                                            : 'validating'
-                                    }
-                                    help={
-                                        <>
-                                            {
-                                                errors?.options?.alert?.alertOn?.discord?.channelId
-                                                    ?.message
-                                            }
-                                        </>
-                                    }
-                                >
-                                    <Input
-                                        addonBefore="Send message on Discord to channel ID:"
-                                        defaultValue={field?.value?.toString() ?? ''}
-                                    />
-                                </Item>
-                            )}
-                        />
-                    </Input.Group>
-                </Space>
+
+                <AlertOptions control={control} errors={errors} setValue={setValue} />
             </WrapCreateOrEdit>
         </Form>
     );
