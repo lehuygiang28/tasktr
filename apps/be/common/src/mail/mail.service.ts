@@ -11,6 +11,14 @@ import { SENDGRID_TRANSPORT } from './mail.constant';
 
 import { ErrorNotificationEnum } from '~be/app/tasks/enums';
 
+export type NotifyStopTaskOptions = {
+    to: string;
+    data: {
+        url: string;
+    };
+    typeErr: ErrorNotificationEnum;
+};
+
 @Injectable()
 export class MailService {
     private readonly TRANSPORTERS: string[] = [];
@@ -157,11 +165,7 @@ export class MailService {
         });
     }
 
-    async notifyStopTask(
-        data: { to: string; mailData: { url: string } },
-        typeErr: ErrorNotificationEnum,
-    ) {
-        const { to, mailData } = data;
+    async notifyStopTask({ to, data, typeErr }: NotifyStopTaskOptions) {
         const template = 'stop-task-notify';
 
         let [stopTaskTitle, text1, text2, btn1]: MaybeType<string>[] = await Promise.all([
@@ -196,7 +200,7 @@ export class MailService {
             to,
             subject: stopTaskTitle,
             template,
-            context: { title: stopTaskTitle, url: mailData.url, text1, text2, btn1 },
+            context: { title: stopTaskTitle, url: data.url, text1, text2, btn1 },
         });
     }
 }

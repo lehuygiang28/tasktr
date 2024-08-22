@@ -7,6 +7,7 @@ import { Job, Queue } from 'bullmq';
 import { type Timings } from '@szmarczak/http-timer';
 
 import {
+    BULLMQ_BG_JOB_QUEUE,
     BULLMQ_DISCORD_QUEUE,
     BULLMQ_TASK_QUEUE,
     InjectQueueDecorator,
@@ -17,7 +18,7 @@ import { CreateTaskLogDto, TaskLogJobName } from '~be/app/task-logs';
 import { defaultHeaders } from '~be/common/axios';
 import { isTrueSet, normalizeHeaders, isNullOrUndefined } from '~be/common/utils';
 import { RedisService } from '~be/common/redis/services';
-import { MailService } from '~be/common/mail';
+import { MailJobName, NotifyStopTaskOptions } from '~be/common/mail';
 import { UsersService } from '~be/app/users';
 import { AllConfig } from '~be/app/config';
 
@@ -44,10 +45,11 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         private readonly redisService: RedisService,
         private readonly taskService: TasksService,
         private readonly configService: ConfigService<AllConfig>,
-        private readonly mailService: MailService,
         private readonly usersService: UsersService,
         @InjectQueueDecorator(BULLMQ_DISCORD_QUEUE)
         private readonly discordQueue: Queue<unknown, unknown, DiscordJobName>,
+        @InjectQueueDecorator(BULLMQ_BG_JOB_QUEUE)
+        private readonly bgQueue: Queue<unknown, unknown, MailJobName>,
     ) {
         super();
         this.logger = new Logger(TaskProcessor.name);
@@ -325,32 +327,56 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
 
         if (!isNullOrUndefined(discordOptions?.dmUserId) && discordOptions?.dmUserId != '') {
             promises.push(
-                this.discordQueue.add('sendDirectMessage', {
-                    dmUserId: discordOptions.dmUserId,
-                    message: discordMessage,
-                } satisfies SendDirectMessage),
+                this.discordQueue.add(
+                    'sendDirectMessage',
+                    {
+                        dmUserId: discordOptions.dmUserId,
+                        message: discordMessage,
+                    } satisfies SendDirectMessage,
+                    {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                        attempts: 10,
+                    },
+                ),
             );
         }
 
         if (!isNullOrUndefined(discordOptions?.channelId) && discordOptions?.channelId != '') {
             promises.push(
-                this.discordQueue.add('sendMessage', {
-                    channelId: discordOptions.channelId,
-                    message: discordMessage,
-                } satisfies SendMessage),
+                this.discordQueue.add(
+                    'sendMessage',
+                    {
+                        channelId: discordOptions.channelId,
+                        message: discordMessage,
+                    } satisfies SendMessage,
+                    {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                        attempts: 10,
+                        backoff: { type: 'exponential', delay: 3000 },
+                    },
+                ),
             );
         }
 
         if (isTrueSet(options?.alert?.alertOn?.email)) {
             promises.push(
-                this.mailService.notifyStopTask(
+                this.bgQueue.add(
+                    'notifyStopTask',
                     {
                         to: (await this.usersService.findById(job.data.userId.toString())).email,
-                        mailData: {
+                        data: {
                             url: taskUrl,
                         },
+                        typeErr: ErrorNotificationEnum.disableByTooManyFailures,
+                    } satisfies NotifyStopTaskOptions,
+                    {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                        attempts: 10,
+                        backoff: { type: 'exponential', delay: 3000 },
                     },
-                    ErrorNotificationEnum.disableByTooManyFailures,
                 ),
             );
         }
@@ -391,32 +417,57 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
 
         if (!isNullOrUndefined(discordOptions?.dmUserId) && discordOptions?.dmUserId != '') {
             promises.push(
-                this.discordQueue.add('sendDirectMessage', {
-                    dmUserId: discordOptions.dmUserId,
-                    message: discordMessage,
-                } satisfies SendDirectMessage),
+                this.discordQueue.add(
+                    'sendDirectMessage',
+                    {
+                        dmUserId: discordOptions.dmUserId,
+                        message: discordMessage,
+                    } satisfies SendDirectMessage,
+                    {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                        attempts: 10,
+                        backoff: { type: 'exponential', delay: 3000 },
+                    },
+                ),
             );
         }
 
         if (!isNullOrUndefined(discordOptions?.channelId) && discordOptions?.channelId != '') {
             promises.push(
-                this.discordQueue.add('sendMessage', {
-                    message: discordMessage,
-                    channelId: discordOptions.channelId,
-                } satisfies SendMessage),
+                this.discordQueue.add(
+                    'sendMessage',
+                    {
+                        message: discordMessage,
+                        channelId: discordOptions.channelId,
+                    } satisfies SendMessage,
+                    {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                        attempts: 10,
+                        backoff: { type: 'exponential', delay: 3000 },
+                    },
+                ),
             );
         }
 
         if (isTrueSet(options?.alert?.alertOn?.email)) {
             promises.push(
-                this.mailService.notifyStopTask(
+                this.bgQueue.add(
+                    'notifyStopTask',
                     {
                         to: (await this.usersService.findById(job.data.userId.toString())).email,
-                        mailData: {
+                        data: {
                             url: taskUrl,
                         },
+                        typeErr: ErrorNotificationEnum.jobExecutionFailed,
+                    } satisfies NotifyStopTaskOptions,
+                    {
+                        removeOnComplete: true,
+                        removeOnFail: true,
+                        attempts: 10,
+                        backoff: { type: 'exponential', delay: 3000 },
                     },
-                    ErrorNotificationEnum.jobExecutionFailed,
                 ),
             );
         }

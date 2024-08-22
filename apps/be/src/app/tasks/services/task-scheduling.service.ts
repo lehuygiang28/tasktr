@@ -36,6 +36,7 @@ export class TaskSchedulingService implements OnModuleInit {
             jobId: task._id.toString(),
             repeat: {
                 pattern: task.cron,
+                tz: task.timezone,
             },
             removeOnComplete: true,
             removeOnFail: true,
@@ -57,6 +58,7 @@ export class TaskSchedulingService implements OnModuleInit {
                 `fetch`,
                 {
                     pattern: task.cron,
+                    tz: task.timezone,
                 },
                 taskIdString,
             ),
@@ -65,6 +67,7 @@ export class TaskSchedulingService implements OnModuleInit {
                     `fetch`,
                     {
                         pattern: cron,
+                        tz: task.timezone,
                     },
                     taskIdString,
                 );

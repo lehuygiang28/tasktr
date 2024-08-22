@@ -4,10 +4,10 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { PinoLogger } from 'nestjs-pino';
 
 import { BULLMQ_BG_JOB_QUEUE } from '~be/common/bullmq';
-import { MailService } from '~be/common/mail';
+import { MailService, NotifyStopTaskOptions } from '~be/common/mail';
 import { ModuleRef } from '@nestjs/core';
 
-export type MailJobName = 'sendEmailRegister' | 'sendEmailLogin';
+export type MailJobName = 'sendEmailRegister' | 'sendEmailLogin' | 'notifyStopTask';
 
 @Processor(BULLMQ_BG_JOB_QUEUE, {
     useWorkerThreads: true,
@@ -38,12 +38,15 @@ export class MailProcessor extends WorkerHost implements OnModuleInit {
                 return this.sendEmailRegister(job);
             case 'sendEmailLogin':
                 return this.sendEmailLogin(job);
+            case 'notifyStopTask': {
+                return this.notifyStopTask(job as Job<NotifyStopTaskOptions>);
+            }
             default:
                 return;
         }
     }
 
-    async sendEmailRegister(job: Job<unknown, unknown, MailJobName>): Promise<unknown> {
+    private async sendEmailRegister(job: Job<unknown, unknown, MailJobName>): Promise<unknown> {
         const { email, url } = job.data as { email: string; url: string };
         return this.mailService.sendConfirmMail({
             to: email,
@@ -53,7 +56,7 @@ export class MailProcessor extends WorkerHost implements OnModuleInit {
         });
     }
 
-    async sendEmailLogin(job: Job<unknown, unknown, MailJobName>): Promise<unknown> {
+    private async sendEmailLogin(job: Job<unknown, unknown, MailJobName>): Promise<unknown> {
         const { email, url } = job.data as { email: string; url: string };
         return this.mailService.sendLogin({
             to: email,
@@ -61,5 +64,9 @@ export class MailProcessor extends WorkerHost implements OnModuleInit {
                 url,
             },
         });
+    }
+
+    private async notifyStopTask(job: Job<NotifyStopTaskOptions>) {
+        return this.mailService.notifyStopTask(job.data);
     }
 }

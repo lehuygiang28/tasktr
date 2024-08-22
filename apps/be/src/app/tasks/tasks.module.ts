@@ -9,10 +9,10 @@ import {
     BULLMQ_TASK_LOG_QUEUE,
     BULLMQ_CLEAR_TASK_QUEUE,
     BULLMQ_RESTORE_TASK_FROM_DB_QUEUE,
+    BULLMQ_BG_JOB_QUEUE,
 } from '~be/common/bullmq/bullmq.constant';
 import { axiosConfig } from '~be/common/axios';
 import { RedisModule } from '~be/common/redis';
-import { MailModule } from '~be/common/mail';
 import { UsersModule } from '~be/app/users';
 
 import { Task, TaskSchema } from './schemas';
@@ -36,7 +36,6 @@ const importProviders = [
     HttpModule.register(axiosConfig),
     MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema }]),
     RedisModule,
-    MailModule,
     UsersModule,
     TaskLogsModule,
     BullModule.registerQueue({
@@ -47,6 +46,9 @@ const importProviders = [
     }),
     BullModule.registerQueue({
         name: BULLMQ_CLEAR_TASK_QUEUE,
+    }),
+    BullModule.registerQueue({
+        name: BULLMQ_BG_JOB_QUEUE,
     }),
     ConditionalModule.registerWhen(
         DiscordModule,
