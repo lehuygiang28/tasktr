@@ -62,7 +62,7 @@ export class MailService {
                 transporterName,
                 attachments: this.BASE_ATTACHMENT,
             });
-            this.logger.debug(`Mail sent: ${mailData.to}`);
+            this.logger.info(`Mail sent: ${mailData.to}`);
         } catch (error) {
             this.logger.error(`Send mail failed: ${(error as Error)?.message}`);
             const nextTransporter = this.getNextTransporter(transporterName);
