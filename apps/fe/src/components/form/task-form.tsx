@@ -67,7 +67,7 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
     });
 
     const [cronValues, dispatchCronValues] = useCronReducer({
-        defaultValue: defaultValues?.cron,
+        defaultValue: defaultValues?.cron ?? '*/5 * * * *',
         setFormValue: (value) => setValue('cron', value),
     });
 
