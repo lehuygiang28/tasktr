@@ -1,5 +1,6 @@
 export * from './axios';
 export * from './bullmq';
+export * from './discord';
 export * from './i18n';
 export * from './mail';
 export * from './mongodb';

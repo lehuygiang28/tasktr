@@ -2,7 +2,7 @@ import { Module, Provider } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BullModule } from '@nestjs/bullmq';
 import { HttpModule } from '@nestjs/axios';
-import { ConfigModule } from '@nestjs/config';
+import { ConditionalModule, ConfigModule } from '@nestjs/config';
 
 import {
     BULLMQ_TASK_QUEUE,
@@ -29,6 +29,7 @@ import { TaskProcessor, ClearTasksProcessor } from './processors';
 import tasksConfig from './config/tasks-config';
 import { TaskRestoreProcessor } from './processors/restore-task.processor';
 import { isNullOrUndefined, isTrueSet } from '~be/common/utils';
+import { DiscordModule } from '~be/common/discord';
 
 const importProviders = [
     ConfigModule.forFeature(tasksConfig),
@@ -47,6 +48,11 @@ const importProviders = [
     BullModule.registerQueue({
         name: BULLMQ_CLEAR_TASK_QUEUE,
     }),
+    ConditionalModule.registerWhen(
+        DiscordModule,
+        (env: NodeJS.ProcessEnv) =>
+            !env?.DISCORD_BOT_TOKEN || !isNullOrUndefined(env?.DISCORD_BOT_TOKEN),
+    ),
 ];
 
 const providers: Provider[] = [
