@@ -1,17 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+
 import { AbstractDocument } from '~be/common/utils';
 import type { NullableType } from '~be/common/utils/types';
-import { HttpMethodEnum } from '../tasks.enum';
 import { User } from '~be/app/users/schemas';
 
-export class AlertSchema {
-    @Prop({ required: false, type: Boolean, default: false })
-    disableByTooManyFailures?: boolean;
+import { HttpMethodEnum } from '../tasks.enum';
+import { AlertSchema } from './alert.schema';
 
-    @Prop({ required: false, type: Boolean, default: false })
-    jobExecutionFailed?: boolean;
-}
 
 export class TaskOptionSchema {
     @Prop({ required: false, type: AlertSchema })

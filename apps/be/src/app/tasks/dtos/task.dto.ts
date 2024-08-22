@@ -1,5 +1,11 @@
 import { Types } from 'mongoose';
-import { AlertSchema, TaskOptionSchema, Task } from '../schemas/task.schema';
+import {
+    AlertSchema,
+    TaskOptionSchema,
+    Task,
+    AlertOnSchema,
+    AlertOnDiscordSchema,
+} from '../schemas';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
     IsNumber,
@@ -17,7 +23,35 @@ import { Type } from 'class-transformer';
 import { IsCron, IsObjectString, ToBoolean } from '~be/common/utils';
 import { HttpMethodEnum } from '../tasks.enum';
 
+export class AlertOnDiscordDto implements AlertOnDiscordSchema {
+    @ApiPropertyOptional()
+    @IsString()
+    channelId?: string;
+
+    @ApiPropertyOptional()
+    @IsString()
+    dmUserId?: string;
+}
+
+export class AlertOnDto implements AlertOnSchema {
+    @ApiPropertyOptional()
+    @IsOptional()
+    @Type(() => AlertOnDiscordDto)
+    discord?: AlertOnDiscordDto;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @ToBoolean()
+    @IsBoolean()
+    email?: boolean;
+}
+
 export class AlertDto implements AlertSchema {
+    @ApiPropertyOptional()
+    @IsOptional()
+    @Type(() => AlertOnDto)
+    alertOn?: AlertOnDto;
+
     @ApiProperty()
     @IsOptional()
     @ToBoolean()

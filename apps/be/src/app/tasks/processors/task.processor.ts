@@ -1,5 +1,4 @@
-import { OnModuleInit } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
+import { Logger, OnModuleInit } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -7,11 +6,16 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { type Timings } from '@szmarczak/http-timer';
 
-import { BULLMQ_TASK_QUEUE, InjectTaskLogQueue } from '~be/common/bullmq';
+import {
+    BULLMQ_DISCORD_QUEUE,
+    BULLMQ_TASK_QUEUE,
+    InjectQueueDecorator,
+    InjectTaskLogQueue,
+} from '~be/common/bullmq';
 import { Task } from '~be/app/tasks/schemas/task.schema';
 import { CreateTaskLogDto, TaskLogJobName } from '~be/app/task-logs';
 import { defaultHeaders } from '~be/common/axios';
-import { isTrueSet, normalizeHeaders } from '~be/common/utils';
+import { isTrueSet, normalizeHeaders, isNullOrUndefined } from '~be/common/utils';
 import { RedisService } from '~be/common/redis/services';
 import { MailService } from '~be/common/mail';
 import { UsersService } from '~be/app/users';
@@ -20,6 +24,8 @@ import { AllConfig } from '~be/app/config';
 import { TASK_FAIL_STREAK_PREFIX } from '../tasks.constant';
 import { TasksService } from '../services';
 import { ErrorNotificationEnum } from '../enums';
+import { DiscordJobName } from '~be/common/discord';
+import { SendDirectMessage, SendMessage } from '~be/common/discord/discord.type';
 
 type TaskFailStreak = {
     [key: string]: number;
@@ -29,8 +35,9 @@ type TaskFailStreak = {
     concurrency: Number(process.env['TASKS_CONCURRENCY']) || 10,
 })
 export class TaskProcessor extends WorkerHost implements OnModuleInit {
+    private readonly logger: Logger;
+
     constructor(
-        private readonly logger: PinoLogger,
         private readonly httpService: HttpService,
         @InjectTaskLogQueue()
         private readonly taskLogQueue: Queue<unknown, unknown, TaskLogJobName>,
@@ -39,15 +46,15 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         private readonly configService: ConfigService<AllConfig>,
         private readonly mailService: MailService,
         private readonly usersService: UsersService,
+        @InjectQueueDecorator(BULLMQ_DISCORD_QUEUE)
+        private readonly discordQueue: Queue<unknown, unknown, DiscordJobName>,
     ) {
         super();
-        this.logger.setContext(TaskProcessor.name);
+        this.logger = new Logger(TaskProcessor.name);
     }
 
     onModuleInit() {
-        this.logger.info(
-            `${TaskProcessor.name} for ${BULLMQ_TASK_QUEUE} is initialized and ready.`,
-        );
+        this.logger.log(`${TaskProcessor.name} for ${BULLMQ_TASK_QUEUE} is initialized and ready.`);
     }
 
     async process(job: Job<unknown>): Promise<unknown> {
@@ -188,7 +195,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         const { name } = job.data;
         const taskLog = this.createTaskLog(job, response, timings, stringBody);
 
-        this.logger.info(
+        this.logger.log(
             `FETCH ${name} - ${response?.status} - ${timings?.phases?.total ?? 0} ms - ${stringBody?.length} bytes`,
         );
 
@@ -282,26 +289,138 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
     }
 
     private async notifyTooManyFailures(job: Job<Task>) {
-        return this.mailService.notifyStopTask(
-            {
-                to: (await this.usersService.findById(job.data.userId.toString())).email,
-                mailData: {
-                    url: `${this.configService.getOrThrow('app.feDomain', { infer: true })}/tasks/logs/${job.data._id.toString()}`,
+        const taskUrl = `${this.configService.getOrThrow('app.feDomain', { infer: true })}/tasks/logs/${job.data._id.toString()}`;
+
+        const promises = [];
+        const { options } = job.data;
+        const discordOptions = options?.alert?.alertOn?.discord || {};
+        const discordMessage = {
+            content: '**Task Disabled Notification**',
+            embeds: [
+                {
+                    title: 'Task Disabled',
+                    description: 'The task has been disabled due to too many failures.',
+                    color: 16711680, // Red color
+                    fields: [
+                        {
+                            name: 'Task Name',
+                            value: job.data.name,
+                        },
+                        {
+                            name: 'Reason',
+                            value: 'Too many failures',
+                        },
+                        {
+                            name: 'Task URL',
+                            value: taskUrl,
+                        },
+                    ],
+                    url: taskUrl,
+                    footer: {
+                        text: 'Please check the task logs for more details.',
+                    },
                 },
-            },
-            ErrorNotificationEnum.disableByTooManyFailures,
-        );
+            ],
+        };
+
+        if (!isNullOrUndefined(discordOptions?.dmUserId) && discordOptions?.dmUserId != '') {
+            promises.push(
+                this.discordQueue.add('sendDirectMessage', {
+                    dmUserId: discordOptions.dmUserId,
+                    message: discordMessage,
+                } satisfies SendDirectMessage),
+            );
+        }
+
+        if (!isNullOrUndefined(discordOptions?.channelId) && discordOptions?.channelId != '') {
+            promises.push(
+                this.discordQueue.add('sendMessage', {
+                    channelId: discordOptions.channelId,
+                    message: discordMessage,
+                } satisfies SendMessage),
+            );
+        }
+
+        if (isTrueSet(options?.alert?.alertOn?.email)) {
+            promises.push(
+                this.mailService.notifyStopTask(
+                    {
+                        to: (await this.usersService.findById(job.data.userId.toString())).email,
+                        mailData: {
+                            url: taskUrl,
+                        },
+                    },
+                    ErrorNotificationEnum.disableByTooManyFailures,
+                ),
+            );
+        }
+
+        return Promise.allSettled(promises);
     }
 
     private async notifyJobExecutionFailed(job: Job<Task>) {
-        return this.mailService.notifyStopTask(
-            {
-                to: (await this.usersService.findById(job.data.userId.toString())).email,
-                mailData: {
-                    url: `${this.configService.getOrThrow('app.feDomain', { infer: true })}/tasks/logs/${job.data._id.toString()}`,
+        const taskUrl = `${this.configService.getOrThrow('app.feDomain', { infer: true })}/tasks/logs/${job.data._id.toString()}`;
+
+        const promises = [];
+        const { options } = job.data;
+        const discordOptions = options?.alert?.alertOn?.discord || {};
+        const discordMessage = {
+            content: '**Task Failed Notification**',
+            embeds: [
+                {
+                    title: 'Task Execution Failed',
+                    description: 'The task has been failed',
+                    color: 16776960, // Yellow color for warning
+                    fields: [
+                        {
+                            name: 'Task Name',
+                            value: job.data.name,
+                        },
+                        {
+                            name: 'Task URL',
+                            value: taskUrl,
+                        },
+                    ],
+                    url: taskUrl,
+                    footer: {
+                        text: 'Please check the task logs for more details.',
+                    },
                 },
-            },
-            ErrorNotificationEnum.jobExecutionFailed,
-        );
+            ],
+        };
+
+        if (!isNullOrUndefined(discordOptions?.dmUserId) && discordOptions?.dmUserId != '') {
+            promises.push(
+                this.discordQueue.add('sendDirectMessage', {
+                    dmUserId: discordOptions.dmUserId,
+                    message: discordMessage,
+                } satisfies SendDirectMessage),
+            );
+        }
+
+        if (!isNullOrUndefined(discordOptions?.channelId) && discordOptions?.channelId != '') {
+            promises.push(
+                this.discordQueue.add('sendMessage', {
+                    message: discordMessage,
+                    channelId: discordOptions.channelId,
+                } satisfies SendMessage),
+            );
+        }
+
+        if (isTrueSet(options?.alert?.alertOn?.email)) {
+            promises.push(
+                this.mailService.notifyStopTask(
+                    {
+                        to: (await this.usersService.findById(job.data.userId.toString())).email,
+                        mailData: {
+                            url: taskUrl,
+                        },
+                    },
+                    ErrorNotificationEnum.jobExecutionFailed,
+                ),
+            );
+        }
+
+        return Promise.allSettled(promises);
     }
 }
