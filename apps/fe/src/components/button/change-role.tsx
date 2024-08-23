@@ -26,13 +26,18 @@ export function UpdateUserRole(props: UpdateUserRoleProps) {
             resource: 'users',
             id: user?._id.toString(),
             values: { role: selectedRole },
-            invalidates: ['all', 'detail', 'list'],
+            invalidates: ['all'],
         });
-        setIsUpdateModalVisible(false);
+        clearToDefault();
     };
 
     const handleRoleChange = (value: UserRoleEnum) => {
         setSelectedRole(value);
+    };
+
+    const clearToDefault = () => {
+        setIsUpdateModalVisible(false);
+        setSelectedRole(undefined);
     };
 
     return (
@@ -50,7 +55,7 @@ export function UpdateUserRole(props: UpdateUserRoleProps) {
                     });
                 }}
                 onCancel={() => {
-                    setIsUpdateModalVisible(false);
+                    clearToDefault();
                 }}
                 destroyOnClose
             >
