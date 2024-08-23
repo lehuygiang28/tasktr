@@ -7,14 +7,13 @@ import { useMany } from '@refinedev/core';
 
 import type { UserDto } from '~be/app/users';
 import { formatDateToHumanReadable } from '~/libs/utils/common';
+import { DATE_RANGE_SEPARATOR } from '~/constants';
 
 export type BlockLogTableProps = {
     logs?: UserDto['block']['activityLogs'];
 };
 
 type ActivityLog = UserDto['block']['activityLogs'][0];
-
-const DATE_RANGE_SEPARATOR = ' - ';
 
 export function BlockLogTable({ logs = [] }: BlockLogTableProps) {
     const { data, isLoading, isError } = useMany({

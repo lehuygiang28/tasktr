@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { HttpError, useParsed, useInvalidate } from '@refinedev/core';
-import { List, ShowButton, useTable, RefreshButton } from '@refinedev/antd';
-import { Breadcrumb, Grid, Space, Table } from 'antd';
+import { List, useTable, RefreshButton } from '@refinedev/antd';
+import { Breadcrumb, Grid, Space } from 'antd';
 import { format } from 'date-fns/format';
 import { useState } from 'react';
 import {
@@ -16,14 +16,11 @@ import {
     LineElement,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { HttpStatus } from '@nestjs/common';
 
-import { HttpMethodTag } from '~/components/tag/http-method-tag';
-import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import { type TaskLogDto } from '~be/app/task-logs';
-import { formatDateToHumanReadable, getJitter, sortArrayByKey } from '~/libs/utils/common';
-import { HttpStatusTag } from '~/components/tag/http-status-tag';
+import { sortArrayByKey } from '~/libs/utils/common';
 import { TaskLogsModal } from '~/components/modal';
+import { TaskLogTable } from '~/components/table/task-log';
 
 ChartJS.register(LineElement, PointElement, Title, Tooltip, Legend);
 const { useBreakpoint } = Grid;
@@ -33,7 +30,7 @@ export default function LogList() {
     const { pathname } = useParsed();
     const id = pathname?.replace(/\/$/, '')?.split('/')?.pop();
     const {
-        tableProps: { pagination, ...tableProps },
+        tableProps,
         tableQueryResult: { data },
     } = useTable<TaskLogDto, HttpError>({
         resource: `tasks/logs/${id}`,
@@ -231,116 +228,7 @@ export default function LogList() {
                         />
                     )}
 
-                    <Table<TaskLogDto>
-                        {...tableProps}
-                        rowKey="_id"
-                        pagination={{
-                            ...pagination,
-                            position: ['topRight', 'bottomRight'],
-                            size: 'small',
-                            showSizeChanger: true,
-                            showTotal: (total) => `Total ${total} logs`,
-                            defaultPageSize: 5,
-                            pageSizeOptions: [5, 10, 20, 50, 100],
-                            showTitle: false,
-                        }}
-                    >
-                        <Table.Column<TaskLogDto>
-                            dataIndex="method"
-                            title={'Method'}
-                            render={(method) => <HttpMethodTag method={method} />}
-                            filters={Object.values(HttpMethodEnum).map((value: string) => ({
-                                value: value,
-                                text: <HttpMethodTag method={value} />,
-                            }))}
-                            onFilter={(value, record) => record.method.indexOf(String(value)) === 0}
-                            sorter={(a: TaskLogDto, b: TaskLogDto) =>
-                                a.method.localeCompare(b.method)
-                            }
-                            sortDirections={['descend', 'ascend']}
-                        />
-                        <Table.Column<TaskLogDto>
-                            dataIndex="endpoint"
-                            title={'Url'}
-                            onFilter={(value, record) =>
-                                record.endpoint.indexOf(value as string) === 0
-                            }
-                            sorter={(a: TaskLogDto, b: TaskLogDto) =>
-                                a.endpoint.localeCompare(b.endpoint)
-                            }
-                            sortDirections={['descend', 'ascend']}
-                            render={(_, record: TaskLogDto) => (
-                                <Link href={record.endpoint} target="_blank">
-                                    {record.endpoint.length > 40
-                                        ? `${record.endpoint.substring(0, 37)}...`
-                                        : record.endpoint}
-                                </Link>
-                            )}
-                        />
-                        <Table.Column<TaskLogDto>
-                            dataIndex="statusCode"
-                            title={'Status'}
-                            render={(_, record) => <HttpStatusTag statusCode={record.statusCode} />}
-                            filters={Object.values(HttpStatus).map((value: number) => ({
-                                value: value,
-                                text: <HttpStatusTag statusCode={value} />,
-                            }))}
-                            onFilter={(value, record) => record.statusCode === value}
-                        />
-                        <Table.Column<TaskLogDto>
-                            dataIndex="executedAt"
-                            title={'Executed'}
-                            render={(_, record) => formatDateToHumanReadable(record.executedAt)}
-                            sorter={(a: TaskLogDto, b: TaskLogDto) =>
-                                new Date(a.executedAt).getTime() - new Date(b.executedAt).getTime()
-                            }
-                            sortDirections={['descend', 'ascend']}
-                        />
-                        <Table.Column<TaskLogDto>
-                            dataIndex="scheduledAt"
-                            title={'Scheduled'}
-                            render={(_, record) => formatDateToHumanReadable(record.scheduledAt)}
-                            sorter={(a: TaskLogDto, b: TaskLogDto) =>
-                                new Date(a.scheduledAt).getTime() -
-                                new Date(b.scheduledAt).getTime()
-                            }
-                            sortDirections={['descend', 'ascend']}
-                        />
-                        <Table.Column<TaskLogDto>
-                            dataIndex="jitter"
-                            title={'Jitter'}
-                            render={(_, record) => <>{`${getJitter(record)} s`}</>}
-                            sorter={(a: TaskLogDto, b: TaskLogDto) => getJitter(a) - getJitter(b)}
-                            sortDirections={['descend', 'ascend']}
-                        />
-                        <Table.Column<TaskLogDto>
-                            dataIndex="duration"
-                            title={'Duration'}
-                            render={(_, record) => <>{`${record.duration} ms`}</>}
-                        />
-                        <Table.Column<TaskLogDto>
-                            dataIndex="responseSizeBytes"
-                            title={'Response Size'}
-                            render={(_, record) => (
-                                <>{`${(record.responseSizeBytes / 1024).toFixed(2)} KB`}</>
-                            )}
-                        />
-                        <Table.Column
-                            title={'Actions'}
-                            dataIndex="actions"
-                            render={(_, record: TaskLogDto) => (
-                                <Space>
-                                    <ShowButton
-                                        size="small"
-                                        recordItemId={record._id.toString()}
-                                        onClick={() => setSelectedLog(record)}
-                                    >
-                                        Details
-                                    </ShowButton>
-                                </Space>
-                            )}
-                        />
-                    </Table>
+                    <TaskLogTable tableProps={tableProps} setSelectedLog={setSelectedLog} />
                 </Space>
             </List>
             <TaskLogsModal type="logs" selectedLog={selectedLog} setSelectedLog={setSelectedLog} />
