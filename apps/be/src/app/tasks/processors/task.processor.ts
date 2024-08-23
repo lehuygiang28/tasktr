@@ -201,7 +201,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             `FETCH ${name} - ${response?.status} - ${timings?.phases?.total ?? 0} ms - ${stringBody?.length} bytes`,
         );
 
-        await this.taskLogQueue.add(`saveTaskLog`, taskLog, {
+        await this.taskLogQueue.add('saveTaskLog', taskLog, {
             removeOnComplete: true,
             removeOnFail: true,
             attempts: 10,
@@ -215,8 +215,7 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
         timings: Timings | null,
         stringBody: string,
     ): CreateTaskLogDto {
-        const { endpoint, method, _id: taskId, options } = job.data;
-        const now = Date.now();
+        const { endpoint, method, _id: taskId, options, timezone } = job.data;
         const maxBodyLogSize = Number(process.env['MAX_BODY_LOG_SIZE'] || 1024 * 50); // Default 50KB
 
         let log: CreateTaskLogDto = {
@@ -224,8 +223,9 @@ export class TaskProcessor extends WorkerHost implements OnModuleInit {
             endpoint,
             method,
             workerName: process.env['WORKER_NAME'] ?? 'default',
-            scheduledAt: new Date(job.processedOn ?? now),
-            executedAt: new Date(job.finishedOn ?? now),
+            timezone,
+            scheduledAt: new Date(job.processedOn ?? Date.now()),
+            executedAt: new Date(job.finishedOn ?? Date.now()),
             duration: timings?.phases?.total ?? 0,
             statusCode: response?.status ?? 0,
             responseSizeBytes: stringBody?.length,

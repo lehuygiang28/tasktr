@@ -1,25 +1,17 @@
-import { format, isToday, isTomorrow, isYesterday } from 'date-fns';
 import { TaskLogDto } from '~be/app/task-logs';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import tz from 'dayjs/plugin/timezone';
 
-export function formatDateToHumanReadable(date: Date | string) {
-    const d = new Date(date);
-    let formattedDate: string;
+dayjs.extend(tz);
+dayjs.extend(utc);
 
-    switch (true) {
-        case isToday(d):
-            formattedDate = `Today at ${format(d, 'HH:mm:ss')}`;
-            break;
-        case isTomorrow(d):
-            formattedDate = `Tomorrow at ${format(d, 'HH:mm:ss')}`;
-            break;
-        case isYesterday(d):
-            formattedDate = `Yesterday at ${format(d, 'HH:mm:ss')}`;
-            break;
-        default:
-            formattedDate = format(d, 'HH:mm:ss dd/MM/yyyy');
-    }
-
-    return formattedDate;
+export function formatDateToHumanReadable(
+    date: Date | string,
+    { timezone, ms }: { timezone?: string; ms?: boolean } = { ms: false, timezone: null },
+) {
+    const format = ms ? 'HH:mm:ss:SSS DD/MM/YYYY' : 'HH:mm:ss DD/MM/YYYY';
+    return timezone ? dayjs(date).tz(timezone).format(format) : dayjs(date).format(format);
 }
 
 export function sortArrayByKey<T>(array: T[], key: keyof T, order: 'asc' | 'desc' = 'asc'): T[] {

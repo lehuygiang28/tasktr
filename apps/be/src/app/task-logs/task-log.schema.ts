@@ -60,6 +60,9 @@ export class TaskLog extends AbstractDocument {
     @Prop({ required: true, type: String })
     method: string;
 
+    @Prop({ required: true, type: String })
+    timezone: string;
+
     @Prop({ required: true, type: Number })
     statusCode: number;
 

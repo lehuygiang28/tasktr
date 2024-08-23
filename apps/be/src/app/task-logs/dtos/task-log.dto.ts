@@ -84,6 +84,10 @@ export class TaskLogDto implements TaskLog {
     @IsString()
     method: string;
 
+    @ApiProperty({ type: String })
+    @IsString()
+    timezone: string;
+
     @ApiProperty({ type: Number })
     @IsNumber()
     duration: number;

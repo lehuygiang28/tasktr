@@ -163,6 +163,9 @@ export function TaskLogsModal({ type, selectedLog, setSelectedLog }: TaskLogsMod
                                                     <Text>
                                                         {formatDateToHumanReadable(
                                                             selectedLog.executedAt,
+                                                            // {
+                                                            //     timezone: selectedLog?.timezone,
+                                                            // },
                                                         )}
                                                     </Text>
                                                 </DesItem>
@@ -170,6 +173,9 @@ export function TaskLogsModal({ type, selectedLog, setSelectedLog }: TaskLogsMod
                                                     <Text>
                                                         {formatDateToHumanReadable(
                                                             selectedLog.scheduledAt,
+                                                            // {
+                                                            //     timezone: selectedLog?.timezone,
+                                                            // },
                                                         )}
                                                     </Text>
                                                 </DesItem>
