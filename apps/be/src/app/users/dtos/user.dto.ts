@@ -1,8 +1,6 @@
 import { Types } from 'mongoose';
-import { User } from '../schemas';
-import { AvatarSchema } from '../schemas/avatar.schema';
-import { UserBlockSchema } from '../schemas/block.schema';
 import { IntersectionType } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsDate,
     IsEmail,
@@ -15,8 +13,11 @@ import {
     IsUrl,
     ValidateNested,
 } from 'class-validator';
+
+import { User } from '../schemas';
+import { AvatarSchema } from '../schemas/avatar.schema';
+import { UserBlockSchema } from '../schemas/block.schema';
 import { UserRoleEnum } from '../users.enum';
-import { Transform, Type } from 'class-transformer';
 
 export class AvatarDto extends IntersectionType(AvatarSchema) implements AvatarSchema {
     @IsOptional()
@@ -44,7 +45,6 @@ export class UserDto extends IntersectionType(User) implements User {
 
     @IsString()
     @IsEnum(UserRoleEnum)
-    @Transform(({ value }) => value.toLowerCase())
     role: string;
 
     @IsObject()

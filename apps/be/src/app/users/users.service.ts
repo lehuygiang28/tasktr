@@ -2,6 +2,7 @@ import {
     HttpException,
     HttpStatus,
     Injectable,
+    Logger,
     UnprocessableEntityException,
 } from '@nestjs/common';
 import { FilterQuery, Types } from 'mongoose';
@@ -10,7 +11,14 @@ import * as bcrypt from 'bcryptjs';
 import type { NullableType } from '~be/common/utils/types';
 import { convertToObjectId, getGravatarUrl } from '~be/common/utils';
 
-import { BlockUserDto, CreateUserDto, GetUsersDto, GetUsersResponseDto, UserDto } from './dtos';
+import {
+    BlockUserDto,
+    CreateUserDto,
+    GetUsersDto,
+    GetUsersResponseDto,
+    UpdateUserDto,
+    UserDto,
+} from './dtos';
 import { UsersRepository } from './users.repository';
 import { UserBlockActionEnum, UserRoleEnum } from './users.enum';
 import { User } from './schemas';
@@ -21,6 +29,7 @@ import { BlockActivityLog } from './schemas/block.schema';
 
 @Injectable()
 export class UsersService {
+    private readonly logger = new Logger(UsersService.name);
     constructor(
         public readonly usersRepository: UsersRepository,
         private readonly configService: ConfigService<AllConfig>,
@@ -75,6 +84,57 @@ export class UsersService {
             },
         });
         return user ? new User(user) : null;
+    }
+
+    async updateUser({
+        actor: _actor,
+        userId: _userId,
+        data: updateData,
+    }: {
+        actor: JwtPayloadType;
+        userId: string;
+        data: UpdateUserDto;
+    }) {
+        const actor = await this.findByIdOrThrow(_actor.userId);
+        const user = await this.findByIdOrThrow(_userId);
+        let updateQuery: UpdateUserDto = {};
+
+        if (!this.isAdmin(actor) || this.isSelf(user, actor)) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: {
+                        email: 'notAllowed',
+                    },
+                },
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        if (updateData?.role) {
+            if (updateData.role !== UserRoleEnum.Admin && this.isRootAdmin(user)) {
+                throw new HttpException(
+                    {
+                        status: HttpStatus.UNPROCESSABLE_ENTITY,
+                        errors: {
+                            email: 'notAllowed',
+                        },
+                    },
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                );
+            }
+
+            updateQuery = {
+                role: updateData.role,
+            };
+        }
+
+        return this.usersRepository.findOneAndUpdateOrThrow({
+            filterQuery: {
+                _id: user._id,
+            },
+            updateQuery,
+        });
     }
 
     async update(
@@ -327,4 +387,12 @@ export class UsersService {
             },
         });
     }
+
+    private readonly isAdmin = (actor: User | UserDto) => actor.role === UserRoleEnum.Admin;
+
+    private readonly isSelf = (actor: User | UserDto, user: User | UserDto) =>
+        actor._id === user._id;
+
+    private readonly isRootAdmin = (user: User | UserDto) =>
+        user.email === this.configService.get('auth.adminEmail', { infer: true });
 }

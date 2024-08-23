@@ -12,13 +12,20 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
-import { CurrentUser, IdParamDto, type NullableType } from '~be/common/utils';
+import { CurrentUser, IdParamDto, NullableType } from '~be/common/utils';
 import { AuthRoles } from '~be/app/auth/guards/auth.guard';
 
 import { UsersService } from './users.service';
-import { BlockUserDto, CreateUserDto, GetUsersDto, GetUsersResponseDto, UserDto } from './dtos';
+import {
+    BlockUserDto,
+    CreateUserDto,
+    GetUsersDto,
+    GetUsersResponseDto,
+    UpdateUserDto,
+    UserDto,
+} from './dtos';
 import { UserRoleEnum } from './users.enum';
-import type { JwtPayloadType } from '../auth';
+import { JwtPayloadType } from '../auth';
 
 @AuthRoles(UserRoleEnum.Admin)
 @ApiTags('users')
@@ -48,6 +55,16 @@ export class UsersController {
     @Get('/:id')
     getUserById(@Param() { id }: IdParamDto): Promise<UserDto> {
         return this.usersService.getUserById(id);
+    }
+
+    @Patch('/:id')
+    updateUser(
+        @CurrentUser() actor: JwtPayloadType,
+        @Param() { id: userId }: IdParamDto,
+        @Body() data: UpdateUserDto,
+    ) {
+        console.log(data);
+        return this.usersService.updateUser({ actor, userId, data });
     }
 
     @Patch('block/:id')
