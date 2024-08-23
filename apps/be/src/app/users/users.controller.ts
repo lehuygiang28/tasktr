@@ -8,15 +8,17 @@ import {
     Query,
     Get,
     Param,
+    Patch,
 } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
-import { IdParamDto, type NullableType } from '~be/common/utils';
+import { CurrentUser, IdParamDto, type NullableType } from '~be/common/utils';
 import { AuthRoles } from '~be/app/auth/guards/auth.guard';
 
 import { UsersService } from './users.service';
-import { CreateUserDto, GetUsersDto, GetUsersResponseDto, UserDto } from './dtos';
+import { BlockUserDto, CreateUserDto, GetUsersDto, GetUsersResponseDto, UserDto } from './dtos';
 import { UserRoleEnum } from './users.enum';
+import type { JwtPayloadType } from '../auth';
 
 @AuthRoles(UserRoleEnum.Admin)
 @ApiTags('users')
@@ -46,5 +48,22 @@ export class UsersController {
     @Get('/:id')
     getUserById(@Param() { id }: IdParamDto): Promise<UserDto> {
         return this.usersService.getUserById(id);
+    }
+
+    @Patch('block/:id')
+    blockUser(
+        @CurrentUser() actor: JwtPayloadType,
+        @Param() { id: userId }: IdParamDto,
+        @Body() data: BlockUserDto,
+    ): Promise<NullableType<UserDto>> {
+        return this.usersService.blockUser({ actor, userId, data });
+    }
+
+    @Patch('unblock/:id')
+    unblockUser(
+        @CurrentUser() actor: JwtPayloadType,
+        @Param() { id: userId }: IdParamDto,
+    ): Promise<NullableType<UserDto>> {
+        return this.usersService.unblockUser({ actor, userId });
     }
 }

@@ -10,14 +10,21 @@ import * as bcrypt from 'bcryptjs';
 import type { NullableType } from '~be/common/utils/types';
 import { convertToObjectId, getGravatarUrl } from '~be/common/utils';
 
-import { CreateUserDto, GetUsersDto, GetUsersResponseDto, UserDto } from './dtos';
+import { BlockUserDto, CreateUserDto, GetUsersDto, GetUsersResponseDto, UserDto } from './dtos';
 import { UsersRepository } from './users.repository';
-import { UserRoleEnum } from './users.enum';
+import { UserBlockActionEnum, UserRoleEnum } from './users.enum';
 import { User } from './schemas';
+import { JwtPayloadType } from '../auth';
+import { ConfigService } from '@nestjs/config';
+import { AllConfig } from '../config';
+import { BlockActivityLog } from './schemas/block.schema';
 
 @Injectable()
 export class UsersService {
-    constructor(public readonly usersRepository: UsersRepository) {}
+    constructor(
+        public readonly usersRepository: UsersRepository,
+        private readonly configService: ConfigService<AllConfig>,
+    ) {}
 
     async create(createProfileDto: CreateUserDto): Promise<User> {
         const clonedPayload = {
@@ -140,6 +147,183 @@ export class UsersService {
         return this.usersRepository.findOne({
             filterQuery: {
                 _id: convertToObjectId(id),
+            },
+        });
+    }
+
+    async blockUser({
+        actor: _actor,
+        userId,
+        data,
+    }: {
+        actor: JwtPayloadType;
+        userId: string;
+        data: BlockUserDto;
+    }) {
+        const actor = await this.findByIdOrThrow(_actor.userId);
+        if (actor.role !== UserRoleEnum.Admin) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNAUTHORIZED,
+                    errors: {
+                        user: 'unauthorized',
+                    },
+                },
+                HttpStatus.UNAUTHORIZED,
+            );
+        }
+
+        if (actor?.block?.isBlocked) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: {
+                        user: 'alreadyBlocked',
+                        forceLogout: true,
+                    },
+                },
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        let user = await this.findByIdOrThrow(userId);
+        const canNotBlock = this.configService.get('auth.adminEmail', { infer: true });
+        if (canNotBlock && user.email === canNotBlock) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: {
+                        user: 'canNotBlockRootAdmin',
+                    },
+                },
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        if (actor._id === user._id) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: {
+                        user: 'canNotBlockSelf',
+                    },
+                },
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        if (user?.block?.isBlocked) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: {
+                        user: 'alreadyBlocked',
+                    },
+                },
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        const blockLog: BlockActivityLog = {
+            action: UserBlockActionEnum.Block,
+            actionAt: new Date(),
+            actionBy: actor._id,
+            note: data?.note ?? '',
+            reason: data.reason,
+        };
+
+        user = {
+            ...user,
+            block: {
+                isBlocked: true,
+                activityLogs: [...(user?.block?.activityLogs ?? []), blockLog],
+            },
+        };
+
+        return this.usersRepository.findOneAndUpdate({
+            filterQuery: {
+                _id: convertToObjectId(userId),
+            },
+            updateQuery: {
+                ...user,
+            },
+        });
+    }
+
+    async unblockUser({ actor: _actor, userId }: { actor: JwtPayloadType; userId: string }) {
+        const actor = await this.findByIdOrThrow(_actor.userId);
+        if (actor.role !== UserRoleEnum.Admin) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNAUTHORIZED,
+                    errors: {
+                        user: 'unauthorized',
+                    },
+                },
+                HttpStatus.UNAUTHORIZED,
+            );
+        }
+
+        if (actor?.block?.isBlocked) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: {
+                        user: 'alreadyBlocked',
+                        forceLogout: true,
+                    },
+                },
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        let user = await this.findByIdOrThrow(userId);
+        if (actor._id === user._id) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: {
+                        user: 'canNotUnblockSelf',
+                    },
+                },
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        if (!user?.block?.isBlocked) {
+            throw new HttpException(
+                {
+                    status: HttpStatus.UNPROCESSABLE_ENTITY,
+                    errors: {
+                        user: 'alreadyUnblocked',
+                    },
+                },
+                HttpStatus.UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        const blockLog: BlockActivityLog = {
+            action: UserBlockActionEnum.Unblock,
+            actionAt: new Date(),
+            actionBy: actor._id,
+            note: '',
+            reason: '',
+        };
+
+        user = {
+            ...user,
+            block: {
+                isBlocked: false,
+                activityLogs: [...(user?.block?.activityLogs ?? []), blockLog],
+            },
+        };
+
+        return this.usersRepository.findOneAndUpdate({
+            filterQuery: {
+                _id: convertToObjectId(userId),
+            },
+            updateQuery: {
+                ...user,
             },
         });
     }
