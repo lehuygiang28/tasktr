@@ -8,6 +8,7 @@ import type { UserDto } from '~be/app/users/dtos';
 import { formatDateToHumanReadable } from '~/libs/utils/common';
 import { BlockLogTable } from '~/components/table/block-log';
 import { BlockOrUnblockUser } from '~/components/button/block-or-unblock-user';
+import { UpdateUserRole } from '~/components/button/change-role';
 
 const { Text } = Typography;
 
@@ -26,6 +27,7 @@ export default function UserShow() {
                 <>
                     {defaultButtons}
                     <BlockOrUnblockUser idParam={id} user={record} />
+                    <UpdateUserRole user={record} idParam={id} />
                 </>
             )}
         >
