@@ -25,7 +25,7 @@ export function UpdateUserRole(props: UpdateUserRoleProps) {
         mutate({
             resource: 'users',
             id: user?._id.toString(),
-            values: { role: selectedRole },
+            values: data,
             invalidates: ['all'],
         });
         clearToDefault();
@@ -51,7 +51,7 @@ export function UpdateUserRole(props: UpdateUserRoleProps) {
                 open={isUpdateModalVisible}
                 onOk={() => {
                     handleUpdate({
-                        role: selectedRole || '',
+                        role: selectedRole,
                     });
                 }}
                 onCancel={() => {
