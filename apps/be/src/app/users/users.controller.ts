@@ -25,7 +25,7 @@ import {
     UserDto,
 } from './dtos';
 import { UserRoleEnum } from './users.enum';
-import { JwtPayloadType } from '../auth';
+import type { JwtPayloadType } from '../auth';
 
 @AuthRoles(UserRoleEnum.Admin)
 @ApiTags('users')
