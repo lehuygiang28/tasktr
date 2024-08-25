@@ -5,3 +5,4 @@ export * from './get-tasks.dto';
 export * from './get-tasks-response.dto';
 export * from './try-request.dto';
 export * from './try-request-response.dto';
+export * from './import-tasks.dto';

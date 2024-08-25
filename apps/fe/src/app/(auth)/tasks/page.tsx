@@ -1,24 +1,19 @@
 'use client';
 
-import { HttpError, useUpdate, useExport } from '@refinedev/core';
-import {
-    DeleteButton,
-    EditButton,
-    List,
-    ShowButton,
-    useTable,
-    ExportButton,
-} from '@refinedev/antd';
+import { HttpError, useUpdate } from '@refinedev/core';
+import { DeleteButton, EditButton, List, ShowButton, useTable } from '@refinedev/antd';
 import { Space, Table, Switch, Typography, Button } from 'antd';
 import { FileProtectOutlined } from '@ant-design/icons';
 import { toString as cronReadable } from 'cronstrue';
 import { getSchedule, stringToArray } from 'cron-converter';
 
-import { type TaskDto } from '~be/app/tasks/dtos';
+import type { TaskDto } from '~be/app/tasks/dtos';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
 import { useDebouncedCallback } from '~/hooks/useDebouncedCallback';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import Link from 'next/link';
+import { ExportTask } from '~/components/button/export-task';
+import { ImportTask } from '~/components/button/import-task';
 
 const { Text } = Typography;
 
@@ -46,19 +41,14 @@ export default function TaskList() {
     });
     const { mutate: update } = useUpdate<TaskDto>({});
     const debouncedUpdate = useDebouncedCallback(update, 200);
-    const { triggerExport, isLoading: exportLoading } = useExport<TaskDto>({
-        mapData: (item) => {
-            const { cronHistory, ...rest } = item;
-            return rest;
-        },
-    });
 
     return (
         <List
             headerButtons={({ defaultButtons }) => (
                 <>
                     {defaultButtons}
-                    <ExportButton onClick={triggerExport} loading={exportLoading} />
+                    <ExportTask />
+                    <ImportTask />
                 </>
             )}
         >
