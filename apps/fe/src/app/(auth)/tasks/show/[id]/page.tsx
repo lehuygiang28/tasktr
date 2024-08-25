@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Descriptions, Typography, Button } from 'antd';
+import { Descriptions, Typography, Button, Collapse } from 'antd';
 import { ExportButton, Show } from '@refinedev/antd';
 import { useExport, useShow } from '@refinedev/core';
 import { FileProtectOutlined } from '@ant-design/icons';
@@ -11,6 +11,8 @@ import { formatDateToHumanReadable } from '~/libs/utils/common';
 import { HighlightCode } from '~/components/show';
 
 const { Text } = Typography;
+const { Panel } = Collapse;
+const { Item } = Descriptions;
 
 export default function TaskShow() {
     const {
@@ -41,33 +43,37 @@ export default function TaskShow() {
             )}
         >
             <Descriptions>
-                <Descriptions.Item label="ID">
+                <Item label="ID">
                     <Text copyable>{record?._id.toString()}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Name">{record?.name}</Descriptions.Item>
-                <Descriptions.Item label="Cron">
+                </Item>
+                <Item label="Name">{record?.name}</Item>
+                <Item label="Cron">
                     <Text copyable>{record?.cron}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Url">
+                </Item>
+                <Item label="Url">
                     <Text copyable>{record?.endpoint}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Method">{record?.method}</Descriptions.Item>
-                <Descriptions.Item label="TimeZone">
+                </Item>
+                <Item label="Method">{record?.method}</Item>
+                <Item label="TimeZone">
                     <Text copyable>{record?.timezone}</Text>
-                </Descriptions.Item>
-                <Descriptions.Item label="Note">{record?.note}</Descriptions.Item>
-                <Descriptions.Item label="Created At">
+                </Item>
+                <Item label="Note">{record?.note}</Item>
+                <Item label="Created At">
                     {record?.createdAt && formatDateToHumanReadable(record?.createdAt)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Updated At">
+                </Item>
+                <Item label="Updated At">
                     {record?.updatedAt && formatDateToHumanReadable(record?.updatedAt)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Headers" span={12}>
-                    <HighlightCode source={record?.headers} formatType="json" />
-                </Descriptions.Item>
-                <Descriptions.Item label="Body" span={12}>
+                </Item>
+                <Item label="Headers" span={12}>
+                    <Collapse ghost>
+                        <Panel header="Show Headers" key="1">
+                            <HighlightCode source={record?.headers} formatType="json" />
+                        </Panel>
+                    </Collapse>
+                </Item>
+                <Item label="Body" span={12}>
                     <HighlightCode source={record?.body} formatType="markdown" />
-                </Descriptions.Item>
+                </Item>
             </Descriptions>
         </Show>
     );
