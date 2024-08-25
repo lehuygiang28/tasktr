@@ -1,5 +1,7 @@
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
+import { AxiosRequestConfig } from 'axios';
+
 import { useAxios } from './useAxios';
 import { useRefreshToken } from './useRefreshToken';
 
@@ -8,6 +10,9 @@ export type UseAxiosAuthPayload =
           baseURL?: string;
       }
     | undefined;
+
+const requestsQueue: AxiosRequestConfig[] = [];
+let isRefreshing = false;
 
 export function useAxiosAuth(payload?: UseAxiosAuthPayload) {
     const { instance: axiosInstance } = useAxios();
@@ -43,8 +48,27 @@ export function useAxiosAuth(payload?: UseAxiosAuthPayload) {
                 const prevRequest = error?.config;
                 if (error?.response?.status === 401 && !prevRequest?.sent) {
                     prevRequest.sent = true;
-                    await refreshToken();
-                    prevRequest.headers['Authorization'] = `Bearer ${session?.user.accessToken}`;
+                    // Queue the request
+                    requestsQueue.push(prevRequest);
+                    if (!isRefreshing) {
+                        isRefreshing = true;
+                        try {
+                            await refreshToken();
+
+                            for (const queuedRequest of requestsQueue) {
+                                queuedRequest.headers['Authorization'] =
+                                    `Bearer ${session?.user?.accessToken}`;
+                                axiosInstance(queuedRequest);
+                            }
+
+                            requestsQueue.length = 0; // Clear the queue
+                        } catch (refreshError) {
+                            // Handle refresh token error
+                            console.error('Failed to refresh token:', refreshError);
+                        } finally {
+                            isRefreshing = false;
+                        }
+                    }
                     return axiosInstance(prevRequest);
                 }
                 return Promise.reject(error);
