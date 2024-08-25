@@ -382,6 +382,10 @@ export class AuthService implements OnModuleInit {
             });
         }
 
+        if (!user.emailVerified) {
+            user = await this.usersService.update(user._id, { ...user, emailVerified: true });
+        }
+
         return this.generateTokens(user);
     }
 
@@ -413,6 +417,11 @@ export class AuthService implements OnModuleInit {
                 emailVerified: true,
             });
         }
+
+        if (!user.emailVerified) {
+            user = await this.usersService.update(user._id, { ...user, emailVerified: true });
+        }
+
         return this.generateTokens(user);
     }
 
