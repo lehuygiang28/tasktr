@@ -33,7 +33,7 @@ export class Task extends AbstractDocument {
     @Prop({ required: true, type: Types.ObjectId, ref: User.name })
     userId: Types.ObjectId;
 
-    @Prop({ unique: true, required: true, type: String })
+    @Prop({ required: true, type: String })
     name: string;
 
     @Prop({ required: false, default: '', type: String })
