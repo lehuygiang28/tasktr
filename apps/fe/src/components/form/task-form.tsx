@@ -3,7 +3,7 @@
 import 'react-js-cron/dist/styles.css';
 
 import { useEffect } from 'react';
-import { Controller, useFieldArray } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import {
     Form,
     Input,
@@ -12,7 +12,6 @@ import {
     Col,
     Switch,
     Space,
-    Button,
     FormProps,
     InputNumber,
     Divider,
@@ -22,7 +21,6 @@ import { Create, Edit } from '@refinedev/antd';
 import { HttpError, useList } from '@refinedev/core';
 import { useForm } from '@refinedev/react-hook-form';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
-import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import Cron from 'react-js-cron';
 
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
@@ -31,7 +29,7 @@ import worldTimeAPIProvider from '~/providers/data-provider/timezone';
 import { useCronReducer } from '~/hooks/useCronReducer';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
 import { TryRequestButton } from '../button/try-request-btn';
-import { AlertOptions } from '../form-item';
+import { AlertOptions, HeadersOption } from '../form-item';
 
 const { Item } = Form;
 const { Text } = Typography;
@@ -69,11 +67,6 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
     const [cronValues, dispatchCronValues] = useCronReducer({
         defaultValue: defaultValues?.cron ?? '*/5 * * * *',
         setFormValue: (value) => setValue('cron', value),
-    });
-
-    const { fields, append, remove } = useFieldArray({
-        control,
-        name: 'headerLists',
     });
 
     useEffect(() => {
@@ -362,47 +355,7 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                     )}
                 />
 
-                <Form.Item label="Headers">
-                    <div>
-                        {fields.map((field, index) => {
-                            return (
-                                <Row key={field.id} gutter={16} style={{ marginBottom: 8 }}>
-                                    <Col span={11}>
-                                        <Controller
-                                            name={`headerLists.${index}.key`}
-                                            control={control}
-                                            rules={{ required: 'Key is required' }}
-                                            render={({ field }) => (
-                                                <Input {...field} placeholder="Key" />
-                                            )}
-                                        />
-                                    </Col>
-                                    <Col span={11}>
-                                        <Controller
-                                            name={`headerLists.${index}.value`}
-                                            control={control}
-                                            rules={{ required: 'Value is required' }}
-                                            render={({ field }) => (
-                                                <Input {...field} placeholder="Value" />
-                                            )}
-                                        />
-                                    </Col>
-                                    <Col span={2}>
-                                        <MinusCircleOutlined onClick={() => remove(index)} />
-                                    </Col>
-                                </Row>
-                            );
-                        })}
-                    </div>
-                    <Button
-                        type="dashed"
-                        onClick={() => append({ key: '', value: '' })}
-                        block
-                        icon={<PlusOutlined />}
-                    >
-                        Add Header
-                    </Button>
-                </Form.Item>
+                <HeadersOption control={control} />
 
                 <Controller<TaskFormValues>
                     name={'body'}
