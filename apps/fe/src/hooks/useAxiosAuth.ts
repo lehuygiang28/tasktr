@@ -11,7 +11,11 @@ export type UseAxiosAuthPayload =
       }
     | undefined;
 
-const requestsQueue: AxiosRequestConfig[] = [];
+const requestsQueue: {
+    prevRequest: AxiosRequestConfig;
+    resolve: (value: unknown) => void;
+    reject: (reason?: unknown) => void;
+}[] = [];
 let isRefreshing = false;
 
 export function useAxiosAuth(payload?: UseAxiosAuthPayload) {
@@ -44,32 +48,43 @@ export function useAxiosAuth(payload?: UseAxiosAuthPayload) {
 
         const responseIntercept = axiosInstance.interceptors.response.use(
             (response) => response,
-            async (error) => {
+            (error) => {
                 const prevRequest = error?.config;
                 if (error?.response?.status === 401 && !prevRequest?.sent) {
-                    prevRequest.sent = true;
-                    // Queue the request
-                    requestsQueue.push(prevRequest);
+                    prevRequest.sent = true; // prevent infinite loop
+
+                    // Create a Promise to pause the request
+                    const retryOriginalRequest = new Promise((resolve, reject) => {
+                        // Queue the request with its resolve/reject handlers
+                        requestsQueue.push({ resolve, reject, prevRequest });
+                    });
+
                     if (!isRefreshing) {
                         isRefreshing = true;
-                        try {
-                            await refreshToken();
+                        refreshToken()
+                            .then(() => {
+                                // Retry all queued requests
+                                for (const { resolve, prevRequest } of requestsQueue) {
+                                    prevRequest.headers['Authorization'] =
+                                        `Bearer ${session?.user?.accessToken}`;
+                                    resolve(axiosInstance(prevRequest));
+                                }
+                            })
+                            .catch((refreshError) => {
+                                // Handle refresh token error
+                                for (const { reject } of requestsQueue) {
+                                    reject(error);
+                                }
 
-                            for (const queuedRequest of requestsQueue) {
-                                queuedRequest.headers['Authorization'] =
-                                    `Bearer ${session?.user?.accessToken}`;
-                                axiosInstance(queuedRequest);
-                            }
-
-                            requestsQueue.length = 0; // Clear the queue
-                        } catch (refreshError) {
-                            // Handle refresh token error
-                            console.error('Failed to refresh token:', refreshError);
-                        } finally {
-                            isRefreshing = false;
-                        }
+                                console.error('Failed to refresh token:', refreshError);
+                            })
+                            .finally(() => {
+                                requestsQueue.length = 0; // Clear the queue
+                                isRefreshing = false;
+                            });
                     }
-                    return axiosInstance(prevRequest);
+
+                    return retryOriginalRequest; // Return the Promise to pause the original request
                 }
                 return Promise.reject(error);
             },
