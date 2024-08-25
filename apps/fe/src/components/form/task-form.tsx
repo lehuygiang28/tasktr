@@ -22,6 +22,7 @@ import { HttpError, useList } from '@refinedev/core';
 import { useForm } from '@refinedev/react-hook-form';
 import { classValidatorResolver } from '@hookform/resolvers/class-validator';
 import Cron from 'react-js-cron';
+import { createRegex } from '@vn-utils/text';
 
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
 import { TaskFormValidator } from '~/validators';
@@ -272,7 +273,7 @@ export function TaskForm({ mode, defaultValues, onSubmit, formProps }: TaskFormP
                                         placeholder="Select timezone"
                                         optionFilterProp="children"
                                         filterOption={(input, option) =>
-                                            (option?.label ?? '').includes(input)
+                                            createRegex(input).test(option?.label ?? '')
                                         }
                                         filterSort={(optionA, optionB) =>
                                             (optionA?.label ?? '')
