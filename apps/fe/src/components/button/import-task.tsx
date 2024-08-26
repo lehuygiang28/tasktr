@@ -1,6 +1,6 @@
 import { ImportButton, useImport } from '@refinedev/antd';
 import { ImportErrorResult, useNotification } from '@refinedev/core';
-import { Modal, List, Typography } from 'antd';
+import { Modal, List, Typography, Spin } from 'antd';
 import { useState } from 'react';
 
 import type { TaskImport } from '~be/app/tasks/dtos';
@@ -10,7 +10,9 @@ export function ImportTask() {
     const [modalOpen, setModalOpen] = useState(false);
     const [failedTasks, setFailedTasks] = useState<ImportErrorResult<TaskImport>[]>([]);
 
-    const importProps = useImport<Omit<TaskImport, 'options'> & { options?: string }>({
+    const { isLoading: importLoading, ...importProps } = useImport<
+        Omit<TaskImport, 'options'> & { options?: string }
+    >({
         resource: 'tasks',
         batchSize: 50,
         mapData: (item) => {
@@ -39,7 +41,8 @@ export function ImportTask() {
 
     return (
         <>
-            <ImportButton {...importProps} />
+            <ImportButton {...importProps} loading={importLoading} />
+            {importLoading && <Spin size="large" fullscreen />}
             <Modal
                 title="Failed Task Imports"
                 open={modalOpen}
