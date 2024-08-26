@@ -32,6 +32,16 @@ export default function DashboardPage() {
         logs: [],
     };
 
+    const getRateColor = (rate: number) => {
+        if (rate > 0.8) {
+            return 'green';
+        } else if (rate >= 0.5) {
+            return 'yellow';
+        } else {
+            return 'red';
+        }
+    };
+
     const cartData = [
         {
             title: 'Enabled Task',
@@ -44,10 +54,12 @@ export default function DashboardPage() {
         {
             title: 'Success Rate',
             value: `${successRate * 100}%`,
+            color: getRateColor(successRate),
         },
         {
             title: 'Failed Rate',
             value: `${failedRate * 100}%`,
+            color: getRateColor(1 - failedRate), // Invert for failed rate
         },
     ];
 
@@ -58,7 +70,9 @@ export default function DashboardPage() {
                     {cartData.map((data, index) => (
                         <Col key={index} xs={24} sm={12} md={8} lg={6} xl={6}>
                             <Card style={{ width: '100%', textAlign: 'center' }} hoverable>
-                                <Title level={4}>{data?.value}</Title>
+                                <Title level={4} style={{ color: data?.color }}>
+                                    {data?.value}
+                                </Title>
                                 <Title level={5}>{data?.title}</Title>
                             </Card>
                         </Col>
