@@ -2,7 +2,7 @@
 
 import { HttpError, useUpdate } from '@refinedev/core';
 import { DeleteButton, EditButton, List, ShowButton, useTable } from '@refinedev/antd';
-import { Space, Table, Switch, Typography, Button } from 'antd';
+import { Space, Table, Switch, Typography, Button, Grid } from 'antd';
 import { FileProtectOutlined } from '@ant-design/icons';
 import { toString as cronReadable } from 'cronstrue';
 import { getSchedule, stringToArray } from 'cron-converter';
@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { ExportTask } from '~/components/button/export-task';
 import { ImportTask } from '~/components/button/import-task';
 
+const { useBreakpoint } = Grid;
 const { Text } = Typography;
 
 interface TableSearch {
@@ -22,6 +23,8 @@ interface TableSearch {
 }
 
 export default function TaskList() {
+    const screens = useBreakpoint();
+
     const {
         tableProps: { pagination, ...tableProps },
     } = useTable<TaskDto, HttpError, TableSearch>({
@@ -91,9 +94,12 @@ export default function TaskList() {
                     render={(_, record: TaskDto) => (
                         <>
                             <Space direction="vertical">
-                                <Text>
-                                    <pre style={{ display: 'inline' }}>{record.cron}</pre>
-                                </Text>
+                                {screens?.md && (
+                                    <Text>
+                                        <pre style={{ display: 'inline' }}>{record.cron}</pre>
+                                    </Text>
+                                )}
+
                                 <Text type="secondary">
                                     {cronReadable(record.cron, {
                                         throwExceptionOnParseError: false,

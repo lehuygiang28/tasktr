@@ -2,13 +2,14 @@
 
 import React, { useContext } from 'react';
 import type { RefineThemedLayoutV2HeaderProps } from '@refinedev/antd';
-import { Avatar, Layout, Space, Switch, theme, Typography } from 'antd';
+import { Avatar, Layout, Space, Switch, theme, Typography, Grid } from 'antd';
 
 import { ColorModeContext } from '~/contexts/color-mode';
 import { type UserDto } from '~be/app/users/dtos';
 
 const { Text } = Typography;
 const { useToken } = theme;
+const { useBreakpoint } = Grid;
 const { Header: HeaderAntd } = Layout;
 
 export type HeaderProps = RefineThemedLayoutV2HeaderProps & {
@@ -17,6 +18,7 @@ export type HeaderProps = RefineThemedLayoutV2HeaderProps & {
 
 export function Header({ sticky, user }: HeaderProps) {
     const { token } = useToken();
+    const screens = useBreakpoint();
     const { mode, setMode } = useContext(ColorModeContext);
 
     const headerStyles: React.CSSProperties = {
@@ -45,7 +47,7 @@ export function Header({ sticky, user }: HeaderProps) {
                 />
                 {user && (
                     <Space style={{ marginLeft: '8px' }} size="middle">
-                        <Text strong>{user.email}</Text>
+                        {screens?.md && <Text strong>{user.email}</Text>}
                         <Avatar src={user?.avatar?.url} alt={`avatar of ${user?.email}`} />
                     </Space>
                 )}
