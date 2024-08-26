@@ -1,16 +1,18 @@
 'use client';
 
-import { HttpError, useDelete, useUpdate } from '@refinedev/core';
+import Link from 'next/link';
+import { HttpError } from '@refinedev/core';
 import { List, useTable } from '@refinedev/antd';
-import { Space, Table, Typography, Button, Popconfirm } from 'antd';
-import { FileProtectOutlined, RollbackOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Space, Table, Typography, Button } from 'antd';
+import { FileProtectOutlined } from '@ant-design/icons';
 import { toString as cronReadable } from 'cronstrue';
 import { getSchedule, stringToArray } from 'cron-converter';
 
 import { type TaskDto } from '~be/app/tasks/dtos';
 import { HttpMethodTag } from '~/components/tag/http-method-tag';
 import { HttpMethodEnum } from '~be/app/tasks/tasks.enum';
-import Link from 'next/link';
+import { HardDeleteTask } from '~/components/button/hard-delete-task';
+import { RestoreTask } from '~/components/button/restore-task';
 
 const { Text } = Typography;
 
@@ -47,8 +49,6 @@ export default function TaskList() {
             ],
         },
     });
-    const { mutate: mutateDelete } = useDelete<TaskDto>({});
-    const { mutate: mutateRestore } = useUpdate<TaskDto>({});
 
     return (
         <List>
@@ -150,48 +150,8 @@ export default function TaskList() {
                                     <FileProtectOutlined />
                                 </Button>
                             </Link>
-                            <Popconfirm
-                                key={'restore'}
-                                okText="Yes"
-                                cancelText="No"
-                                icon={<RollbackOutlined style={{ color: 'green' }} />}
-                                title="Are you sure you want to restore this task?"
-                                onConfirm={() => {
-                                    mutateRestore({
-                                        id: record._id.toString(),
-                                        resource: 'tasks',
-                                        invalidates: ['list', 'detail'],
-                                        values: {
-                                            deletedAt: null,
-                                        },
-                                    });
-                                }}
-                            >
-                                <Button size="small" type="default" icon={<RollbackOutlined />} />
-                            </Popconfirm>
-                            <Popconfirm
-                                key={'delete'}
-                                okText="Yes"
-                                cancelText="No"
-                                title="Are you sure you want to delete this task forever?"
-                                description="This action cannot be undone. Your task data will be permanently deleted."
-                                onConfirm={() => {
-                                    mutateDelete({
-                                        id: record._id.toString(),
-                                        resource: 'tasks',
-                                        invalidates: ['list', 'detail'],
-                                        meta: {
-                                            params: ['hard'],
-                                        },
-                                    });
-                                }}
-                            >
-                                <Button
-                                    size="small"
-                                    type="default"
-                                    icon={<DeleteOutlined style={{ color: 'red' }} />}
-                                />
-                            </Popconfirm>
+                            <RestoreTask id={record._id?.toString()} />
+                            <HardDeleteTask id={record._id?.toString()} />
                         </Space>
                     )}
                 />
