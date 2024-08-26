@@ -54,10 +54,10 @@ export default function DashboardPage() {
     return (
         <Show resource="stats" recordItemId={''}>
             <Space direction="vertical" style={{ width: '100%' }} size={'large'}>
-                <Row justify={'center'} gutter={[16, 16]}>
+                <Row gutter={[16, 16]} justify="center">
                     {cartData.map((data, index) => (
-                        <Col key={index} xs={24} sm={24} md={18} lg={6} xl={6}>
-                            <Card style={{ width: 300, textAlign: 'center' }} hoverable>
+                        <Col key={index} xs={24} sm={12} md={8} lg={6} xl={6}>
+                            <Card style={{ width: '100%', textAlign: 'center' }} hoverable>
                                 <Title level={4}>{data?.value}</Title>
                                 <Title level={5}>{data?.title}</Title>
                             </Card>
